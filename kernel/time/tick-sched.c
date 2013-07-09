@@ -23,6 +23,7 @@
 #include <linux/irq_work.h>
 #include <linux/posix-timers.h>
 #include <linux/perf_event.h>
+#include <linux/context_tracking.h>
 #include <linux/rq_stats.h>
 
 #include <asm/irq_regs.h>
@@ -381,6 +382,9 @@ void __init tick_nohz_init(void)
 		if (tick_nohz_init_all() < 0)
 			return;
 	}
+
+	for_each_cpu(cpu, nohz_full_mask)
+		context_tracking_cpu_set(cpu);
 
 	cpu_notifier(tick_nohz_cpu_down_callback, 0);
 
