@@ -75,6 +75,7 @@
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
 #include <linux/sched_clock.h>
+#include <linux/context_tracking.h>
 #include <linux/random.h>
 
 #include <asm/io.h>
@@ -548,6 +549,7 @@ asmlinkage void __init start_kernel(void)
 	perf_event_init();
 	rcu_init();
 	tick_nohz_init();
+	context_tracking_init();
 	radix_tree_init();
 	/* init some links before init_ISA_irqs() */
 	early_irq_init();
