@@ -25,6 +25,10 @@
 #include "mdss_dsi.h"
 #include "mdss_livedisplay.h"
 
+#ifdef CONFIG_POWERSUSPEND
+#include <linux/powersuspend.h>
+#endif
+
 #define DT_CMD_HDR 6
 
 #ifdef CONFIG_MACH_LONGCHEER
@@ -666,6 +670,10 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 	gpio_set_value(TPS65132_GPIO_NEG_EN, 1);
 #endif
 
+#ifdef CONFIG_POWERSUSPEND
+       set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE);
+#endif
+
 	pinfo = &pdata->panel_info;
 	ctrl = container_of(pdata, struct mdss_dsi_ctrl_pdata,
 				panel_data);
@@ -750,6 +758,10 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 
 	if (ctrl->off_cmds.cmd_cnt)
 		mdss_dsi_panel_cmds_send(ctrl, &ctrl->off_cmds);
+
+#ifdef CONFIG_POWERSUSPEND
+       set_power_suspend_state_panel_hook(POWER_SUSPEND_ACTIVE);
+#endif
 
 end:
 	pinfo->blank_state = MDSS_PANEL_BLANK_BLANK;
