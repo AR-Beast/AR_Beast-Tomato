@@ -1167,6 +1167,7 @@ skip:
 	sb->s_flags = (sb->s_flags & ~MS_POSIXACL) |
 		(test_opt(sbi, POSIX_ACL) ? MS_POSIXACL : 0);
 
+
 	return 0;
 restore_gc:
 	if (need_restart_gc) {
