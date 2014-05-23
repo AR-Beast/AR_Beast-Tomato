@@ -146,6 +146,12 @@ static void __irq_work_run(void)
 	}
 }
 
+static void __irq_work_run(void)
+{
+	irq_work_run_list(&__get_cpu_var(raised_list));
+	irq_work_run_list(&__get_cpu_var(lazy_list));
+}
+
 /*
  * Run the irq_work entries on this cpu. Requires to be ran from hardirq
  * context with local IRQs disabled.
