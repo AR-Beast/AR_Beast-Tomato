@@ -3496,6 +3496,7 @@ err:
 	debugfs_remove_recursive(root);
 	adsp_err(dsp, "Failed to create debugfs\n");
 }
+
 EXPORT_SYMBOL_GPL(wm_adsp_init_debugfs);
 
 
@@ -3505,5 +3506,7 @@ void wm_adsp_cleanup_debugfs(struct wm_adsp *dsp)
 }
 EXPORT_SYMBOL_GPL(wm_adsp_cleanup_debugfs);
 #endif
+
+EXPORT_SYMBOL_GPL(wm_adsp2_init);
 
 MODULE_LICENSE("GPL v2");
