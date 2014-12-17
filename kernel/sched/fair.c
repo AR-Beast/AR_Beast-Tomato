@@ -1268,6 +1268,7 @@ unsigned int __read_mostly sysctl_sched_mostly_idle_nr_run = 3;
  * guide task placement.
  * This sysctl can be set to a default value using boot command line arguments.
  */
+ 
 unsigned int __read_mostly sysctl_sched_enable_power_aware = 1;
 
 /*
