@@ -182,11 +182,11 @@ TRACE_EVENT(sched_cpu_load,
 		__entry->idle			= idle;
 		__entry->mostly_idle		= mostly_idle;
 		__entry->nr_running		= rq->nr_running;
-		__entry->nr_big_tasks		= rq->nr_big_tasks;
-		__entry->nr_small_tasks		= rq->nr_small_tasks;
+		__entry->nr_big_tasks		= rq->hmp_stats.nr_big_tasks;
+		__entry->nr_small_tasks		= rq->hmp_stats.nr_small_tasks;
 		__entry->load_scale_factor	= rq->load_scale_factor;
 		__entry->capacity		= rq->capacity;
-		__entry->cumulative_runnable_avg = rq->cumulative_runnable_avg;
+		__entry->cumulative_runnable_avg = rq->hmp_stats.cumulative_runnable_avg;
 		__entry->cur_freq		= rq->cur_freq;
 		__entry->max_freq		= rq->max_freq;
 		__entry->power_cost		= power_cost;
@@ -325,8 +325,8 @@ TRACE_EVENT(sched_update_history,
 		__entry->demand         = p->ravg.demand;
 		memcpy(__entry->hist, p->ravg.sum_history,
 					RAVG_HIST_SIZE_MAX * sizeof(u32));
-		__entry->nr_big_tasks   = rq->nr_big_tasks;
-		__entry->nr_small_tasks = rq->nr_small_tasks;
+		__entry->nr_big_tasks   = rq->hmp_stats.nr_big_tasks;
+		__entry->nr_small_tasks = rq->hmp_stats.nr_small_tasks;
 		__entry->cpu            = rq->cpu;
 	),
 
@@ -931,6 +931,8 @@ TRACE_EVENT(sched_get_nr_running_avg,
 	TP_printk("avg=%d big_avg=%d iowait_avg=%d",
 		__entry->avg, __entry->big_avg, __entry->iowait_avg)
 );
+
+
 #endif /* _TRACE_SCHED_H */
 
 /* This part must be outside protection */

@@ -26,6 +26,7 @@ static DEFINE_PER_CPU(u64, nr_prod_sum);
 static DEFINE_PER_CPU(u64, last_time);
 static DEFINE_PER_CPU(u64, nr_big_prod_sum);
 static DEFINE_PER_CPU(u64, nr);
+
 static DEFINE_PER_CPU(unsigned long, iowait_prod_sum);
 static DEFINE_PER_CPU(spinlock_t, nr_lock) = __SPIN_LOCK_UNLOCKED(nr_lock);
 static s64 last_get_time;

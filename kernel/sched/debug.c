@@ -231,6 +231,24 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 			cfs_rq->throttled);
 	SEQ_printf(m, "  .%-30s: %d\n", "throttle_count",
 			cfs_rq->throttle_count);
+	SEQ_printf(m, "  .%-30s: %d\n", "runtime_enabled",
+			cfs_rq->runtime_enabled);
+#ifdef CONFIG_SCHED_HMP
+	SEQ_printf(m, "  .%-30s: %d\n", "nr_big_tasks",
+			cfs_rq->hmp_stats.nr_big_tasks);
+	SEQ_printf(m, "  .%-30s: %d\n", "nr_small_tasks",
+			cfs_rq->hmp_stats.nr_small_tasks);
+	SEQ_printf(m, "  .%-30s: %llu\n", "cumulative_runnable_avg",
+			cfs_rq->hmp_stats.cumulative_runnable_avg);
+#endif
+#endif
+#ifdef CONFIG_CFS_BANDWIDTH
+	SEQ_printf(m, "  .%-30s: %d\n", "tg->cfs_bandwidth.timer_active",
+			cfs_rq->tg->cfs_bandwidth.timer_active);
+	SEQ_printf(m, "  .%-30s: %d\n", "throttled",
+			cfs_rq->throttled);
+	SEQ_printf(m, "  .%-30s: %d\n", "throttle_count",
+			cfs_rq->throttle_count);
 #endif
 
 	print_cfs_group_stats(m, cpu, cfs_rq->tg);
@@ -314,8 +332,10 @@ do {									\
 	P(max_freq);
 #endif
 #ifdef CONFIG_SCHED_HMP
-	P(nr_big_tasks);
-	P(nr_small_tasks);
+	P(hmp_stats.nr_big_tasks);
+	P(hmp_stats.nr_small_tasks);
+	SEQ_printf(m, "  .%-30s: %llu\n", "hmp_stats.cumulative_runnable_avg",
+			rq->hmp_stats.cumulative_runnable_avg);
 #endif
 #undef P
 #undef PN
@@ -325,6 +345,7 @@ do {									\
 #define P64(n) SEQ_printf(m, "  .%-30s: %Ld\n", #n, rq->n);
 
 	P(yld_count);
+	P(yield_sleep_count);
 
 	P(sched_count);
 	P(sched_goidle);
