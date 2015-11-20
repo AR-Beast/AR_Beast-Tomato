@@ -2754,16 +2754,16 @@ static int cpufreq_notifier_trans(struct notifier_block *nb,
 	BUG_ON(!new_freq);
 
 	if (cpu_rq(cpu)->cur_freq == new_freq)
-		return 0;
+
+ 		return 0;
 
 	for_each_cpu(i, &cpu_rq(cpu)->freq_domain_cpumask) {
-		struct rq *rq = cpu_rq(i);
-		raw_spin_lock_irqsave(&rq->lock, flags);
-		update_task_ravg(rq->curr, rq, TASK_UPDATE, sched_clock(), 0);
-		rq->cur_freq = new_freq;
-		raw_spin_unlock_irqrestore(&rq->lock, flags);
-	}
-
+ 		struct rq *rq = cpu_rq(i);
+ 		raw_spin_lock_irqsave(&rq->lock, flags);
+ 		update_task_ravg(rq->curr, rq, TASK_UPDATE, sched_clock(), 0);
+ 		rq->cur_freq = new_freq;
+ 		raw_spin_unlock_irqrestore(&rq->lock, flags);
+}]
 	return 0;
 }
 
