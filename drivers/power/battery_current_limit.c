@@ -187,86 +187,6 @@ static struct bcl_context *gbcl;
 static enum bcl_threshold_state bcl_vph_state = BCL_THRESHOLD_DISABLED,
 		bcl_ibat_state = BCL_THRESHOLD_DISABLED;
 static DEFINE_MUTEX(bcl_notify_mutex);
-static uint32_t bcl_hotplug_request, bcl_hotplug_mask;
-static struct work_struct bcl_hotplug_work;
-static DEFINE_MUTEX(bcl_hotplug_mutex);
-static bool bcl_hotplug_enabled;
-
-#ifdef CONFIG_SMP
-static void __ref bcl_handle_hotplug(struct work_struct *work)
-{
-	int ret = 0, _cpu = 0;
-	uint32_t prev_hotplug_request = 0;
-
-	mutex_lock(&bcl_hotplug_mutex);
-	prev_hotplug_request = bcl_hotplug_request;
-
-	if (bcl_vph_state == BCL_LOW_THRESHOLD
-		&& bcl_ibat_state == BCL_HIGH_THRESHOLD)
-		bcl_hotplug_request = bcl_hotplug_mask;
-	else
-		bcl_hotplug_request = 0;
-
-	if (bcl_hotplug_request == prev_hotplug_request)
-		goto handle_hotplug_exit;
-
-	for_each_possible_cpu(_cpu) {
-		if (!(bcl_hotplug_mask & BIT(_cpu)))
-			continue;
-
-		if (bcl_hotplug_request & BIT(_cpu)) {
-			if (!cpu_online(_cpu))
-				continue;
-			ret = cpu_down(_cpu);
-			if (ret)
-				pr_err("Error %d offlining core %d\n",
-					ret, _cpu);
-			else
-				pr_info("Set Offline CPU:%d\n", _cpu);
-		} else {
-			if (cpu_online(_cpu))
-				continue;
-			ret = cpu_up(_cpu);
-			if (ret)
-				pr_err("Error %d onlining core %d\n",
-					ret, _cpu);
-			else
-				pr_info("Allow Online CPU:%d\n", _cpu);
-		}
-	}
-
-handle_hotplug_exit:
-	mutex_unlock(&bcl_hotplug_mutex);
-	return;
-}
-#else
-static void __ref bcl_handle_hotplug(struct work_struct *work)
-{
-	return;
-}
-#endif
-
-static int __ref bcl_cpu_ctrl_callback(struct notifier_block *nfb,
-	unsigned long action, void *hcpu)
-{
-	uint32_t cpu = (uintptr_t)hcpu;
-
-	if (action == CPU_UP_PREPARE || action == CPU_UP_PREPARE_FROZEN) {
-		if ((bcl_hotplug_mask & BIT(cpu))
-			&& (bcl_hotplug_request & BIT(cpu))) {
-			pr_info("preventing CPU%d from coming online\n", cpu);
-			return NOTIFY_BAD;
-		} else {
-			pr_debug("voting for CPU%d to be online\n", cpu);
-		}
-	}
-
-	return NOTIFY_OK;
-}
-
-static struct notifier_block __refdata bcl_cpu_notifier = {
-	.notifier_call = bcl_cpu_ctrl_callback,
-};
 
 static int bcl_cpufreq_callback(struct notifier_block *nfb,
 		unsigned long event, void *data)
@@ -423,16 +343,12 @@ static void bcl_iavail_work(struct work_struct *work)
 
 static void bcl_ibat_notify(enum bcl_threshold_state thresh_type)
 {
-	if (bcl_hotplug_enabled)
-		schedule_work(&bcl_hotplug_work);
 	bcl_ibat_state = thresh_type;
 	update_cpu_freq();
 }
 
 static void bcl_vph_notify(enum bcl_threshold_state thresh_type)
 {
-	if (bcl_hotplug_enabled)
-		schedule_work(&bcl_hotplug_work);
 	bcl_vph_state = thresh_type;
 	update_cpu_freq();
 }
@@ -825,8 +741,6 @@ show_bcl(vph_low, (gbcl->bcl_monitor_type == BCL_IBAT_MONITOR_TYPE) ?
 show_bcl(freq_limit, gbcl->thermal_freq_limit, "%u\n")
 show_bcl(vph_state, bcl_vph_state, "%d\n")
 show_bcl(ibat_state, bcl_ibat_state, "%d\n")
-show_bcl(hotplug_mask, bcl_hotplug_mask, "%d\n")
-show_bcl(hotplug_status, bcl_hotplug_request, "%d\n")
 
 static ssize_t
 mode_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -1137,24 +1051,6 @@ static ssize_t vph_high_store(struct device *dev,
 	return count;
 }
 
-static ssize_t hotplug_mask_store(struct device *dev,
-					struct device_attribute *attr,
-					const char *buf, size_t count)
-{
-	int ret = 0, val = 0;
-
-	if (!bcl_hotplug_enabled)
-		return -ENODEV;
-
-	ret = convert_to_int(buf, &val);
-	if (ret)
-		return ret;
-
-	bcl_hotplug_mask = val;
-
-	return count;
-}
-
 /*
  * BCL device attributes
  */
@@ -1193,8 +1089,6 @@ static struct device_attribute btm_dev_attr[] = {
 	__ATTR(vph_high_thresh_uv, 0644, vph_high_show, vph_high_store),
 	__ATTR(vph_low_thresh_uv, 0644, vph_low_show, vph_low_store),
 	__ATTR(thermal_freq_limit, 0444, freq_limit_show, NULL),
-	__ATTR(hotplug_status, 0444, hotplug_status_show, NULL),
-	__ATTR(hotplug_mask, 0644, hotplug_mask_show, hotplug_mask_store),
 };
 
 static int create_bcl_sysfs(struct bcl_context *bcl)
@@ -1557,9 +1451,8 @@ btm_probe_exit:
 static int bcl_probe(struct platform_device *pdev)
 {
 	struct bcl_context *bcl = NULL;
-	int ret = 0, i = 0, cpu = 0;
+	int ret = 0;
 	enum bcl_device_mode bcl_mode = BCL_DEVICE_DISABLED;
-	struct device_node *core_phandle = NULL;
 
 	bcl = devm_kzalloc(&pdev->dev, sizeof(struct bcl_context), GFP_KERNEL);
 	if (!bcl) {
@@ -1592,20 +1485,6 @@ static int bcl_probe(struct platform_device *pdev)
 	else
 		bcl->bcl_no_bms = false;
 
-	core_phandle = of_parse_phandle(pdev->dev.of_node,
-			"qcom,bcl-hotplug-list", i++);
-	while (core_phandle) {
-		bcl_hotplug_enabled = true;
-		for_each_possible_cpu(cpu) {
-			if (of_get_cpu_node(cpu, NULL) == core_phandle)
-				bcl_hotplug_mask |= BIT(cpu);
-		}
-		core_phandle = of_parse_phandle(pdev->dev.of_node,
-			"qcom,bcl-hotplug-list", i++);
-	}
-	if (!bcl_hotplug_mask)
-		bcl_hotplug_enabled = false;
-
 	if (of_property_read_bool(pdev->dev.of_node,
 		"qcom,bcl-framework-interface"))
 		ret = probe_bcl_periph_prop(bcl);
@@ -1624,9 +1503,6 @@ static int bcl_probe(struct platform_device *pdev)
 	gbcl = bcl;
 	platform_set_drvdata(pdev, bcl);
 	INIT_DEFERRABLE_WORK(&bcl->bcl_iavail_work, bcl_iavail_work);
-	INIT_WORK(&bcl_hotplug_work, bcl_handle_hotplug);
-	if (bcl_hotplug_enabled)
-		register_cpu_notifier(&bcl_cpu_notifier);
 	if (bcl_mode == BCL_DEVICE_ENABLED)
 		bcl_mode_set(bcl_mode);
 
