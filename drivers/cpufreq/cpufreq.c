@@ -29,6 +29,20 @@
 #include <linux/syscore_ops.h>
 #include <linux/tick.h>
 #include <trace/events/power.h>
+#include <linux/moduleparam.h>
+
+static bool allow_minup = true;
+module_param(allow_minup, bool, 0644);
+bool allow_maxdown = true;
+module_param(allow_maxdown, bool, 0644);
+// Sloppy sysfs file to indicate if we're allowing per core control of freqs and governors.
+// This is used in our modified Kernel Adiutor
+bool per_core_control = true;
+module_param(per_core_control, bool, 0644);
+
+#ifdef CONFIG_MSM_LIMITER
+#include <linux/msm_thermal.h>
+#endif
 
 /**
  * The "cpufreq driver" - the arch- or hardware-dependent low
