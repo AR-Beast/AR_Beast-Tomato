@@ -30,6 +30,9 @@
 #include <linux/qpnp/qpnp-adc.h>
 #include <linux/completion.h>
 #include <linux/pm_wakeup.h>
+#ifdef CONFIG_STATE_HELPER
+#include <linux/state_helper.h>
+#endif
 
 #define _SMB1360_MASK(BITS, POS) \
 	((unsigned char)(((1 << (BITS)) - 1) << (POS)))
@@ -1392,6 +1395,10 @@ static int smb1360_get_prop_batt_capacity(struct smb1360_chip *chip)
 #endif
 
 	chip->soc_now = (chip->batt_full ? 100 : bound(soc, 0, 100));
+
+#ifdef CONFIG_STATE_HELPER
+	batt_level_notify(chip->soc_now);
+#endif
 
 	return chip->soc_now;
 }
