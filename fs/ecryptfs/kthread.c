@@ -167,6 +167,16 @@ int ecryptfs_privileged_open(struct file **lower_file,
 	wait_for_completion(&req.done);
 	if (IS_ERR(*lower_file))
 		rc = PTR_ERR(*lower_file);
+		goto out;
+	}
+
+have_file:
+	if ((*lower_file)->f_op->mmap == NULL) {
+		fput(*lower_file);
+		*lower_file = NULL;
+		rc = -EMEDIUMTYPE;
+	}
+
 out:
 	return rc;
 }
