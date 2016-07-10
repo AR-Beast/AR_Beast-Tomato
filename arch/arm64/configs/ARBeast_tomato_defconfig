@@ -64,6 +64,11 @@ CONFIG_CPU_FREQ=y
 CONFIG_SCHED_FREQ_INPUT=y
 CONFIG_CPU_FREQ_GOV_POWERSAVE=y
 CONFIG_CPU_FREQ_GOV_INTERACTIVE=y
+<<<<<<< HEAD:arch/arm64/configs/ARBeast_tomato_defconfig
+=======
+CONFIG_CPU_FREQ_GOV_CHILL=y
+CONFIG_CPU_BOOST=y
+>>>>>>> 9864c0b1ac6... cpufreq: Add Chill v2.10 CPU gov with all patches and fixes:arch/arm64/configs/lineageos_tomato_defconfig
 CONFIG_CPU_IDLE=y
 CONFIG_CPU_IDLE_MULTIPLE_DRIVERS=y
 CONFIG_NET=y
@@ -714,6 +719,7 @@ CONFIG_TCP_CONG_ILLINOIS=y
 CONFIG_DEFAULT_WESTWOOD=y
 CONFIG_DEFAULT_TCP_CONG="westwood"
 
+<<<<<<< HEAD:arch/arm64/configs/ARBeast_tomato_defconfig
 #Compressions
 CONFIG_HAVE_KERNEL_GZIP=y
 CONFIG_HAVE_KERNEL_LZMA=y
@@ -838,3 +844,5 @@ CONFIG_MAC80211_RC_DEFAULT="minstrel_ht"
 CONFIG_MAC80211_LEDS=y
 CONFIG_RFKILL_PM=y
 CONFIG_RFKILL_LEDS=y
+=======
+>>>>>>> 9864c0b1ac6... cpufreq: Add Chill v2.10 CPU gov with all patches and fixes:arch/arm64/configs/lineageos_tomato_defconfig
