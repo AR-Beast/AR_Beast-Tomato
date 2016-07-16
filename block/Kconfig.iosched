@@ -47,6 +47,10 @@ config IOSCHED_MAPLE
 	tristate "Maple I/O scheduler"
 	default y
 
+config IOSCHED_MAPLE
+	tristate "Maple I/O scheduler"
+	default y
+
 config IOSCHED_CFQ
 	tristate "CFQ I/O scheduler"
 	default y
@@ -167,6 +171,12 @@ choice
 	
 	config DEFAULT_FIOPS
 		bool "FIOPS" if IOSCHED_FIOPS=y
+
+	config DEFAULT_MAPLE
+		bool "Maple" if IOSCHED_MAPLE=y
+
+	config DEFAULT_SIOPLUS
+		bool "SIOPLUS" if IOSCHED_SIOPLUS=y
 
 	config DEFAULT_NOOP
 		bool "No-op"
