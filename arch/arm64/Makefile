@@ -47,6 +47,7 @@ core-$(CONFIG_XEN)		+= arch/arm64/xen/
 core-$(CONFIG_KVM) += arch/arm64/kvm/
 core-$(CONFIG_CRYPTO) += arch/arm64/crypto/
 core-y		+= arch/arm64/hotplug/
+core-$(CONFIG_FORCE_FAST_CHARGE) += arch/arm64/fastcharge/
 libs-y		:= arch/arm64/lib/ $(libs-y)
 libs-y		+= $(LIBGCC)
 
