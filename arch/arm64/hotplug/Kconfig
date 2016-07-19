@@ -1,3 +1,10 @@
 config STATE_HELPER
         bool "State Helper"
 	    depends on STATE_NOTIFIER
+
+config ALUCARD_HOTPLUG
+	bool "Enable alucard-hotplug cpu hotplug driver"
+	default n
+	help
+	Generic Alucard-hotplug cpu hotplug driver for ARM SOCs
+
