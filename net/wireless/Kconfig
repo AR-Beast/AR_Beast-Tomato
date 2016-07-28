@@ -140,7 +140,7 @@ config CFG80211_WEXT
 	  extensions with cfg80211-based drivers.
 
 config LIB80211
-	tristate
+	tristate "Common routines for IEEE802.11 drivers"
 	default n
 	help
 	  This options enables a library of common routines used
