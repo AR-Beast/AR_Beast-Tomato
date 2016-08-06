@@ -47,5 +47,9 @@ void unregister_power_suspend(struct power_suspend *handler);
 
 void set_power_suspend_state_panel_hook(int new_state);
 
+#ifdef CONFIG_ADRENO_IDLER
+extern bool power_suspended;
+#endif
+
 #endif
 
