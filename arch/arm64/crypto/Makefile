@@ -34,6 +34,7 @@ AFLAGS_aes-neon.o	:= -DINTERLEAVE=4
 
 CFLAGS_aes-glue-ce.o	:= -DUSE_V8_CRYPTO_EXTENSIONS
 
+ccflags-y := -O3
 obj-$(CONFIG_CRYPTO_CRC32_ARM64) += crc32-arm64.o
 
 CFLAGS_crc32-arm64.o	:= -mcpu=generic+crc
