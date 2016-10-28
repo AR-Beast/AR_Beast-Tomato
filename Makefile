@@ -344,7 +344,7 @@ CHECK		= sparse
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-GRAPHITE	= -fgraphite-identity -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -floop-flatten
+GRAPHITE	= -fgraphite-identity -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -floop-flatten -mcpu=cortex-a57 -mtune=cortex-a57
 FLAGS_MODULE   = $(GRAPHITE)
 AFLAGS_MODULE   = $(GRAPHITE)
 LDFLAGS_MODULE  =  --strip-debug
@@ -398,6 +398,7 @@ KBUILD_CFLAGS   :=$(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-sequence-point \
 		   -Wno-array-bounds \
 		   -std=gnu89 \
+		   -march=armv8-a+crc -mtune=cortex-a57.cortex-a53 -mcpu=cortex-a57.cortex-a53 \
 		   -fno-delete-null-pointer-checks -fgnu89-inline\
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves -fno-tree-vectorize -ffast-math \
 	           -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
