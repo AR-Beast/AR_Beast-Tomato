@@ -55,6 +55,7 @@
  * Compat version of cputime_to_compat_timeval, perhaps this
  * should be an inline in <linux/compat.h>.
  */
+#ifdef CONFIG_ELF_CORE
 static void cputime_to_compat_timeval(const cputime_t cputime,
 				      struct compat_timeval *value)
 {
@@ -63,6 +64,7 @@ static void cputime_to_compat_timeval(const cputime_t cputime,
 	value->tv_sec = tv.tv_sec;
 	value->tv_usec = tv.tv_usec;
 }
+#endif
 
 #undef cputime_to_timeval
 #define cputime_to_timeval cputime_to_compat_timeval
