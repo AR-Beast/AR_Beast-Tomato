@@ -34,6 +34,19 @@ static inline long do_strncpy_from_user(char *dst, const char __user *src, long 
 	if (IS_UNALIGNED(src, dst))
 		goto byte_at_a_time;
 
+	/* Copy a byte at a time until we align to 8 bytes */
+	while (max && (!CHECK_ALIGN(src + res, 8))) {
+		char c;
+
+		if (unlikely(__get_user(c, src + res)))
+			return -EFAULT;
+		dst[res] = c;
+		if (!c)
+			return res;
+		res++;
+		max--;
+	}
+
 	while (max >= sizeof(unsigned long)) {
 		unsigned long c, data;
 
