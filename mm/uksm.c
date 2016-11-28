@@ -4712,7 +4712,8 @@ out:
 	return referenced;
 }
 
-int try_to_unmap_ksm(struct page *page, enum ttu_flags flags)
+int try_to_unmap_ksm(struct page *page,
+			enum ttu_flags flags, struct vm_area_struct *vma)
 {
 	struct stable_node *stable_node;
 	struct node_vma *node_vma;
