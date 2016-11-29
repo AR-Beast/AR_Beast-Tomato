@@ -355,7 +355,7 @@ AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 # ak flags optimization
-ARM64_ARCH_OPT := -mcpu=cortex-a53 -mtune=cortex-a53 \
+ARM_ARCH_OPT := -mcpu=cortex-a53 -mtune=cortex-a53 -mcpu=cortex-a57 -mtune=cortex-a57 \
  -g0 \
  -DNDEBUG \
  -fomit-frame-pointer \
