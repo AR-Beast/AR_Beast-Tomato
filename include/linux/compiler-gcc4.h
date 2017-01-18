@@ -54,21 +54,18 @@
 #define unreachable() __builtin_unreachable()
 
 /* Mark a function definition as prohibited from being cloned. */
-#define __noclone	__attribute__((__noclone__, __optimize__("no-tracer")))
+#define __noclone	__attribute__((__noclone__))
 
 #endif /* GCC_VERSION >= 40500 */
 
 #if GCC_VERSION >= 40600
 /*
- * When used with Link Time Optimization, gcc can optimize away C functions or
- * variables which are referenced only from assembly code.  __visible tells the
- * optimizer that something else uses this function or variable, thus preventing
- * this.
+ * Tell the optimizer that something else uses this function or variable.
  */
 #define __visible __attribute__((externally_visible))
 #endif
 
-#if GCC_VERSION >= 40900 && !defined(__CHECKER__)
+#if GCC_VERSION >= 40900
 /*
  * __assume_aligned(n, k): Tell the optimizer that the returned
  * pointer can be assumed to be k modulo n. The second argument is
@@ -104,3 +101,4 @@
 #define __HAVE_BUILTIN_BSWAP16__
 #endif
 #endif /* CONFIG_ARCH_USE_BUILTIN_BSWAP */
+
