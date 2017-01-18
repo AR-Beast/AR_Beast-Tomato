@@ -1036,7 +1036,7 @@ static inline bool adreno_checkreg_off(struct adreno_device *adreno_dev,
  * @offset_name:	The register enum that is to be read
  * @val:		Register value read is placed here
  */
-static inline void adreno_readreg(struct adreno_device *adreno_dev,
+static void adreno_readreg(struct adreno_device *adreno_dev,
 				enum adreno_regs offset_name, unsigned int *val)
 {
 	struct adreno_gpudev *gpudev = ADRENO_GPU_DEVICE(adreno_dev);

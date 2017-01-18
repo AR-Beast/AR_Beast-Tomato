@@ -564,6 +564,8 @@ EXPORT_SYMBOL(handle_sysrq);
 
 #ifdef CONFIG_INPUT
 
+static int sysrq_reset_downtime_ms;
+
 /* Simple translation table for the SysRq keys */
 static const unsigned char sysrq_xlate[KEY_CNT] =
         "\000\0331234567890-=\177\t"                    /* 0x00 - 0x0f */
@@ -899,23 +901,13 @@ static bool sysrq_handler_registered;
 
 static inline void sysrq_register_handler(void)
 {
-	unsigned short key;
 	int error;
-	int i;
 
-	for (i = 0; i < ARRAY_SIZE(sysrq_reset_seq); i++) {
-		key = platform_sysrq_reset_seq[i];
-		if (key == KEY_RESERVED || key > KEY_MAX)
-			break;
-
-		sysrq_reset_seq[sysrq_reset_seq_len++] = key;
-	}
-
-	error = input_register_handler(&sysrq_handler);
-	if (error)
-		pr_err("Failed to register input handler, error %d", error);
-	else
-		sysrq_handler_registered = true;
+ 	error = input_register_handler(&sysrq_handler);
+ 	if (error)
+ 		pr_err("Failed to register input handler, error %d", error);
+ 	else
+ 		sysrq_handler_registered = true;
 }
 
 static inline void sysrq_unregister_handler(void)
