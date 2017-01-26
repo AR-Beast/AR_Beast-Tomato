@@ -583,6 +583,12 @@ config STATE_NOTIFIER
         bool "State Notifier"
 	    default y
 
+config INTELLI_PLUG
+        bool "Enable intelli-plug cpu hotplug driver"
+        default n
+        help
+          Generic Intelli-plug cpu hotplug driver for ARM SOCs
+
 source "drivers/soc/qcom/memshare/Kconfig"
 
 endif # ARCH_MSM
