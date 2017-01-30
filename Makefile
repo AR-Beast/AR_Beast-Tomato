@@ -380,13 +380,13 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-format-security \
                    -Wno-sequence-point \
                    -Wno-unused-function \
-		   -fno-delete-null-pointer-checks
+		   -fno-delete-null-pointer-checks \
 		   -Wno-format-security \
                    -Wno-array-bounds \
 		   -Wno-unused-const-variable \
  		   -Wno-misleading-indentation \
  		   -Wno-shift-overflow \
- 		   -Wno-bool-compare \
+ 		   -Wno-bool-compare 
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
@@ -584,8 +584,11 @@ endif # $(dot-config)
 # Defaults to vmlinux, but the arch makefile usually adds further targets
 all: vmlinux
 
+KBUILD_CFLAGS	+= $(call cc-disable-warning,switch,)
+KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
+
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS	+= -Os
 else
 KBUILD_CFLAGS	+= -O2
 endif
