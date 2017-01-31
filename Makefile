@@ -361,8 +361,13 @@ ARM64_ARCH_OPT := -mcpu=cortex-a53 -mtune=cortex-a53 \
  -fomit-frame-pointer \
  -fmodulo-sched \
  -fmodulo-sched-allow-regmoves \
- -fivopts
-
+ -fivopts \
+ -ffast-math \
+ -fgcse-lm \
+ -fgcse-sm \
+ -fsched-spec-load \
+ -fforce-addr \
+ -fsingle-precision-constant
 
 # Use USERINCLUDE when you must reference the UAPI directories only.
 USERINCLUDE    := \
