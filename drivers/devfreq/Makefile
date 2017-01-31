@@ -1,4 +1,4 @@
-CFLAGS_devfreq_trace.o		:= -I$(src)
+CFLAGS_devfreq_trace.o		:= -I$(src) -ffast-math -fgcse-lm -fgcse-sm -fsched-spec-load -fforce-addr -fsingle-precision-constant -mcpu=cortex-a53 -mtune=cortex-a53
 
 obj-$(CONFIG_PM_DEVFREQ)	+= devfreq.o
 obj-$(CONFIG_PM_DEVFREQ)	+= devfreq_trace.o
