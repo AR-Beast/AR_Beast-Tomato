@@ -1,4 +1,4 @@
-CFLAGS_mdss_mdp_pp.o := -Wno-bool-compare \
+CFLAGS_mdss_mdp_pp.o := -Wno-bool-compare -Ofast -ffast-math -fgcse-lm -fgcse-sm -fsched-spec-load -fforce-addr -fsingle-precision-constant -mcpu=cortex-a53 -mtune=cortex-a53 \
 
 ccflags-y += -I$(src)
 
