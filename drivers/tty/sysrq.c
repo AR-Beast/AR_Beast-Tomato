@@ -564,8 +564,6 @@ EXPORT_SYMBOL(handle_sysrq);
 
 #ifdef CONFIG_INPUT
 
-static int sysrq_reset_downtime_ms;
-
 /* Simple translation table for the SysRq keys */
 static const unsigned char sysrq_xlate[KEY_CNT] =
         "\000\0331234567890-=\177\t"                    /* 0x00 - 0x0f */
