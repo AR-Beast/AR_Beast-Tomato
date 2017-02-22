@@ -2035,4 +2035,4 @@ static void __exit gether_exit(void)
 }
 module_exit(gether_exit);
 MODULE_DESCRIPTION("ethernet over USB driver");
-MODULE_LICENSE("GPL v2");<<<<<<<
+MODULE_LICENSE("GPL v2");
