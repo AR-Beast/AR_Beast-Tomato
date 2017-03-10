@@ -29,7 +29,13 @@
 #include <linux/alarmtimer.h>
 #include <linux/wakelock.h>
 #include <linux/qpnp/power-on.h>
+
+#ifdef CONFIG_STATE_HELPER
+#include <linux/state_helper.h>
+#endif
+
 #include "yl_pm8916_vbus.h"
+
 #ifdef CONFIG_THUNDERCHARGE_CONTROL
 #include "thundercharge_control.h"
 #endif
@@ -1217,6 +1223,10 @@ static int fan5405_get_prop_batt_capa(struct fan5405_chip *chip)
                 pr_err("battery property is unregisted . \n");
                 chip->batt_capa = 88;
         }
+
+	#ifdef CONFIG_STATE_HELPER
+	batt_level_notify(chip->batt_capa);
+	#endif
 
         return chip->batt_capa;
 }
