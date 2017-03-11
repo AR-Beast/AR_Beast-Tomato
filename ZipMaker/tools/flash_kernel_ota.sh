@@ -18,7 +18,7 @@
 cd /data/local/tmp/tools/
 dd if=/dev/block/bootdevice/by-name/boot of=./boot.img
 ./unpackbootimg -i /data/local/tmp/tools/boot.img
-./mkbootimg --kernel /data/local/tmp/tools/zImage --ramdisk /data/local/tmp/tools/boot.img-ramdisk.gz --cmdline "console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 androidboot.bootdevice=7824900.sdhci lpm_levels.sleep_disabled=1 earlyprintk"  --base 0x80000000 --pagesize 2048 --ramdisk_offset 0x02000000 --tags_offset 0x01e00000 --dt /data/local/tmp/tools/dt.img -o /data/local/tmp/tools/newboot.img
+./mkbootimg --kernel /data/local/tmp/tools/Image --ramdisk /data/local/tmp/tools/boot.img-ramdisk.gz --cmdline "console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 androidboot.bootdevice=7824900.sdhci lpm_levels.sleep_disabled=1 earlyprintk"  --base 0x80000000 --pagesize 2048 --ramdisk_offset 0x02000000 --tags_offset 0x01e00000 --dt /data/local/tmp/tools/dt.img -o /data/local/tmp/tools/newboot.img
 dd if=/data/local/tmp/tools/newboot.img of=/dev/block/bootdevice/by-name/boot
 mount -o rw,remount /system
 rm /system/lib/modules/*.ko

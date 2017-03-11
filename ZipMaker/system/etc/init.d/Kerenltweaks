@@ -1,0 +1,60 @@
+# Made by Shoiab05 
+# Modified by Ayush Rathore
+
+# Load Shifter big.Little architecture
+echo 0 > /proc/sys/kernel/sched_boost
+echo 9 > /proc/sys/kernel/sched_upmigrate_min_nice
+echo 65 > /proc/sys/kernel/sched_small_task
+echo 20 > /proc/sys/kernel/sched_mostly_idle_load
+echo 95 > /proc/sys/kernel/sched_upmigrate
+echo 80 > /proc/sys/kernel/sched_downmigrate
+
+# Stop Logging Process to Reduce CPU-Load---
+stop logd
+
+# Set Display's Colour Configuration to My Custom Profile (kCAL v2.0 Settings)---
+echo 32 > /sys/devices/platform/kcal_ctrl.0/kcal_min
+echo 273 > /sys/devices/platform/kcal_ctrl.0/kcal_sat
+echo 256 > /sys/devices/platform/kcal_ctrl.0/kcal_val
+echo 256 > /sys/devices/platform/kcal_ctrl.0/kcal_cont
+
+
+# Set Minimum CPU-Frequency to 200MHz for big and 800MHz for LITTLE Cluster---
+echo 1 > /sys/devices/system/cpu/cpu0/online
+echo 200000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 1 > /sys/devices/system/cpu/cpu4/online
+echo 800000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
+
+
+# Enable and Configure Interactive Governor for big Cluster---
+echo 1 > /sys/devices/system/cpu/cpu0/online
+echo "interactive" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+echo "20000 1200000:50000" > /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay
+echo 85 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 
+echo 50000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate
+echo 100000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack  
+echo 1200000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 
+echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy
+echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down
+echo 50000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration
+echo "1 800000:85 1200000:90" > /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads 
+echo 50000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time
+
+
+# Enable and Configure Interactive Governor for LITTLE Cluster---
+echo 1 > /sys/devices/system/cpu/cpu4/online
+echo "interactive" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
+echo "20000 1000000:50000" > /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay
+echo 85 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 
+echo 50000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate
+echo 100000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack 
+echo 1000000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 
+echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy
+echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down
+echo 50000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration
+echo "1 800000:85 1000000:90" > /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads 
+echo 50000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time
+
+# Misc
+echo 128 > /proc/sys/kernel/random/read_wakeup_threshold
+echo 256 > /proc/sys/kernel/random/write_wakeup_threshold
