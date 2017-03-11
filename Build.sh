@@ -104,8 +104,8 @@ cp $KERNEL_DIR/drivers/staging/prima/wlan.ko $ZIP_MAKER_DIR/system/lib/modules/
 echo "**** Time to zip up! ****"
 cd $ZIP_MAKER_DIR/
 zip -r9 $FINAL_KERNEL_ZIP * -x README $FINAL_KERNEL_ZIP
-rm -rf /home/skull/$FINAL_KERNEL_ZIP
-cp /home/skull/android/kernel/ZipMaker/$FINAL_KERNEL_ZIP /home/skull/android/$FINAL_KERNEL_ZIP
+rm -rf /home/beast12/ARBeast/$FINAL_KERNEL_ZIP
+cp /home/beast12/ARBeast/android_kernel_cyanogen_msm8916/ZipMaker/$FINAL_KERNEL_ZIP /home/beast12/ARBeast/$FINAL_KERNEL_ZIP
 
 echo "**** Good Bye!! ****"
 cd $KERNEL_DIR
