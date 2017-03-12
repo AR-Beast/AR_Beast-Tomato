@@ -28,12 +28,12 @@ yellow='\033[0;33m'
 red='\033[0;31m'
 nocol='\033[0m'
 
-make ARCH=arm64 clean
 export CROSS_COMPILE="/home/beast12/ARBeast/aarch64-linux-android-4.9-kernel/bin/aarch64-linux-android-"
 export ARCH=arm64
+export USE_CCACHE=1
 export SUBARCH=arm64
 export KBUILD_BUILD_USER="Ayush"
-export KBUILD_BUILD_HOST="AR_Beast™"
+export KBUILD_BUILD_HOST="Beast"
 STRIP="/home/beast12/ARBeast/aarch64-linux-android-4.9-kernel/bin/aarch64-linux-android-strip"
 MODULES_DIR=$KERNEL_DIR/drivers/staging/prima/
 
@@ -55,22 +55,9 @@ fi
 $DTBTOOL -2 -o $KERNEL_DIR/arch/arm64/boot/dt.img -s 2048 -p $KERNEL_DIR/scripts/dtc/ $KERNEL_DIR/arch/arm/boot/dts/
 }
 
-strip_modules ()
-{
-echo "Copying modules"
-rm $MODULES_DIR
-find . -name '*.ko' -exec cp {} $MODULES_DIR/ \;
-cd $MODULES_DIR
-echo "Stripping modules for size"
-$STRIP --strip-unneeded wlan.ko
-zip -9 modules *
-cd $KERNEL_DIR
-}
-
 case $1 in
 clean)
 make ARCH=arm64 -j4 clean mrproper
-rm -rf $KERNEL_DIR/arch/arm/boot/dt.img
 ;;
 dt)
 make lineageos_tomato_defconfig -j4
@@ -85,7 +72,7 @@ BUILD_END=$(date +"%s")
 DIFF=$(($BUILD_END - $BUILD_START))
 echo -e "$yellow Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds.$nocol"
 
-#ZIP MAKER time!!(by @skull)
+#ZIP MAKER time!
 echo "**** Verifying ZIP MAKER Directory ****"
 ls $ZIP_MAKER_DIR
 echo "**** Removing leftovers ****"
