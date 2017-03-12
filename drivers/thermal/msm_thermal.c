@@ -55,10 +55,9 @@
 #define SENSOR_SCALING_FACTOR 1
 #define CPU_DEVICE "cpu%d"
 
+struct msm_thermal_data msm_thermal_info;
 unsigned int temp_threshold = 69;
 module_param(temp_threshold, int, 0755);
-
-static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
 static bool core_control_enabled;
 static DEFINE_MUTEX(core_control_mutex);
