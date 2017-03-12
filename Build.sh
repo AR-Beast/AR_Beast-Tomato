@@ -18,7 +18,7 @@
 KERNEL_DIR=$PWD
 KERN_IMG=$KERNEL_DIR/arch/arm64/boot/Image
 DTBTOOL=$KERNEL_DIR/tools/dtbToolCM
-FINAL_KERNEL_ZIP=AR_Beast™.zip
+FINAL_KERNEL_ZIP=AR_Beast™-$(date +"%Y%m%d").zip
 ZIP_MAKER_DIR=$KERNEL_DIR/ZipMaker/
 
 BUILD_START=$(date +"%s")
