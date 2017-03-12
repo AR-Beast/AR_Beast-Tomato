@@ -1,3 +1,4 @@
+CFLAGS_KERNEL := -Wno-logical-not-parentheses -Wno-discarded-array-qualifiers 
 CFLAGS_schBeaconGen.o := -Wno-discarded-array-qualifiers \
 
 MODNAME := wlan
