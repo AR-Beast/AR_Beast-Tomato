@@ -227,21 +227,7 @@ config CPU_FREQ_GOV_ONDEMAND
 	  If in doubt, say N.
 	  
 config CPU_FREQ_GOV_BARRY_ALLEN
-	tristate "'barry_allen' cpufreq policy governor"
-	help
-	  'barry_allen' - This driver adds a dynamic cpufreq policy governor
-	  designed for latency-sensitive workloads.
-
-	  This governor attempts to reduce the latency of clock
-	  increases so that the system is more responsive to
-      barry_allen workloads.
-
-	  To compile this driver as a module, choose M here: the
-	  module will be called cpufreq_barry_allen.
-
-	  For details, take a look at linux/Documentation/cpu-freq.
-
-	  If in doubt, say N. 	
+	tristate "'barry_allen' cpufreq policy governor"	
 
 config CPU_FREQ_GOV_ELEMENTALX
 	tristate "'elementalx' cpufreq policy governor"
