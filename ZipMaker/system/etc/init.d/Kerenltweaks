@@ -59,3 +59,6 @@ echo 50000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time
 echo 128 > /proc/sys/kernel/random/read_wakeup_threshold
 echo 256 > /proc/sys/kernel/random/write_wakeup_threshold
 
+#Safetynet
+chmod 640 /sys/fs/selinux/enforce
+chmod 440 /sys/fs/selinux/policy
