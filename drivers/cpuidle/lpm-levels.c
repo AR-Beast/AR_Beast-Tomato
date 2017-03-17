@@ -33,7 +33,6 @@
 #include <linux/coresight-cti.h>
 #include <linux/moduleparam.h>
 #include <linux/sched.h>
-#include <linux/quickwakeup.h>
 #include <soc/qcom/spm.h>
 #include <soc/qcom/pm.h>
 #include <soc/qcom/rpm-notifier.h>
