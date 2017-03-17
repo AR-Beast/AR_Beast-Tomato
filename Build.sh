@@ -44,7 +44,6 @@ echo "          Compiling AR_Beast™          "
 echo -e "***********************************************$nocol"
 rm -f $KERN_IMG
 make lineageos_tomato_defconfig -j4
-make xconfig
 make Image -j4
 make dtbs -j4
 make modules -j4
