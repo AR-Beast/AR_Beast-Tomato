@@ -28,13 +28,13 @@ yellow='\033[0;33m'
 red='\033[0;31m'
 nocol='\033[0m'
 
-export CROSS_COMPILE="/home/beast12/ARBeast/aarch64-linux-android-4.9-kernel/bin/aarch64-linux-android-"
+export CROSS_COMPILE="/home/beast12/ARBeast/aarch64-linux-android-5.3-kernel/bin/aarch64-linux-android-"
 export ARCH=arm64
 export USE_CCACHE=1
 export SUBARCH=arm64
 export KBUILD_BUILD_USER="Ayush"
 export KBUILD_BUILD_HOST="Beast"
-STRIP="/home/beast12/ARBeast/aarch64-linux-android-4.9-kernel/bin/aarch64-linux-android-strip"
+STRIP="/home/beast12/ARBeast/aarch64-linux-android-5.3-kernel/bin/aarch64-linux-android-strip"
 MODULES_DIR=$KERNEL_DIR/drivers/staging/prima/
 
 compile_kernel ()
@@ -44,6 +44,7 @@ echo "          Compiling AR_Beast™          "
 echo -e "***********************************************$nocol"
 rm -f $KERN_IMG
 make lineageos_tomato_defconfig -j4
+make xconfig
 make Image -j4
 make dtbs -j4
 make modules -j4
