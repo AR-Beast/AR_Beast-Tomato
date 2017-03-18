@@ -1,13 +1,6 @@
-# Made by Shoiab05 
-# Modified by Ayush Rathore
-
-# Load Shifter big.Little architecture
-echo 0 > /proc/sys/kernel/sched_boost
-echo 9 > /proc/sys/kernel/sched_upmigrate_min_nice
-echo 65 > /proc/sys/kernel/sched_small_task
-echo 20 > /proc/sys/kernel/sched_mostly_idle_load
-echo 95 > /proc/sys/kernel/sched_upmigrate
-echo 80 > /proc/sys/kernel/sched_downmigrate
+#!/system/bin/sh
+# Made by Ayush Rathore
+# Credits to Shoaib Anwar a.k.a Shoaib0597.
 
 # Stop Logging Process to Reduce CPU-Load---
 stop logd

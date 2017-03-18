@@ -1,0 +1,17 @@
+#!/system/bin/sh
+# Script Created for big.LITTLE SoCs by Shoaib Anwar a.k.a Shoaib0597.
+# Load Shifter v1.1
+
+
+
+
+# HMP Task-Packing Settings---
+echo 0 > /proc/sys/kernel/sched_boost
+echo 9 > /proc/sys/kernel/sched_upmigrate_min_nice
+echo 65 > /proc/sys/kernel/sched_small_task
+echo 20 > /proc/sys/kernel/sched_mostly_idle_load
+
+
+# HMP Scheduler Settings---
+echo 95 > /proc/sys/kernel/sched_upmigrate
+echo 80 > /proc/sys/kernel/sched_downmigrate
