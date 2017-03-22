@@ -32,11 +32,11 @@ on enable-low-power
     write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "20000 1113600:50000"
     write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 85
     write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate 30000
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 1113600
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 1350000
     write /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy 0
     write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "10 533333:15 800000:25 960000:40 1113600:60 1344000:75"
     write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time 40000
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 400000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 100000
 
     # Enable governor for power cluster
     write /sys/devices/system/cpu/cpu4/online 1
@@ -44,18 +44,14 @@ on enable-low-power
     write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "25000 800000:50000"
     write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 90
     write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate 30000
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 998400
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 1000000
     write /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy 0
     write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "10 800000:20 998400:40"
     write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time 40000
-    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 499200
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 100000     
 
     # Enable thermal core_control now
     write /sys/module/msm_thermal/core_control/enabled 1
-
-    # HMP scheduler (big.Little cluster related) settings
-    write /proc/sys/kernel/sched_upmigrate 75
-    write /proc/sys/kernel/sched_downmigrate 60
 
     # Bring all CPUs online
     write /sys/devices/system/cpu/cpu1/online 1
@@ -95,4 +91,4 @@ on property:init.svc.recovery=running
     trigger enable-low-power
 
 on property:dev.bootcomplete=1
-    setprop sys.io.scheduler bfq
+    setprop sys.io.scheduler zen
