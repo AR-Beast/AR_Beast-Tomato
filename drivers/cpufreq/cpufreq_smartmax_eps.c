@@ -218,7 +218,7 @@ static int cpufreq_governor_smartmax(struct cpufreq_policy *policy,
 #ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_SMARTMAX
 static
 #endif
-struct cpufreq_governor cpufreq_gov_smartmax = { .name = "smartmax", .governor =
+struct cpufreq_governor cpufreq_gov_smartmax = { .name = "smartmax_eps", .governor =
 		cpufreq_governor_smartmax, .max_transition_latency = 9000000, .owner =
 		THIS_MODULE , };
 
