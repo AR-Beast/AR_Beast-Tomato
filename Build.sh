@@ -28,13 +28,13 @@ yellow='\033[0;33m'
 red='\033[0;31m'
 nocol='\033[0m'
 
-export CROSS_COMPILE="/home/beast12/ARBeast/aarch64-linux-android-5.3-kernel/bin/aarch64-linux-android-"
+export CROSS_COMPILE="/home/ayush/ARBeast/aarch64-linux-android-5.3-kernel/bin/aarch64-linux-android-"
 export ARCH=arm64
 export USE_CCACHE=1
 export SUBARCH=arm64
 export KBUILD_BUILD_USER="Ayush"
 export KBUILD_BUILD_HOST="Beast"
-STRIP="/home/beast12/ARBeast/aarch64-linux-android-5.3-kernel/bin/aarch64-linux-android-strip"
+STRIP="/home/ayush/ARBeast/aarch64-linux-android-5.3-kernel/bin/aarch64-linux-android-strip"
 MODULES_DIR=$KERNEL_DIR/drivers/staging/prima/
 
 compile_kernel ()
@@ -92,7 +92,7 @@ echo "**** Time to zip up! ****"
 cd $ZIP_MAKER_DIR/
 zip -r9 $FINAL_KERNEL_ZIP * -x README $FINAL_KERNEL_ZIP
 rm -rf /home/beast12/ARBeast/$FINAL_KERNEL_ZIP
-cp /home/beast12/ARBeast/android_kernel_cyanogen_msm8916/ZipMaker/$FINAL_KERNEL_ZIP /home/beast12/ARBeast/$FINAL_KERNEL_ZIP
+cp /home/ayush/ARBeast/AR_Beast-Kernel/ZipMaker/$FINAL_KERNEL_ZIP /home/ayush/ARBeast/$FINAL_KERNEL_ZIP
 
 echo "**** Good Bye!! ****"
 cd $KERNEL_DIR
