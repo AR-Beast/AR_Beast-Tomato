@@ -80,6 +80,4 @@ obj-$(CONFIG_MSM_SYSTEM_HEALTH_MONITOR) += system_health_monitor.o
 obj-$(CONFIG_MSM_RTB) += msm_rtb-hotplug.o
 obj-$(CONFIG_QCOM_EARLY_RANDOM)	+= early_random.o
 obj-$(CONFIG_MSM_PACMAN)        += msm_pacman.o
-obj-$(CONFIG_ALUCARD_HOTPLUG) += alucard_hotplug.o
-obj-$(CONFIG_ASMP)		+= autosmp.o
 obj-$(CONFIG_INTELLI_PLUG)	        += intelli_plug.o
