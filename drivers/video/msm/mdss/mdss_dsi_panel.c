@@ -21,10 +21,6 @@
 #include <linux/leds.h>
 #include <linux/qpnp/pwm.h>
 #include <linux/err.h>
-#include <linux/display_state.h>
-#include <linux/backlight.h>
-#include <linux/mfd/lm3533.h>
-#endif
 
 #include "mdss_dsi.h"
 #include "mdss_livedisplay.h"
@@ -55,15 +51,6 @@ char g_lcm_id[128];
 #define TPS65132_GPIO_POS_EN 902
 #define TPS65132_GPIO_NEG_EN 903
 #endif
-
-bool display_on = true;
-
-bool is_display_on()
-{
-	return display_on;
-}
-
-DEFINE_LED_TRIGGER(bl_led_trigger);
 
 DEFINE_LED_TRIGGER(bl_led_trigger);
 
@@ -687,9 +674,6 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
        set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE);
 #endif
 
-	display_on = true;
-
-	mdss_screen_on = true;
 	pinfo = &pdata->panel_info;
 	ctrl = container_of(pdata, struct mdss_dsi_ctrl_pdata,
 				panel_data);
@@ -778,10 +762,6 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 #ifdef CONFIG_POWERSUSPEND
        set_power_suspend_state_panel_hook(POWER_SUSPEND_ACTIVE);
 #endif
-
-	
-	display_on = false;
-	mdss_screen_on = false;
 
 end:
 	pinfo->blank_state = MDSS_PANEL_BLANK_BLANK;
