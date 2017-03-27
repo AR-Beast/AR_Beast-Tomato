@@ -2311,7 +2311,7 @@ static int fg_hw_init(struct fg_chip *chip)
 	}
 
 	rc = fg_mem_masked_write(chip, EXTERNAL_SENSE_SELECT,
-			BATT_TEMP_CNTRL_MASK,
+			settings[FG_MEM_DELTA_SOC].value == 1 ? 1 : BATT_TEMP_CNTRL_MASK,
 			BATT_TEMP_ON,
 			BATT_TEMP_OFFSET);
 	if (rc) {
