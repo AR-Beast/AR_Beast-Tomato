@@ -112,17 +112,6 @@ static void process_lpm_workarounds(struct work_struct *w)
 			if (scm_io_read((u32)(l1_l2_gcc_res->start)) !=0)
 				pr_err("Failed to set L1_L2_GCC\n");
 		}
-		else {
-			__raw_writel(0x0, l1_l2_gcc);
-			if (__raw_readl(l1_l2_gcc) != 0x0)
-				pr_err("Failed to set L1_L2_GCC\n");
-		}
-
-		HOTPLUG_NO_MITIGATION(&curr_req.offline_mask);
-		ret = devmgr_client_request_mitigation(
-				hotplug_handle,
-				HOTPLUG_MITIGATION_REQ,
-				&curr_req);
 		if (ret) {
 			pr_err("hotplug request failed. err:%d\n", ret);
 			return;
@@ -148,15 +137,6 @@ static ssize_t store_clock_gating_enabled(struct kobject *kobj,
 	int ret = 0, val = 0;
 
 	ret = kstrtoint(buf, 10, &val);
-	if (ret || !enable_dynamic_clock_gating) {
-		pr_err("Invalid input%s %s. err:%d\n", __func__, buf, ret);
-		return count;
-	}
-	cpumask_copy(&curr_req.offline_mask, &l1_l2_offline_mask);
-	ret = devmgr_client_request_mitigation(
-			hotplug_handle,
-			HOTPLUG_MITIGATION_REQ,
-			&curr_req);
 	if (ret) {
 		pr_err("hotplug request failed. err:%d\n", ret);
 		return count;
@@ -263,13 +243,6 @@ static int lpm_wa_probe(struct platform_device *pdev)
 
 	ret = sysfs_create_file(module_lpm_wa,
 					&clock_gating_enabled_attr.attr);
-	if (ret) {
-		pr_err("cannot create attr group. err:%d\n", ret);
-		return ret;
-	}
-
-	hotplug_handle = devmgr_register_mitigation_client(&pdev->dev,
-						HOTPLUG_DEVICE,	NULL);
 	if (IS_ERR_OR_NULL(hotplug_handle)) {
 		ret = PTR_ERR(hotplug_handle);
 		pr_err("Error registering for hotplug. ret:%d\n", ret);
