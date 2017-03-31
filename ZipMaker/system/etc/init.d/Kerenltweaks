@@ -5,6 +5,9 @@
 # Stop Logging Process to Reduce CPU-Load---
 stop logd
 
+#Increase Default temp limit
+echo 50 > /sys/module/msm_thermal/parameters/temp_threshold
+
 # kCAL settings for more vibrancy and better colour reproduction---
 echo 33 > /sys/devices/platform/kcal_ctrl.0/kcal_min
 echo 273 > /sys/devices/platform/kcal_ctrl.0/kcal_sat
