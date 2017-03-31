@@ -55,6 +55,7 @@
 #define SENSOR_SCALING_FACTOR 1
 #define CPU_DEVICE "cpu%d"
 
+/* Throttle CPU when it reaches a certain temp*/
 unsigned int temp_threshold = 60;
 module_param(temp_threshold, int, 0644);
 
@@ -67,22 +68,24 @@ static struct thermal_info {
 } info = {
 	.cpuinfo_max_freq = LONG_MAX,
 	.limited_max_freq = LONG_MAX,
-	.safe_diff = 3,
+	.safe_diff = 5,
 	.throttling = false,
 	.pending_change = false,
 };
 
 /* throttle points in MHz */
 enum thermal_freqs {
-	FREQ_HELL		 = 200000,
-	FREQ_VERY_HOT		 = 600000,
+	FREQ_SHIT        = 200000,
+	FREQ_HELL		 = 600000,
+	FREQ_VERY_HOT		 = 800000,
 	FREQ_HOT		 = 1000000,
 	FREQ_WARM		 = 1200000,
 };
 
 enum threshold_levels {
-	LEVEL_HELL		= 12,
-	LEVEL_VERY_HOT		= 9,
+	LEVEL_SHIT      = 20,
+	LEVEL_HELL		= 15,
+	LEVEL_VERY_HOT		= 10,
 	LEVEL_HOT		= 5,
 };
 
@@ -146,7 +149,9 @@ static void check_temp(struct work_struct *work)
 		}
 	}
 
-	if (temp >= temp_threshold + LEVEL_HELL)
+	if (temp >= temp_threshold + LEVEL_SHIT)
+		freq = FREQ_SHIT;
+	else if (temp >= temp_threshold + LEVEL_HELL)
 		freq = FREQ_HELL;
 	else if (temp >= temp_threshold + LEVEL_VERY_HOT)
 		freq = FREQ_VERY_HOT;
