@@ -35,16 +35,16 @@
 
 #define HOTPLUG_ENABLED              (0)
 
-#define DEF_SAMPLING_MS	             (690)
+#define DEF_SAMPLING_MS	             (700)
 #define MIN_SAMLING_MS               (60)
-#define MIN_CPU_UP_TIME              (690)
+#define MIN_CPU_UP_TIME              (700)
 #define TOUCH_BOOST_ENABLED          (0)
 
 static bool isSuspended = false;
 
 struct notifier_block lcd_worker;
 
-static int suspend_cpu_num = 2, resume_cpu_num = (NR_CPUS -1);
+static int suspend_cpu_num = 1, resume_cpu_num = (NR_CPUS -1);
 static int endurance_level = 0;
 static int core_limit = NR_CPUS;
 
@@ -89,12 +89,12 @@ static inline void offline_cpus(void)
 	unsigned int cpu;
 	switch(endurance_level) {
 		case 1:
-			if(suspend_cpu_num > NR_CPUS / 2 )
-				suspend_cpu_num = NR_CPUS / 2;
+			if(suspend_cpu_num > 4 )
+				suspend_cpu_num = 1;
 		break;
 		case 2:
-			if( NR_CPUS >=4 && suspend_cpu_num > NR_CPUS / 4)
-				suspend_cpu_num = NR_CPUS / 4;
+			if( NR_CPUS >=4 && suspend_cpu_num > 2)
+				suspend_cpu_num = 1;
 		break;
 		default:
 		break;
@@ -111,12 +111,12 @@ static inline void cpus_online_all(void)
 	unsigned int cpu;
 	switch(endurance_level) {
 	case 1:
-		if(resume_cpu_num > (NR_CPUS / 2) - 1 || resume_cpu_num == 1)
-			resume_cpu_num = ((NR_CPUS / 2) - 1);
+		if(resume_cpu_num > (4) - 1 || resume_cpu_num == 1)
+			resume_cpu_num = ((4) - 1);
 	break;
 	case 2:
-		if( NR_CPUS >= 4 && resume_cpu_num > ((NR_CPUS / 4) - 1))
-			resume_cpu_num = ((NR_CPUS / 4) - 1);
+		if( NR_CPUS >= 2 && resume_cpu_num > ((2) - 1))
+			resume_cpu_num = ((2) - 1);
 	break;
 	case 0:
 			resume_cpu_num = (NR_CPUS - 1);
@@ -390,16 +390,16 @@ static void __cpuinit tplug_work_fn(struct work_struct *work)
 	switch(endurance_level)
 	{
 	case 0:
-		core_limit = NR_CPUS;
+		core_limit = 4;
 	break;
 	case 1:
-		core_limit = NR_CPUS / 2;
+		core_limit = 4;
 	break;
 	case 2:
-		core_limit = NR_CPUS / 4;
+		core_limit = 2;
 	break;
 	default:
-		core_limit = NR_CPUS;
+		core_limit = 4;
 	break;
 	}
 
