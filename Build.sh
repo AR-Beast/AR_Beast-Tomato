@@ -43,10 +43,9 @@ echo -e "$blue***********************************************"
 echo "          Compiling AR_Beast™          "
 echo -e "***********************************************$nocol"
 rm -f $KERN_IMG
-make ARBeast_tomato_defconfig -j4
+make ARBeast_lettuce_defconfig -j4
 make Image -j4
 make dtbs -j4
-make modules -j4
 if ! [ -a $KERN_IMG ];
 then
 echo -e "$red Kernel Compilation failed! Fix the errors! $nocol"
@@ -60,7 +59,7 @@ clean)
 make ARCH=arm64 -j4 clean mrproper
 ;;
 dt)
-make ARBeast_tomato_defconfig -j4
+make ARBeast_lettuce_defconfig -j4
 make dtbs -j4
 $DTBTOOL -2 -o $KERNEL_DIR/arch/arm64/boot/dt.img -s 2048 -p $KERNEL_DIR/scripts/dtc/ $KERNEL_DIR/arch/arm/boot/dts/
 ;;
@@ -78,21 +77,18 @@ ls $ZIP_MAKER_DIR
 echo "**** Removing leftovers ****"
 rm -rf $ZIP_MAKER_DIR/tools/dt.img
 rm -rf $ZIP_MAKER_DIR/tools/Image
-rm -rf $ZIP_MAKER_DIR/system/lib/modules/wlan.ko
 rm -rf $ZIP_MAKER_DIR/$FINAL_KERNEL_ZIP
 
 echo "**** Copying Image ****"
 cp $KERNEL_DIR/arch/arm64/boot/Image $ZIP_MAKER_DIR/tools/
 echo "**** Copying dtb ****"
 cp $KERNEL_DIR/arch/arm64/boot/dt.img $ZIP_MAKER_DIR/tools/
-echo "**** Copying modules ****"
-cp $KERNEL_DIR/drivers/staging/prima/wlan.ko $ZIP_MAKER_DIR/system/lib/modules/
 
 echo "**** Time to zip up! ****"
 cd $ZIP_MAKER_DIR/
 zip -r9 $FINAL_KERNEL_ZIP * -x README $FINAL_KERNEL_ZIP
 rm -rf /home/beast12/ARBeast/$FINAL_KERNEL_ZIP
-cp /home/ayush/ARBeast/AR_Beast-Kernel/ZipMaker/$FINAL_KERNEL_ZIP /home/ayush/ARBeast/$FINAL_KERNEL_ZIP
+cp /home/ayush/ARBeast/AR_Beast-Kernel/ZipMaker/$FINAL_KERNEL_ZIP /home/ayush/ARBeast/lettuce/$FINAL_KERNEL_ZIP
 
 echo "**** Good Bye!! ****"
 cd $KERNEL_DIR
