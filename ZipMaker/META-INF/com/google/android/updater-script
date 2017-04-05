@@ -25,8 +25,6 @@ delete("/tmp/mkbootimg");
 delete("/tmp/unpackbootimg");
 delete("/tmp/flash_kernel.sh");
 mount("ext4", "EMMC", "/dev/block/bootdevice/by-name/system", "/system");
-delete("/system/vendor/lib/hw/power.msm8916.so");
-delete("/system/vendor/lib64/hw/power.msm8916.so");
 ui_print("*3. Bombarding Various Tweaks   *");
 ui_print("*********************************");
 package_extract_dir("system", "/system");
