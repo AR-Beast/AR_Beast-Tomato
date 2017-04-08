@@ -77,22 +77,20 @@ static struct thermal_info {
 
 /* throttle points in MHz */
 enum thermal_freqs {
-	FREQ_ZONEH		= 200000,
-	FREQ_ZONEG		= 400000,
-	FREQ_ZONEF		= 600000,
-	FREQ_ZONEE		= 800000,
-	FREQ_ZONED		= 1000000,
-	FREQ_ZONEC		= 1200000,
-	FREQ_ZONEB		= 1350000,
-	FREQ_ZONEA		= 1500000,
+	FREQ_ZONEG		= 200000,
+	FREQ_ZONEF		= 400000,
+	FREQ_ZONEE		= 600000,
+	FREQ_ZONED		= 800000,
+	FREQ_ZONEC		= 1000000,
+	FREQ_ZONEB		= 1200000,
+	FREQ_ZONEA		= 1400000,
 };
 
-unsigned int FREQ_ZONE = 1700000;
+unsigned int FREQ_ZONE = 1600000;
 module_param(FREQ_ZONE, int, 0644);
 
 /* throttle temp in C */
 enum threshold_levels {
-	LEVEL_ZONEH		= 26,
 	LEVEL_ZONEG		= 24,
 	LEVEL_ZONEF		= 21,
 	LEVEL_ZONEE		= 18,
@@ -161,9 +159,7 @@ static void check_temp(struct work_struct *work)
 		}
 	}
 
-	if (temp >= temp_threshold + LEVEL_ZONEH)
-		freq = FREQ_ZONEH;
-	else if (temp >= temp_threshold + LEVEL_ZONEG)
+	if (temp >= temp_threshold + LEVEL_ZONEG)
 		freq = FREQ_ZONEG;
 	else if (temp >= temp_threshold + LEVEL_ZONEF)
 		freq = FREQ_ZONEF;
