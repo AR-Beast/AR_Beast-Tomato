@@ -10,6 +10,8 @@
  * GNU General Public License for more details.
  *
  */
+ 
+ /* ARB THERMAL CONFIGURARTION */
 
 #define pr_fmt(fmt) "%s:%s " fmt, KBUILD_MODNAME, __func__
 
@@ -56,7 +58,7 @@
 #define CPU_DEVICE "cpu%d"
 
 /* Throttle CPU when it reaches a certain temp*/
-unsigned int temp_threshold = 60;
+unsigned int temp_threshold = 40;
 module_param(temp_threshold, int, 0644);
 
 static struct thermal_info {
@@ -75,18 +77,28 @@ static struct thermal_info {
 
 /* throttle points in MHz */
 enum thermal_freqs {
-	FREQ_SHIT        = 200000,
-	FREQ_HELL		 = 600000,
-	FREQ_VERY_HOT		 = 800000,
-	FREQ_HOT		 = 1000000,
-	FREQ_WARM		 = 1200000,
+	FREQ_ZONEH		= 200000,
+	FREQ_ZONEG		= 400000,
+	FREQ_ZONEF		= 600000,
+	FREQ_ZONEE		= 800000,
+	FREQ_ZONED		= 1000000,
+	FREQ_ZONEC		= 1200000,
+	FREQ_ZONEB		= 1350000,
+	FREQ_ZONEA		= 1500000,
 };
 
+unsigned int FREQ_ZONE = 1700000;
+module_param(FREQ_ZONE, int, 0644);
+
+/* throttle temp in C */
 enum threshold_levels {
-	LEVEL_SHIT      = 20,
-	LEVEL_HELL		= 15,
-	LEVEL_VERY_HOT		= 10,
-	LEVEL_HOT		= 5,
+	LEVEL_ZONEH		= 26,
+	LEVEL_ZONEG		= 24,
+	LEVEL_ZONEF		= 21,
+	LEVEL_ZONEE		= 18,
+	LEVEL_ZONED		= 14,
+	LEVEL_ZONEC		= 10,
+	LEVEL_ZONEB		= 5,
 };
 
 static struct msm_thermal_data msm_thermal_info;
@@ -149,16 +161,24 @@ static void check_temp(struct work_struct *work)
 		}
 	}
 
-	if (temp >= temp_threshold + LEVEL_SHIT)
-		freq = FREQ_SHIT;
-	else if (temp >= temp_threshold + LEVEL_HELL)
-		freq = FREQ_HELL;
-	else if (temp >= temp_threshold + LEVEL_VERY_HOT)
-		freq = FREQ_VERY_HOT;
-	else if (temp >= temp_threshold + LEVEL_HOT)
-		freq = FREQ_HOT;
-	else if (temp > temp_threshold)
-		freq = FREQ_WARM;
+	if (temp >= temp_threshold + LEVEL_ZONEH)
+		freq = FREQ_ZONEH;
+	else if (temp >= temp_threshold + LEVEL_ZONEG)
+		freq = FREQ_ZONEG;
+	else if (temp >= temp_threshold + LEVEL_ZONEF)
+		freq = FREQ_ZONEF;
+	else if (temp >= temp_threshold + LEVEL_ZONEE)
+		freq = FREQ_ZONEE;
+	else if (temp >= temp_threshold + LEVEL_ZONED)
+		freq = FREQ_ZONED;
+	else if (temp >= temp_threshold + LEVEL_ZONEC)
+		freq = FREQ_ZONEC;
+	else if (temp >= temp_threshold + LEVEL_ZONEB)
+		freq = FREQ_ZONEB;
+	else if (temp >= temp_threshold)
+		freq = FREQ_ZONEA;
+	else if (temp < temp_threshold)
+		freq = FREQ_ZONE;
 
 	if (freq) {
 		limit_cpu_freqs(freq);
