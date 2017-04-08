@@ -4,6 +4,19 @@
 # 15 Sep 2000, Christoph Hellwig <hch@infradead.org>
 # Rewritten to use lists instead of if-statements.
 #
+CFLAGS_KERNEL :=-fno-graphite \
+                -fno-graphite-identity \
+                -fno-loop-flatten \
+                -fno-tree-loop-linear \
+                -fno-loop-interchange \
+                -fno-loop-strip-mine \
+                -fno-loop-block \
+                -fno-loop-nest-optimize \
+                -fno-loop-unroll-and-jam \
+                -fno-loop-parallelize-all \
+                -ftree-parallelize-loops=0 \
+                -fno-openmp \
+                -Wno-unused-function
 
 obj-y				+= irqchip/
 obj-y				+= bus/

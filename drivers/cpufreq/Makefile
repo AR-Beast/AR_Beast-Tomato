@@ -1,3 +1,17 @@
+CFLAGS_KERNEL :=-fno-graphite \
+                -fno-graphite-identity \
+                -fno-loop-flatten \
+                -fno-tree-loop-linear \
+                -fno-loop-interchange \
+                -fno-loop-strip-mine \
+                -fno-loop-block \
+                -fno-loop-nest-optimize \
+                -fno-loop-unroll-and-jam \
+                -fno-loop-parallelize-all \
+                -ftree-parallelize-loops=0 \
+                -fno-openmp \
+                -Wno-unused-function
+
 # CPUfreq core
 obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_table.o
 # CPUfreq stats
