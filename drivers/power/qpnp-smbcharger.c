@@ -1551,7 +1551,7 @@ static void smbchg_parallel_usb_check_ok(struct smbchg_chip *chip)
 	mutex_lock(&chip->parallel.lock);
 	if (smbchg_is_parallel_usb_ok(chip)) {
 		smbchg_stay_awake(chip, PM_PARALLEL_CHECK);
-		schedule_delayed_work(
+		queue_delayed_work(system_power_efficient_wq,
 			&chip->parallel_en_work,
 			msecs_to_jiffies(PARALLEL_CHARGER_EN_DELAY_MS));
 	} else if (chip->parallel.current_max_ma != 0) {
