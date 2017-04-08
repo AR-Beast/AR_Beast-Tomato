@@ -84,50 +84,6 @@ static unsigned int *cache_select(unsigned int reg)
 			out = &cached_regs[10];
 			break;
 #endif
-                case MSM8X16_WCD_A_CDC_TX1_VOL_CTL_GAIN:
-			out = &cached_regs[11];
-			break;
-                case MSM8X16_WCD_A_CDC_TX2_VOL_CTL_GAIN:
-			out = &cached_regs[12];
-			break;
-                case MSM8X16_WCD_A_CDC_TX3_VOL_CTL_GAIN:
-			out = &cached_regs[13];
-			break;
-                case MSM8X16_WCD_A_CDC_TX4_VOL_CTL_GAIN:
-			out = &cached_regs[14];
-			break;
-#ifdef UNSUPPORTED_MSM8x16_WCD
-                case MSM8X16_WCD_A_CDC_TX5_VOL_CTL_GAIN:
-			out = &cached_regs[15];
-			break;
-                case MSM8X16_WCD_A_CDC_TX6_VOL_CTL_GAIN:
-			out = &cached_regs[16];
-			break;
-                case MSM8X16_WCD_A_CDC_TX7_VOL_CTL_GAIN:
-			out = &cached_regs[17];
-			break;
-                case MSM8X16_WCD_A_CDC_TX8_VOL_CTL_GAIN:
-			out = &cached_regs[18];
-			break;
-                case MSM8X16_WCD_A_CDC_TX9_VOL_CTL_GAIN:
-			out = &cached_regs[19];
-			break;
-                case MSM8X16_WCD_A_CDC_TX10_VOL_CTL_GAIN:
-			out = &cached_regs[20];
-			break;
-		case MSM8X16_WCD_A_RX_LINE_1_GAIN:
-			out = &cached_regs[21];
-			break;
-		case MSM8X16_WCD_A_RX_LINE_2_GAIN:
-			out = &cached_regs[22];
-			break;
-		case MSM8X16_WCD_A_RX_LINE_3_GAIN:
-			out = &cached_regs[23];
-			break;
-		case MSM8X16_WCD_A_RX_LINE_4_GAIN:
-			out = &cached_regs[24];
-			break;
-#endif
         }
 	return out;
 }
@@ -172,26 +128,10 @@ int snd_hax_reg_access(unsigned int reg)
 		case MSM8X16_WCD_A_CDC_RX5_VOL_CTL_B2_CTL:
 		case MSM8X16_WCD_A_CDC_RX6_VOL_CTL_B2_CTL:
 		case MSM8X16_WCD_A_CDC_RX7_VOL_CTL_B2_CTL:
-		case MSM8X16_WCD_A_RX_LINE_1_GAIN:
-		case MSM8X16_WCD_A_RX_LINE_2_GAIN:
-		case MSM8X16_WCD_A_RX_LINE_3_GAIN:
-		case MSM8X16_WCD_A_RX_LINE_4_GAIN:
 #endif
 			if (snd_ctrl_locked > 0)
 				ret = 0;
 			break;
-		case MSM8X16_WCD_A_CDC_TX1_VOL_CTL_GAIN:
-		case MSM8X16_WCD_A_CDC_TX2_VOL_CTL_GAIN:
-		case MSM8X16_WCD_A_CDC_TX3_VOL_CTL_GAIN:
-		case MSM8X16_WCD_A_CDC_TX4_VOL_CTL_GAIN:
-#ifdef UNSUPPORTED_MSM8x16_WCD
-		case MSM8X16_WCD_A_CDC_TX5_VOL_CTL_GAIN:
-		case MSM8X16_WCD_A_CDC_TX6_VOL_CTL_GAIN:
-		case MSM8X16_WCD_A_CDC_TX7_VOL_CTL_GAIN:
-		case MSM8X16_WCD_A_CDC_TX8_VOL_CTL_GAIN:
-		case MSM8X16_WCD_A_CDC_TX9_VOL_CTL_GAIN:
-		case MSM8X16_WCD_A_CDC_TX10_VOL_CTL_GAIN:
-#endif
 			if (snd_rec_ctrl_locked > 0)
 				ret = 0;
 			break;
@@ -201,62 +141,6 @@ int snd_hax_reg_access(unsigned int reg)
 	return ret;
 }
 EXPORT_SYMBOL(snd_hax_reg_access);
-
-#ifdef UNSUPPORTED_MSM8x16_WCD
-static ssize_t cam_mic_gain_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-        return sprintf(buf, "%u\n",
-		msm8x16_wcd_read(fauxsound_codec_ptr,
-			MSM8X16_WCD_A_CDC_TX6_VOL_CTL_GAIN));
-
-}
-
-static ssize_t cam_mic_gain_store(struct kobject *kobj,
-		struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	unsigned int lval, chksum;
-
-	sscanf(buf, "%u %u", &lval, &chksum);
-
-	if (!snd_ctrl_enabled)
-		return count;
-
-	snd_ctrl_locked = 0;
-	msm8x16_wcd_write(fauxsound_codec_ptr,
-		MSM8X16_WCD_A_CDC_TX6_VOL_CTL_GAIN, lval);
-	snd_ctrl_locked = 2;
-
-	return count;
-}
-#endif
-
-static ssize_t mic_gain_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n",
-		msm8x16_wcd_read(fauxsound_codec_ptr,
-			MSM8X16_WCD_A_CDC_TX1_VOL_CTL_GAIN));
-}
-
-static ssize_t mic_gain_store(struct kobject *kobj,
-		struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	unsigned int lval, chksum;
-
-	sscanf(buf, "%u %u", &lval, &chksum);
-
-	if (!snd_ctrl_enabled)
-		return count;
-
-	snd_ctrl_locked = 0;
-	msm8x16_wcd_write(fauxsound_codec_ptr,
-		MSM8X16_WCD_A_CDC_TX1_VOL_CTL_GAIN, lval);
-	snd_ctrl_locked = 2;
-
-	return count;
-
-}
 
 static ssize_t speaker_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
@@ -444,12 +328,6 @@ static ssize_t sound_control_enabled_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t sound_control_enabled_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-        return sprintf(buf, "%d\n", snd_ctrl_enabled);
-}
-
 static struct kobj_attribute sound_reg_sel_attribute =
 	__ATTR(sound_reg_sel,
 		0222,
@@ -467,20 +345,6 @@ static struct kobj_attribute sound_reg_write_attribute =
 		0222,
 		NULL,
 		sound_reg_write_store);
-
-#ifdef UNSUPPORTED_MSM8x16_WCD
-static struct kobj_attribute cam_mic_gain_attribute =
-	__ATTR(gpl_cam_mic_gain,
-		0666,
-		cam_mic_gain_show,
-		cam_mic_gain_store);
-#endif
-
-static struct kobj_attribute mic_gain_attribute =
-	__ATTR(gpl_mic_gain,
-		0666,
-		mic_gain_show,
-		mic_gain_store);
 
 static struct kobj_attribute speaker_gain_attribute =
 	__ATTR(gpl_speaker_gain,
@@ -518,18 +382,8 @@ static struct kobj_attribute sound_hw_revision_attribute =
 		0444,
 		sound_control_hw_revision_show, NULL);
 
-static struct kobj_attribute sound_control_enabled_attribute =
-	__ATTR(gpl_sound_control_enabled,
-		0666,
-		sound_control_enabled_show,
-		sound_control_enabled_store);
-
 static struct attribute *sound_control_attrs[] =
 	{
-#ifdef UNSUPPORTED_MSM8x16_WCD
-		&cam_mic_gain_attribute.attr,
-#endif
-		&mic_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&headphone_gain_attribute.attr,
 #ifdef UNSUPPORTED_MSM8x16_WCD
@@ -541,7 +395,6 @@ static struct attribute *sound_control_attrs[] =
 		&sound_reg_write_attribute.attr,
 		&sound_hw_revision_attribute.attr,
 		&sound_control_version_attribute.attr,
-		&sound_control_enabled_attribute.attr,
 		NULL,
 	};
 
