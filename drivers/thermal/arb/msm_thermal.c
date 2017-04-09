@@ -76,29 +76,42 @@ static struct thermal_info {
 };
 
 /* throttle points in MHz */
-enum thermal_freqs {
-	FREQ_ZONEH		= 200000,
-	FREQ_ZONEG		= 400000,
-	FREQ_ZONEF		= 600000,
-	FREQ_ZONEE		= 800000,
-	FREQ_ZONED		= 1000000,
-	FREQ_ZONEC		= 1200000,
-	FREQ_ZONEB		= 1350000,
-	FREQ_ZONEA		= 1500000,
-};
+unsigned int FREQ_ZONEH	= 200000;
+module_param(FREQ_ZONEH, int, 0644);
+
+unsigned int FREQ_ZONEG	= 400000;
+module_param(FREQ_ZONEG, int, 0644);
+
+unsigned int FREQ_ZONEF	= 600000;
+module_param(FREQ_ZONEF, int, 0644);
+
+unsigned int FREQ_ZONEE	= 800000;
+module_param(FREQ_ZONEE, int, 0644);
+
+unsigned int FREQ_ZONED	= 1000000;
+module_param(FREQ_ZONED, int, 0644);
+
+unsigned int FREQ_ZONEC	= 1200000;
+module_param(FREQ_ZONEC, int, 0644);
+
+unsigned int FREQ_ZONEB	= 1350000;
+module_param(FREQ_ZONEB, int, 0644);
+
+unsigned int FREQ_ZONEA	= 1500000;
+module_param(FREQ_ZONEA, int, 0644);
 
 unsigned int FREQ_ZONE = 1700000;
 module_param(FREQ_ZONE, int, 0644);
 
 /* throttle temp in C */
 enum threshold_levels {
-	LEVEL_ZONEH		= 26,
-	LEVEL_ZONEG		= 24,
-	LEVEL_ZONEF		= 21,
-	LEVEL_ZONEE		= 18,
-	LEVEL_ZONED		= 14,
-	LEVEL_ZONEC		= 10,
-	LEVEL_ZONEB		= 5,
+	LEVEL_ZONEH		= 1 << 8,
+	LEVEL_ZONEG		= 1 << 7,
+	LEVEL_ZONEF		= 1 << 6,
+	LEVEL_ZONEE		= 1 << 5,
+	LEVEL_ZONED		= 1 << 4,
+	LEVEL_ZONEC		= 1 << 3,
+	LEVEL_ZONEB		= 1 << 2,
 };
 
 static struct msm_thermal_data msm_thermal_info;
