@@ -64,13 +64,13 @@ module_param(temp_threshold, int, 0644);
 static struct thermal_info {
 	uint32_t cpuinfo_max_freq;
 	uint32_t limited_max_freq;
-	unsigned int safe_diff;
+	unsigned int temp_step;
 	bool throttling;
 	bool pending_change;
 } info = {
 	.cpuinfo_max_freq = LONG_MAX,
 	.limited_max_freq = LONG_MAX,
-	.safe_diff = 5,
+	.temp_step = 3,
 	.throttling = false,
 	.pending_change = false,
 };
@@ -103,16 +103,9 @@ module_param(FREQ_ZONEA, int, 0644);
 unsigned int FREQ_ZONE = 1700000;
 module_param(FREQ_ZONE, int, 0644);
 
-/* throttle temp in C */
-enum threshold_levels {
-	LEVEL_ZONEH		= 1 << 8,
-	LEVEL_ZONEG		= 1 << 7,
-	LEVEL_ZONEF		= 1 << 6,
-	LEVEL_ZONEE		= 1 << 5,
-	LEVEL_ZONED		= 1 << 4,
-	LEVEL_ZONEC		= 1 << 3,
-	LEVEL_ZONEB		= 1 << 2,
-};
+/* Diferrence */
+unsigned int temp_step = 3;
+module_param(temp_step, int, 0644);
 
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
@@ -167,26 +160,26 @@ static void check_temp(struct work_struct *work)
 	tsens_get_temp(&tsens_dev, &temp);
 
 	if (info.throttling) {
-		if (temp < (temp_threshold - info.safe_diff)) {
+		if (temp < (temp_threshold - info.temp_step)) {
 			limit_cpu_freqs(info.cpuinfo_max_freq);
 			info.throttling = false;
 			goto reschedule;
 		}
 	}
 
-	if (temp >= temp_threshold + LEVEL_ZONEH)
+	if (temp >= temp_threshold + temp_step + temp_step + temp_step + temp_step + temp_step + temp_step + temp_step)
 		freq = FREQ_ZONEH;
-	else if (temp >= temp_threshold + LEVEL_ZONEG)
+	else if (temp >= temp_threshold + temp_step + temp_step + temp_step + temp_step + temp_step + temp_step)
 		freq = FREQ_ZONEG;
-	else if (temp >= temp_threshold + LEVEL_ZONEF)
+	else if (temp >= temp_threshold + temp_step + temp_step + temp_step + temp_step + temp_step)
 		freq = FREQ_ZONEF;
-	else if (temp >= temp_threshold + LEVEL_ZONEE)
+	else if (temp >= temp_threshold + temp_step + temp_step + temp_step + temp_step)
 		freq = FREQ_ZONEE;
-	else if (temp >= temp_threshold + LEVEL_ZONED)
+	else if (temp >= temp_threshold + temp_step + temp_step + temp_step)
 		freq = FREQ_ZONED;
-	else if (temp >= temp_threshold + LEVEL_ZONEC)
+	else if (temp >= temp_threshold + temp_step + temp_step)
 		freq = FREQ_ZONEC;
-	else if (temp >= temp_threshold + LEVEL_ZONEB)
+	else if (temp >= temp_threshold + temp_step)
 		freq = FREQ_ZONEB;
 	else if (temp >= temp_threshold)
 		freq = FREQ_ZONEA;
@@ -201,7 +194,7 @@ static void check_temp(struct work_struct *work)
 	}
 
 reschedule:
-	queue_delayed_work(thermal_wq, &check_temp_work, msecs_to_jiffies(250));
+	queue_delayed_work(system_power_efficient_wq, &check_temp_work, msecs_to_jiffies(250));
 }
 
 static int msm_thermal_dev_probe(struct platform_device *pdev)
@@ -232,7 +225,7 @@ static int msm_thermal_dev_probe(struct platform_device *pdev)
 	}
 
 	INIT_DELAYED_WORK(&check_temp_work, check_temp);
-	queue_delayed_work(thermal_wq, &check_temp_work, 5);
+	queue_delayed_work(system_power_efficient_wq, &check_temp_work, 5);
 
 err:
 	return ret;
