@@ -121,18 +121,6 @@ static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
 static struct workqueue_struct *thermal_wq;
 
-static void cpu_offline_wrapper(int cpu)
-{
-        if (cpu_online(cpu))
-		cpu_down(cpu);
-}
-
-static void __ref cpu_online_wrapper(int cpu)
-{
-        if (!cpu_online(cpu))
-		cpu_up(cpu);
-}
-
 static int msm_thermal_cpufreq_callback(struct notifier_block *nfb,
 		unsigned long event, void *data)
 {
@@ -160,33 +148,14 @@ static void limit_cpu_freqs(uint32_t max_freq)
 
 	info.limited_max_freq = max_freq;
 	info.pending_change = true;
-	
-pr_info_ratelimited("%s: Setting cpu max frequency to %u\n",
-		KBUILD_MODNAME, max_freq);
-
-	if (num_online_cpus() < NR_CPUS) {
-		if (max_freq > FREQ_ZONEH)
-			cpu_online_wrapper(1);
-			cpu_online_wrapper(4);						
-		if (max_freq > FREQ_ZONEG)
-			cpu_online_wrapper(2);
-		if (max_freq > FREQ_ZONEF)
-			cpu_online_wrapper(3);
-	}
 
 	get_online_cpus();
-	for_each_online_cpu(cpu) 
+	for_each_online_cpu(cpu) {
 		cpufreq_update_policy(cpu);
+		pr_info("%s: Setting cpu%d max frequency to %d\n",
+				KBUILD_MODNAME, cpu, info.limited_max_freq);
+	}
 	put_online_cpus();
-	
-
-	if (max_freq == FREQ_ZONEF)
-		cpu_offline_wrapper(3);
-	else if (max_freq == FREQ_ZONEG)
-		cpu_offline_wrapper(2);
-	else if (max_freq == FREQ_ZONEH)
-		cpu_offline_wrapper(1);
-		cpu_offline_wrapper(4);	
 
 	info.pending_change = false;
 }
