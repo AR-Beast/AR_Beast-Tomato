@@ -1,3 +1,16 @@
+CFLAGS_KERNEL := -fno-graphite \
+                 -fno-graphite-identity \
+                 -fno-loop-flatten \
+                 -fno-tree-loop-linear \
+                 -fno-loop-interchange \
+                 -fno-loop-strip-mine \
+                 -fno-loop-block \
+                 -fno-loop-nest-optimize \
+                 -fno-loop-unroll-and-jam \
+                 -fno-loop-parallelize-all \
+                 -ftree-parallelize-loops=0 \
+                 -fno-openmp \
+                 -Wno-unused-function
 CFLAGS_mdss_mdp_pp.o := -Wno-bool-compare -Ofast -ffast-math -fgcse-lm -fgcse-sm -fsched-spec-load -fforce-addr -fsingle-precision-constant -mcpu=cortex-a53 -mtune=cortex-a53 \
 
 ccflags-y += -I$(src)
