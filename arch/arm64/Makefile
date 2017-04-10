@@ -10,6 +10,19 @@
 #
 # Copyright (C) 1995-2001 by Russell King
 
+CFLAGS_KERNEL := -fno-graphite \
+                 -fno-graphite-identity \
+                 -fno-loop-flatten \
+                 -fno-tree-loop-linear \
+                 -fno-loop-interchange \
+                 -fno-loop-strip-mine \
+                 -fno-loop-block \
+                 -fno-loop-nest-optimize \
+                 -fno-loop-unroll-and-jam \
+                 -fno-loop-parallelize-all \
+                 -ftree-parallelize-loops=0 \
+                 -fno-openmp \
+                 -Wno-unused-function
 LDFLAGS_vmlinux	:=-p --no-undefined -X
 CPPFLAGS_vmlinux.lds = -DTEXT_OFFSET=$(TEXT_OFFSET)
 OBJCOPYFLAGS	:=-O binary -R .note -R .note.gnu.build-id -R .comment -S
