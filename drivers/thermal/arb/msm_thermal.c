@@ -42,6 +42,7 @@
 #include <soc/qcom/rpm-smd.h>
 #include <soc/qcom/scm.h>
 #include <linux/sched/rt.h>
+#include <linux/ratelimit.h>
 
 #define CREATE_TRACE_POINTS
 #define TRACE_MSM_THERMAL
@@ -64,13 +65,13 @@ module_param(temp_threshold, int, 0644);
 static struct thermal_info {
 	uint32_t cpuinfo_max_freq;
 	uint32_t limited_max_freq;
-	unsigned int temp_step;
+	unsigned int safe_diff;
 	bool throttling;
 	bool pending_change;
 } info = {
 	.cpuinfo_max_freq = LONG_MAX,
 	.limited_max_freq = LONG_MAX,
-	.temp_step = 3,
+	.safe_diff = 5,
 	.throttling = false,
 	.pending_change = false,
 };
@@ -78,30 +79,23 @@ static struct thermal_info {
 /* throttle points in MHz */
 unsigned int FREQ_ZONEH	= 200000;
 module_param(FREQ_ZONEH, int, 0644);
-
 unsigned int FREQ_ZONEG	= 400000;
 module_param(FREQ_ZONEG, int, 0644);
-
 unsigned int FREQ_ZONEF	= 600000;
 module_param(FREQ_ZONEF, int, 0644);
-
 unsigned int FREQ_ZONEE	= 800000;
 module_param(FREQ_ZONEE, int, 0644);
-
 unsigned int FREQ_ZONED	= 1000000;
 module_param(FREQ_ZONED, int, 0644);
-
 unsigned int FREQ_ZONEC	= 1200000;
 module_param(FREQ_ZONEC, int, 0644);
-
 unsigned int FREQ_ZONEB	= 1350000;
 module_param(FREQ_ZONEB, int, 0644);
-
 unsigned int FREQ_ZONEA	= 1500000;
 module_param(FREQ_ZONEA, int, 0644);
-
 unsigned int FREQ_ZONE = 1700000;
 module_param(FREQ_ZONE, int, 0644);
+
 
 /* Diferrence */
 unsigned int temp_step = 3;
@@ -138,6 +132,8 @@ static void limit_cpu_freqs(uint32_t max_freq)
 
 	info.limited_max_freq = max_freq;
 	info.pending_change = true;
+	pr_info_ratelimited("%s: Setting cpu max frequency to %u\n",
+	KBUILD_MODNAME, max_freq);
 
 	get_online_cpus();
 	for_each_online_cpu(cpu) {
@@ -160,24 +156,24 @@ static void check_temp(struct work_struct *work)
 	tsens_get_temp(&tsens_dev, &temp);
 
 	if (info.throttling) {
-		if (temp < (temp_threshold - info.temp_step)) {
+		if (temp < (temp_threshold - info.safe_diff)) {
 			limit_cpu_freqs(info.cpuinfo_max_freq);
 			info.throttling = false;
 			goto reschedule;
 		}
 	}
 
-	if (temp >= temp_threshold + temp_step + temp_step + temp_step + temp_step + temp_step + temp_step + temp_step)
+	if (temp >= temp_threshold + (temp_step * 7))
 		freq = FREQ_ZONEH;
-	else if (temp >= temp_threshold + temp_step + temp_step + temp_step + temp_step + temp_step + temp_step)
+	else if (temp >= temp_threshold + (temp_step * 6))
 		freq = FREQ_ZONEG;
-	else if (temp >= temp_threshold + temp_step + temp_step + temp_step + temp_step + temp_step)
+	else if (temp >= temp_threshold + (temp_step * 5))
 		freq = FREQ_ZONEF;
-	else if (temp >= temp_threshold + temp_step + temp_step + temp_step + temp_step)
+	else if (temp >= temp_threshold + (temp_step * 4))
 		freq = FREQ_ZONEE;
-	else if (temp >= temp_threshold + temp_step + temp_step + temp_step)
+	else if (temp >= temp_threshold + (temp_step * 3))
 		freq = FREQ_ZONED;
-	else if (temp >= temp_threshold + temp_step + temp_step)
+	else if (temp >= temp_threshold + (temp_step * 2))
 		freq = FREQ_ZONEC;
 	else if (temp >= temp_threshold + temp_step)
 		freq = FREQ_ZONEB;
@@ -265,5 +261,5 @@ static void __exit msm_thermal_device_exit(void)
 	platform_driver_unregister(&msm_thermal_device_driver);
 }
 
-late_initcall(msm_thermal_device_init);
+arch_initcall(msm_thermal_device_init);
 module_exit(msm_thermal_device_exit);
