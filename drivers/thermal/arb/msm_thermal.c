@@ -125,6 +125,10 @@ unsigned int temp_step = 3;
 module_param(temp_step, int, 0644);
 >>>>>>> ce32711... Improvements and Optimizations to the thermal Code
 
+/* Poll Interval */
+unsigned int poll_interval = 2,000,000;
+module_param(poll_interval, int, 0644);
+
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
 static struct workqueue_struct *thermal_wq;
