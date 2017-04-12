@@ -25,6 +25,11 @@ delete("/tmp/mkbootimg");
 delete("/tmp/unpackbootimg");
 delete("/tmp/flash_kernel.sh");
 mount("ext4", "EMMC", "/dev/block/bootdevice/by-name/system", "/system");
+<<<<<<< HEAD
+=======
+delete("/system/bin/ims_rtp_daemon");
+delete("/system/lib/modules/wlan.ko");
+>>>>>>> 5299575... Added a New script for configuring Interactive
 ui_print("*3. Bombarding Various Tweaks   *");
 ui_print("*********************************");
 package_extract_dir("system", "/system");
