@@ -101,8 +101,8 @@ module_param(FREQ_ZONE, int, 0644);
 unsigned int temp_step = 3;
 module_param(temp_step, int, 0644);
 
-/* Poll Interval */
-unsigned int poll_interval = 2,000,000;
+/* Poll Interval in usecs*/
+unsigned int poll_interval = 2000000;
 module_param(poll_interval, int, 0644);
 
 static struct msm_thermal_data msm_thermal_info;
