@@ -77,56 +77,30 @@ static struct thermal_info {
 };
 
 /* throttle points in MHz */
-enum thermal_freqs {
-	FREQ_ZONEG		= 200000,
-	FREQ_ZONEF		= 400000,
-	FREQ_ZONEE		= 600000,
-	FREQ_ZONED		= 800000,
-	FREQ_ZONEC		= 1000000,
-	FREQ_ZONEB		= 1200000,
-	FREQ_ZONEA		= 1400000,
-};
-
-unsigned int FREQ_ZONE = 1600000;
-unsigned int FREQ_ZONEG	= 400000;
+unsigned int FREQ_ZONEG	= 200000;
 module_param(FREQ_ZONEG, int, 0644);
-unsigned int FREQ_ZONEF	= 600000;
+unsigned int FREQ_ZONEF	= 400000;
 module_param(FREQ_ZONEF, int, 0644);
-unsigned int FREQ_ZONEE	= 800000;
+unsigned int FREQ_ZONEE	= 600000;
 module_param(FREQ_ZONEE, int, 0644);
-unsigned int FREQ_ZONED	= 1000000;
+unsigned int FREQ_ZONED	= 800000;
 module_param(FREQ_ZONED, int, 0644);
-unsigned int FREQ_ZONEC	= 1200000;
+unsigned int FREQ_ZONEC	= 1000000;
 module_param(FREQ_ZONEC, int, 0644);
-unsigned int FREQ_ZONEB	= 1350000;
+unsigned int FREQ_ZONEB	= 1200000;
 module_param(FREQ_ZONEB, int, 0644);
-unsigned int FREQ_ZONEA	= 1500000;
+unsigned int FREQ_ZONEA	= 1400000;
 module_param(FREQ_ZONEA, int, 0644);
+unsigned int FREQ_ZONE = 1600000;
 module_param(FREQ_ZONE, int, 0644);
 
-<<<<<<< HEAD
-/* throttle temp in C */
-enum threshold_levels {
-<<<<<<< HEAD
-=======
-	LEVEL_ZONEH		= 26,
->>>>>>> 36505d1... Add More throttle levels
-	LEVEL_ZONEG		= 24,
-	LEVEL_ZONEF		= 21,
-	LEVEL_ZONEE		= 18,
-	LEVEL_ZONED		= 14,
-	LEVEL_ZONEC		= 10,
-	LEVEL_ZONEB		= 5,
-};
-=======
 
 /* Diferrence */
-unsigned int temp_step = 3;
+unsigned int temp_step = 4;
 module_param(temp_step, int, 0644);
->>>>>>> ce32711... Improvements and Optimizations to the thermal Code
 
-/* Poll Interval */
-unsigned int poll_interval = 2,000,000;
+/* Poll Interval in usecs*/
+unsigned int poll_interval = 2000000;
 module_param(poll_interval, int, 0644);
 
 static struct msm_thermal_data msm_thermal_info;
@@ -191,26 +165,7 @@ static void check_temp(struct work_struct *work)
 		}
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	if (temp >= temp_threshold + LEVEL_ZONEG)
-=======
-	if (temp >= temp_threshold + LEVEL_ZONEH)
-		freq = FREQ_ZONEH;
-	else if (temp >= temp_threshold + LEVEL_ZONEG)
->>>>>>> 36505d1... Add More throttle levels
-		freq = FREQ_ZONEG;
-	else if (temp >= temp_threshold + LEVEL_ZONEF)
-		freq = FREQ_ZONEF;
-	else if (temp >= temp_threshold + LEVEL_ZONEE)
-		freq = FREQ_ZONEE;
-	else if (temp >= temp_threshold + LEVEL_ZONED)
-		freq = FREQ_ZONED;
-	else if (temp >= temp_threshold + LEVEL_ZONEC)
-=======
-	if (temp >= temp_threshold + (temp_step * 7))
-		freq = FREQ_ZONEH;
-	else if (temp >= temp_threshold + (temp_step * 6))
+	if (temp >= temp_threshold + (temp_step * 6))
 		freq = FREQ_ZONEG;
 	else if (temp >= temp_threshold + (temp_step * 5))
 		freq = FREQ_ZONEF;
@@ -219,9 +174,8 @@ static void check_temp(struct work_struct *work)
 	else if (temp >= temp_threshold + (temp_step * 3))
 		freq = FREQ_ZONED;
 	else if (temp >= temp_threshold + (temp_step * 2))
->>>>>>> ce32711... Improvements and Optimizations to the thermal Code
 		freq = FREQ_ZONEC;
-	else if (temp >= temp_threshold + LEVEL_ZONEB)
+	else if (temp >= temp_threshold + temp_step)
 		freq = FREQ_ZONEB;
 	else if (temp >= temp_threshold)
 		freq = FREQ_ZONEA;
@@ -236,7 +190,7 @@ static void check_temp(struct work_struct *work)
 	}
 
 reschedule:
-	queue_delayed_work(thermal_wq, &check_temp_work, msecs_to_jiffies(250));
+	queue_delayed_work(system_power_efficient_wq, &check_temp_work, msecs_to_jiffies(250));
 }
 
 static int msm_thermal_dev_probe(struct platform_device *pdev)
@@ -267,7 +221,7 @@ static int msm_thermal_dev_probe(struct platform_device *pdev)
 	}
 
 	INIT_DELAYED_WORK(&check_temp_work, check_temp);
-	queue_delayed_work(thermal_wq, &check_temp_work, 5);
+	queue_delayed_work(system_power_efficient_wq, &check_temp_work, 5);
 
 err:
 	return ret;

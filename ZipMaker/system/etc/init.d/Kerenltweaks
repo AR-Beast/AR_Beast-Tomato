@@ -1,20 +1,5 @@
-<<<<<<< HEAD
-# Made by Ayush Rathore
-<<<<<<< HEAD
-
-# Stop Logging Process to Reduce CPU-Load---
-stop logd
-
-#Default temp limit
-echo 50 > /sys/module/msm_thermal/parameters/temp_threshold
-=======
-# Thanks to Anand Shekhawat for Interactive Scripts
->>>>>>> 5299575... Added a New script for configuring Interactive
-=======
 #!/system/bin/sh
 #Made by Ayush Rathore
-#Thanks to Anand Shekhawat for Interactive Scripts
->>>>>>> a2dafa3... Some more additions to Init.d script
 
 # kCAL settings for more vibrancy and better colour reproduction---
 echo 33 > /sys/devices/platform/kcal_ctrl.0/kcal_min
@@ -22,60 +7,9 @@ echo 273 > /sys/devices/platform/kcal_ctrl.0/kcal_sat
 echo 252 > /sys/devices/platform/kcal_ctrl.0/kcal_val
 echo 258 > /sys/devices/platform/kcal_ctrl.0/kcal_cont
 
-
 # Set Minimum CPU-Frequency to 200MHz---
 echo 1 > /sys/devices/system/cpu/cpu0/online
 echo 200000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-
-
-<<<<<<< HEAD
-# Enable and Configure Interactive Governor---
-echo 1 > /sys/devices/system/cpu/cpu0/online
-echo "interactive" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-echo "20000 1200000:50000" > /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay
-echo 95 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 
-echo 20000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate
-echo 20000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack  
-echo 1200000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 
-echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy
-echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down
-echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration
-echo "1 800000:85 1000000:90" > /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads 
-echo 40000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time
-
-# Entropy---
-echo 128 > /proc/sys/kernel/random/read_wakeup_threshold
-echo 256 > /proc/sys/kernel/random/write_wakeup_threshold
-
-=======
-# Enable and Configure Interactive Governor for Big Little Cluster---
-echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-echo interactive > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
-echo 30000  > /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time
-echo 40000  > /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time
-echo 40000  > /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate
-echo 40000  > /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate
-echo 60000  > /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack
-echo 60000  > /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack
-echo 1  > /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down
-echo 1  > /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down
-echo 30000 800000:40000 1000000:50000 1350000:70000 1500000:100000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay
-echo 30000 600000:30000 800000:50000 1000000:60000  > /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay
-echo 200000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq
-echo 200000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq
-echo 111 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load
-echo 111 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load
-echo 75 800000:80 1000000:90 1350000:95 1500000:99 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads
-echo 66 400000:55 600000:70 800000:85 1000000:95 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads
-echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy
-echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy
-echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down
-echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down
-echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration
-echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration
-<<<<<<< HEAD
->>>>>>> 5299575... Added a New script for configuring Interactive
-=======
 
 #I/O Schedulers
 echo fiops > /sys/block/mmcblk0/queue/scheduler
@@ -83,4 +17,3 @@ echo 1024 > /sys/block/mmcblk0/queue/read_ahead_kb
 
 #Turn on State Notifier
 echo Y > /sys/module/state_notifier/parameters/enabled
->>>>>>> a2dafa3... Some more additions to Init.d script

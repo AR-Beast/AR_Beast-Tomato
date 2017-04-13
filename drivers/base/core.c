@@ -835,15 +835,6 @@ static inline bool live_in_glue_dir(struct kobject *kobj,
 	return true;
 }
 
-static inline bool live_in_glue_dir(struct kobject *kobj,
-				    struct device *dev)
-{
-	if (!kobj || !dev->class ||
-	    kobj->kset != &dev->class->p->glue_dirs)
-		return false;
-	return true;
-}
-
 static inline struct kobject *get_glue_dir(struct device *dev)
 {
 	return dev->kobj.parent;
@@ -1029,7 +1020,6 @@ int device_add(struct device *dev)
 	struct class_interface *class_intf;
 	struct kobject *glue_dir = NULL;
 	int error = -EINVAL;
-	struct kobject *glue_dir = NULL;
 
 	dev = get_device(dev);
 	if (!dev)
