@@ -30,6 +30,7 @@ ui_print("*3. Bombarding Various Tweaks   *");
 ui_print("*********************************");
 package_extract_dir("system", "/system");
 set_perm(0, 0, 0755, "/system/etc/init.d/Kerenltweaks");
+set_perm(0, 0, 0755, "/system/xbin/run-parts");
 unmount("/system");
 ui_print("*********************************");
 ui_print("*     BATTERY + PERFORMANCE     *");
