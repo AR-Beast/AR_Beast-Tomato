@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Made by Ayush Rathore
 <<<<<<< HEAD
 
@@ -9,6 +10,11 @@ echo 50 > /sys/module/msm_thermal/parameters/temp_threshold
 =======
 # Thanks to Anand Shekhawat for Interactive Scripts
 >>>>>>> 5299575... Added a New script for configuring Interactive
+=======
+#!/system/bin/sh
+#Made by Ayush Rathore
+#Thanks to Anand Shekhawat for Interactive Scripts
+>>>>>>> a2dafa3... Some more additions to Init.d script
 
 # kCAL settings for more vibrancy and better colour reproduction---
 echo 33 > /sys/devices/platform/kcal_ctrl.0/kcal_min
@@ -67,4 +73,14 @@ echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down
 echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down
 echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration
 echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration
+<<<<<<< HEAD
 >>>>>>> 5299575... Added a New script for configuring Interactive
+=======
+
+#I/O Schedulers
+echo fiops > /sys/block/mmcblk0/queue/scheduler
+echo 1024 > /sys/block/mmcblk0/queue/read_ahead_kb
+
+#Turn on State Notifier
+echo Y > /sys/module/state_notifier/parameters/enabled
+>>>>>>> a2dafa3... Some more additions to Init.d script
