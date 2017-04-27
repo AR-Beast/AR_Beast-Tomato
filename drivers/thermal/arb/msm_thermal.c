@@ -105,9 +105,28 @@ module_param(temp_step, int, 0644);
 unsigned int poll_interval = 2000000;
 module_param(poll_interval, int, 0644);
 
+/* Core control temp */
+int corecontrol = 60;
+
+/* CPU Hotplugging Switch */
+unsigned int enabled = 1;
+module_param(enabled, int, 0644);
+
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
 static struct workqueue_struct *thermal_wq;
+
+static void cpu_offline_wrapper(int cpu)
+{
+        if (cpu_online(cpu))
+			cpu_down(cpu);
+}
+
+static void __ref cpu_online_wrapper(int cpu)
+{
+        if (!cpu_online(cpu))
+			cpu_up(cpu);
+}
 
 static int msm_thermal_cpufreq_callback(struct notifier_block *nfb,
 		unsigned long event, void *data)
@@ -192,6 +211,34 @@ static void check_temp(struct work_struct *work)
 		if (!info.throttling)
 			info.throttling = true;
 	}
+
+/* CPU Hotplugging */
+if(enabled==1){
+	if (temp >= (corecontrol)){
+	    cpu_offline_wrapper(1);
+		cpu_offline_wrapper(2);
+		cpu_offline_wrapper(3);}
+    if (temp >= (corecontrol + 10)){
+	    cpu_offline_wrapper(6);
+		cpu_offline_wrapper(7);}
+    if (temp >= (corecontrol + 15)){
+	    cpu_offline_wrapper(4);
+		cpu_offline_wrapper(5);}
+}
+
+/* CPU Plugging */
+if(enabled==1){
+	if (temp < (corecontrol)){
+	    cpu_online_wrapper(1);
+		cpu_online_wrapper(2);
+		cpu_online_wrapper(3);}
+    if (temp < (corecontrol + 10)){
+	    cpu_online_wrapper(6);
+		cpu_online_wrapper(7);}
+    if (temp < (corecontrol + 15)){
+	    cpu_online_wrapper(4);
+		cpu_online_wrapper(5);}
+}
 
 reschedule:
 	queue_delayed_work(system_power_efficient_wq, &check_temp_work, msecs_to_jiffies(250));
