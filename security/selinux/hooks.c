@@ -104,16 +104,20 @@ extern struct security_operations *security_ops;
 static atomic_t selinux_secmark_refcount = ATOMIC_INIT(0);
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
+#ifdef CONFIG_SECURITY_SELINUX_FORCE_PERMISSIVE
+int selinux_enforcing = 0;
+#else
 int selinux_enforcing;
 
 static int __init enforcing_setup(char *str)
 {
 	unsigned long enforcing;
-	if (!strict_strtoul(str, 0, &enforcing))
+	if (!kstrtoul(str, 0, &enforcing))
 		selinux_enforcing = enforcing ? 1 : 0;
 	return 1;
 }
 __setup("enforcing=", enforcing_setup);
+#endif
 #endif
 
 #ifdef CONFIG_SECURITY_SELINUX_BOOTPARAM
@@ -122,7 +126,7 @@ int selinux_enabled = CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE;
 static int __init selinux_enabled_setup(char *str)
 {
 	unsigned long enabled;
-	if (!strict_strtoul(str, 0, &enabled))
+	if (!kstrtoul(str, 0, &enabled))
 		selinux_enabled = enabled ? 1 : 0;
 	return 1;
 }
