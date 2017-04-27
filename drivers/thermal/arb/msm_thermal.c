@@ -218,7 +218,7 @@ if(enabled==1){
 	    cpu_offline_wrapper(1);
 		cpu_offline_wrapper(2);
 		cpu_offline_wrapper(3);}
-    if (temp >= (corecontrol + 10)){
+    if (temp >= (corecontrol + 7)){
 	    cpu_offline_wrapper(6);
 		cpu_offline_wrapper(7);}
     if (temp >= (corecontrol + 15)){
@@ -232,7 +232,7 @@ if(enabled==1){
 	    cpu_online_wrapper(1);
 		cpu_online_wrapper(2);
 		cpu_online_wrapper(3);}
-    if (temp < (corecontrol + 10)){
+    if (temp < (corecontrol + 7)){
 	    cpu_online_wrapper(6);
 		cpu_online_wrapper(7);}
     if (temp < (corecontrol + 15)){
