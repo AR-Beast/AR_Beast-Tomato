@@ -74,6 +74,8 @@ echo N > /sys/module/wakeup/parameters/enable_msm_hsic_ws
 echo N > /sys/module/wakeup/parameters/enable_wlan_rx_wake_ws
 echo N > /sys/module/wakeup/parameters/enable_wlan_ctrl_wake_ws
 echo N > /sys/module/wakeup/parameters/enable_wlan_wake_ws
+echo N > /sys/module/wakeup/parameters/enable_netlink_ws
+echo N > /sys/module/wakeup/parameters/enable_timerfd_ws
 
 # Turning on Core Control--
 echo 1 > /sys/module/msm_thermal/parameters/enabled
