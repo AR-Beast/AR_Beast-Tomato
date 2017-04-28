@@ -18,3 +18,10 @@ config THUNDERPLUG_CONTROL
 	  This driver uses powersuspend to take down the cpu cores
 	  on a octa core device.
 
+config MSM_HOTPLUG
+	bool "MSM hotplug driver"
+	depends on HOTPLUG_CPU
+	default n
+	help
+	  The MSM hotplug driver controls on-/offlining of additional cores based
+	  on current cpu load.
