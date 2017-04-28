@@ -65,7 +65,7 @@ static struct hotplug_tuners {
 	bool force_cpu_up;
 	struct mutex alu_hotplug_mutex;
 } hotplug_tuners_ins = {
-	.hotplug_sampling_rate = 65,
+	.hotplug_sampling_rate = 25,
 #ifdef CONFIG_MACH_JF
 	.hotplug_enable = 1,
 #else

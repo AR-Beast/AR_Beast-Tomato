@@ -30,12 +30,12 @@
 #define DRIVER_VERSION                5
 #define DRIVER_SUBVER                 0
 
-#define DEFAULT_CPU_LOAD_THRESHOLD   (69)
-#define MIN_CPU_LOAD_THRESHOLD       (10)
+#define DEFAULT_CPU_LOAD_THRESHOLD   (77)
+#define MIN_CPU_LOAD_THRESHOLD       (11)
 
 #define HOTPLUG_ENABLED              (0)
 
-#define DEF_SAMPLING_MS	             (700)
+#define DEF_SAMPLING_MS	             (1250)
 #define MIN_SAMLING_MS               (60)
 #define MIN_CPU_UP_TIME              (700)
 #define TOUCH_BOOST_ENABLED          (0)
