@@ -118,10 +118,6 @@ config LIMITS_LITE_HW
 	 supported by LMH Lite, their throttling intensity and the operating
 	 profiles.
 
-choice
-	prompt "MSM Thermal Monitor Types"
-	default ARB_THERMAL
-
 config THERMAL_MONITOR
 	bool "Monitor thermal state and limit CPU Frequency"
 	depends on THERMAL_TSENS8960 || THERMAL_TSENS8974
@@ -140,8 +136,6 @@ config ARB_THERMAL
 	  This enables thermal monitoring capability in the kernel. It
 	  Monitors TSENS temperature and limits the max frequency of the 
 	  core to a certified value.
-
-endchoice
 
 config SUPPLY_LM_MONITOR
 	bool "SUPPLY current monitor driver"
