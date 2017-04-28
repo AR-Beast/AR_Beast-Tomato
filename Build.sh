@@ -18,7 +18,11 @@
 KERNEL_DIR=$PWD
 KERN_IMG=$KERNEL_DIR/arch/arm64/boot/Image
 DTBTOOL=$KERNEL_DIR/tools/dtbToolCM
+<<<<<<< HEAD
 FINAL_KERNEL_ZIP=AR_Beast™-$(date +"%Y%m%d%T")-lettuce.zip
+=======
+FINAL_KERNEL_ZIP=AR_Beast™-$(date +"%Y%m%d-%T")-tomato.zip
+>>>>>>> 1b56d32... Remove AutoSMP
 ZIP_MAKER_DIR=$KERNEL_DIR/ZipMaker/
 
 BUILD_START=$(date +"%s")
