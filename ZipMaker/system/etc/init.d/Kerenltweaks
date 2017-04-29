@@ -48,26 +48,28 @@ echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down
 echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration
 echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration
 
-# Turning of logging
+# Turning of logging--
 stop logd
 
-# Decreasing Poll Interval
+# Decreasing Poll Interval--
 echo 1700000 > /sys/module/msm_thermal/parameters/poll_interval
 
-# Setting I/O Schedulers to Fiops
-echo fiops > /sys/block/mmcblk0/queue/scheduler
+# Setting up I/O Schedulers--
+echo noop > /sys/block/mmcblk1/queue/scheduler
+echo 1024 > /sys/block/mmcblk1/queue/read_ahead_kb
+echo noop > /sys/block/mmcblk0/queue/scheduler
 echo 1024 > /sys/block/mmcblk0/queue/read_ahead_kb
 
-# Turning on State Notifier
+# Turning on State Notifier--
 echo Y > /sys/module/state_notifier/parameters/enabled
 
-# Turning on ArchPower
+# Turning on ArchPower--
 echo 1 > /sys/kernel/sched/arch_power
 
-# Changing PowerSuspend mode to UserSpace
+# Changing PowerSuspend mode to UserSpace--
 echo 1 > /sys/kernel/power_suspend/power_suspend_mode
 
-# Disabling Battery Consuming Wakelocks
+# Disabling Battery Consuming Wakelocks--
 echo N > /sys/module/wakeup/parameters/enable_smb135x_wake_ws
 echo N > /sys/module/wakeup/parameters/enable_si_ws
 echo N > /sys/module/wakeup/parameters/enable_msm_hsic_ws
@@ -76,6 +78,9 @@ echo N > /sys/module/wakeup/parameters/enable_wlan_ctrl_wake_ws
 echo N > /sys/module/wakeup/parameters/enable_wlan_wake_ws
 echo N > /sys/module/wakeup/parameters/enable_netlink_ws
 echo N > /sys/module/wakeup/parameters/enable_timerfd_ws
+
+# Setting SeLinux Status to Permissive--
+setenforce 0
 
 # Turning on Core Control--
 echo 1 > /sys/module/msm_thermal/parameters/enabled
