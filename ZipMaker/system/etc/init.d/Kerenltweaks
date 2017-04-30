@@ -13,52 +13,32 @@ echo 273 > /sys/devices/platform/kcal_ctrl.0/kcal_sat
 echo 252 > /sys/devices/platform/kcal_ctrl.0/kcal_val
 echo 258 > /sys/devices/platform/kcal_ctrl.0/kcal_cont
 
-<<<<<<< HEAD
 # Set Minimum CPU-Frequency to 200MHz---
 echo 1 > /sys/devices/system/cpu/cpu0/online
 echo 200000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-=======
+echo 1 > /sys/devices/system/cpu/cpu1/online
+echo 200000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
+echo 1 > /sys/devices/system/cpu/cpu2/online
+echo 200000 > /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
+echo 1 > /sys/devices/system/cpu/cpu3/online
+echo 200000 > /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
 
-# Set Minimum CPU-Frequency to 200MHz for big and LITTLE Cluster--
-echo 1 > /sys/devices/system/cpu/cpu0/online
-echo 200000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-echo 1 > /sys/devices/system/cpu/cpu4/online
-echo 200000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
-
-
-# Enable and Configure Interactive Governor for Big.little Cluster--
-# Thanks to Anand Shekhawat for Scripts
-echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-echo interactive > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
-echo 30000  > /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time
-echo 40000  > /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time
-echo 40000  > /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate
-echo 40000  > /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate
-echo 60000  > /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack
-echo 60000  > /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack
-echo 1  > /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down
-echo 1  > /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down
-echo 30000 800000:40000 1000000:50000 1350000:70000 1500000:100000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay
-echo 30000 600000:30000 800000:50000 1000000:60000  > /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay
-echo 200000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq
-echo 200000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq
-echo 111 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load
-echo 111 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load
-echo 75 800000:80 1000000:90 1350000:95 1500000:99 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads
-echo 66 400000:55 600000:70 800000:85 1000000:95 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads
-echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy
-echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy
-echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down
-echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down
-echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration
-echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration
->>>>>>> e673238... Some more tweaks for the Built-in Script
+# Enable and Configure Interactive Governor --
+echo interactive > /sys/devices/system/cpu/cpufreq/scaling_governor
+echo 30000  > /sys/devices/system/cpu/cpufreq/interactive/max_freq_hysteresis
+echo 40000  > /sys/devices/system/cpu/cpufreq/interactive/timer_rate
+echo 60000  > /sys/devices/system/cpu/cpufreq/interactive/timer_slack
+echo 1  > /sys/devices/system/cpu/cpufreq/interactive/fast_ramp_down
+echo 30000 800000:40000 1000000:50000 1350000:70000 1500000:100000 > /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
+echo 200000 > /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
+echo 111 > /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
+echo 75 800000:80 1000000:90 1350000:95 1500000:99 > /sys/devices/system/cpu/cpufreq/interactive/target_loads
+echo 0 > /sys/devices/system/cpu/cpufreq/interactive/io_is_busy
+echo 1 > /sys/devices/system/cpu/cpufreq/interactive/fast_ramp_down
+echo 0 > /sys/devices/system/cpu/cpufreq/interactive/boostpulse_duration
 
 # Turning of logging--
 stop logd
-
-# Decreasing Poll Interval--
-echo 1700000 > /sys/module/msm_thermal/parameters/poll_interval
 
 # Setting up I/O Schedulers--
 echo noop > /sys/block/mmcblk1/queue/scheduler
