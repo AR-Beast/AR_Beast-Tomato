@@ -76,6 +76,7 @@ static struct thermal_info {
 	.pending_change = false,
 };
 
+<<<<<<< HEAD
 /* throttle points in MHz */
 unsigned int FREQ_ZONEG	= 200000;
 module_param(FREQ_ZONEG, int, 0644);
@@ -92,23 +93,51 @@ module_param(FREQ_ZONEB, int, 0644);
 unsigned int FREQ_ZONEA	= 1400000;
 module_param(FREQ_ZONEA, int, 0644);
 unsigned int FREQ_ZONE = 1600000;
+=======
+/* Throttle Freq in MHz */
+unsigned int FREQ_ZONEH	= 200000;
+module_param(FREQ_ZONEH, int, 0644);
+
+unsigned int FREQ_ZONEG	= 400000;
+module_param(FREQ_ZONEG, int, 0644);
+
+unsigned int FREQ_ZONEF	= 600000;
+module_param(FREQ_ZONEF, int, 0644);
+
+unsigned int FREQ_ZONEE	= 800000;
+module_param(FREQ_ZONEE, int, 0644);
+
+unsigned int FREQ_ZONED	= 1000000;
+module_param(FREQ_ZONED, int, 0644);
+
+unsigned int FREQ_ZONEC	= 1200000;
+module_param(FREQ_ZONEC, int, 0644);
+
+unsigned int FREQ_ZONEB	= 1350000;
+module_param(FREQ_ZONEB, int, 0644);
+
+unsigned int FREQ_ZONEA	= 1500000;
+module_param(FREQ_ZONEA, int, 0644);
+
+unsigned int FREQ_ZONE = 1700000;
+>>>>>>> 708cecd... Thermal EnhanceMents
 module_param(FREQ_ZONE, int, 0644);
 
 
-/* Diferrence */
+/* Temp Diferrence */
 unsigned int temp_step = 4;
 module_param(temp_step, int, 0644);
-
-/* Poll Interval in usecs*/
-unsigned int poll_interval = 2000000;
-module_param(poll_interval, int, 0644);
 
 /* Core control temp */
 int corecontrol = 60;
 
 /* CPU Hotplugging Switch */
-unsigned int enabled = 1;
-module_param(enabled, int, 0644);
+unsigned int temp_safety = 1;
+module_param(temp_safety, int, 0644);
+
+/* Extras */
+unsigned int enabled = 0;
+module_param(enabled, int, 0664);
 
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
@@ -208,33 +237,44 @@ static void check_temp(struct work_struct *work)
 			info.throttling = true;
 	}
 
-/* CPU Hotplugging */
-if(enabled==1){
+/* CPU UNplugging */
+if(temp_safety==1){
 	if (temp >= (corecontrol)){
 	    cpu_offline_wrapper(1);
 		cpu_offline_wrapper(2);
 		cpu_offline_wrapper(3);}
-    if (temp >= (corecontrol + 7)){
-	    cpu_offline_wrapper(6);
-		cpu_offline_wrapper(7);}
-    if (temp >= (corecontrol + 15)){
+ if (enabled==1){
+	if (temp >= (corecontrol)){
+		cpu_offline_wrapper(0);}
+    if (temp >= (corecontrol + 6)){
 	    cpu_offline_wrapper(4);
 		cpu_offline_wrapper(5);}
 }
+}
 
 /* CPU Plugging */
-if(enabled==1){
+if(temp_safety==1){
 	if (temp < (corecontrol)){
 	    cpu_online_wrapper(1);
 		cpu_online_wrapper(2);
 		cpu_online_wrapper(3);}
-    if (temp < (corecontrol + 7)){
-	    cpu_online_wrapper(6);
-		cpu_online_wrapper(7);}
-    if (temp < (corecontrol + 15)){
+    if (temp < (corecontrol + 6)){
 	    cpu_online_wrapper(4);
-		cpu_online_wrapper(5);}
+		cpu_online_wrapper(5);
+		cpu_online_wrapper(6);}
 }
+
+
+/* Quad core Mode */
+if(enabled==1){
+		cpu_online_wrapper(1);
+	    cpu_offline_wrapper(2);
+		cpu_offline_wrapper(3);
+	    cpu_offline_wrapper(4);
+		cpu_offline_wrapper(5);
+		cpu_online_wrapper(6);
+		cpu_online_wrapper(7);}
+
 
 reschedule:
 	queue_delayed_work(system_power_efficient_wq, &check_temp_work, msecs_to_jiffies(250));
