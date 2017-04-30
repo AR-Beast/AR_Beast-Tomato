@@ -2,7 +2,7 @@
 #Made by Ayush Rathore
 
 # Turning off Core Control to allow changes--
-echo 0 > /sys/module/msm_thermal/parameters/enabled
+echo 0 > /sys/module/msm_thermal/parameters/temp_safety
 
 # Incresing Temp Threshold to allow changes--
 echo 90 > /sys/module/msm_thermal/parameters/temp_threshold
@@ -83,7 +83,7 @@ echo N > /sys/module/wakeup/parameters/enable_timerfd_ws
 setenforce 0
 
 # Turning on Core Control--
-echo 1 > /sys/module/msm_thermal/parameters/enabled
+echo 1 > /sys/module/msm_thermal/parameters/temp_safety
 
 # Decresing Temp Threshold--
 echo 40 > /sys/module/msm_thermal/parameters/temp_threshold
