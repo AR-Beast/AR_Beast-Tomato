@@ -85,9 +85,6 @@ echo N > /sys/module/wakeup/parameters/enable_wlan_wake_ws
 echo N > /sys/module/wakeup/parameters/enable_netlink_ws
 echo N > /sys/module/wakeup/parameters/enable_timerfd_ws
 
-# Setting SeLinux Status to Permissive--
-setenforce 0
-
 # Turning on Core Control--
 echo 1 > /sys/module/msm_thermal/parameters/temp_safety
 
