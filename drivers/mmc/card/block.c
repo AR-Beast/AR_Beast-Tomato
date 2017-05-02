@@ -36,6 +36,7 @@
 #include <linux/capability.h>
 #include <linux/compat.h>
 #include <linux/pm_runtime.h>
+#include <linux/iosched_switcher.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/mmc.h>
@@ -1357,6 +1358,9 @@ static inline void mmc_blk_reset_success(struct mmc_blk_data *md, int type)
 int mmc_access_rpmb(struct mmc_queue *mq)
 {
 	struct mmc_blk_data *md = mq->data;
+
+	init_iosched_switcher(mq->queue);
+
 	/*
 	 * If this is a RPMB partition access, return ture
 	 */
