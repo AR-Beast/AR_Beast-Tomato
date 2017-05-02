@@ -59,7 +59,7 @@
 #define CPU_DEVICE "cpu%d"
 
 /* Throttle CPU when it reaches a certain temp*/
-unsigned int temp_threshold = 40;
+unsigned int temp_threshold = 50;
 module_param(temp_threshold, int, 0644);
 
 static struct thermal_info {
@@ -106,7 +106,7 @@ unsigned int temp_step = 5;
 module_param(temp_step, int, 0644);
 
 /* Core control temp */
-int corecontrol = 60;
+int corecontrol = 63;
 
 /* CPU Hotplugging Switch */
 unsigned int temp_safety = 1;
@@ -216,51 +216,32 @@ static void check_temp(struct work_struct *work)
 
 /* CPU UNplugging */
 if(temp_safety==1){
-	if (temp < (corecontrol)){
+	if (temp > (corecontrol)){
 	    cpu_offline_wrapper(1);
-<<<<<<< HEAD
 		cpu_offline_wrapper(2);}
-    if (temp < (corecontrol + 6)){
+    if (temp > (corecontrol + 7)){
 	    cpu_offline_wrapper(3);}
 }
-=======
-		cpu_offline_wrapper(2);
-		cpu_offline_wrapper(3);}
-	if (temp >= (corecontrol + 6)){
-	    cpu_offline_wrapper(4);
-		cpu_offline_wrapper(5);}
-}
-
->>>>>>> 973e93d... Make Quad Core Mode work along with core control
 
 /* CPU Plugging */
 if(temp_safety==1){
 	if (temp < (corecontrol)){
 	    cpu_online_wrapper(1);
 		cpu_online_wrapper(2);}
-    if (temp < (corecontrol + 10)){
+    if (temp < (corecontrol + 7)){
 	    cpu_online_wrapper(3);;}
 }
 
 
 /* Dual core Mode */
 if(enabled==1){
-<<<<<<< HEAD
 		cpu_online_wrapper(3);
 	    cpu_offline_wrapper(1);
 		cpu_offline_wrapper(2);}
-=======
-		cpu_online_wrapper(1);
 		if(temp_safety==1){
-	    if (temp > (corecontrol)){
-		cpu_offline_wrapper(1);}}
-	    cpu_offline_wrapper(2);
-		cpu_offline_wrapper(3);
-	    cpu_offline_wrapper(4);
-		cpu_offline_wrapper(5);
-		cpu_online_wrapper(6);
-		cpu_online_wrapper(7);}
->>>>>>> 973e93d... Make Quad Core Mode work along with core control
+	    if (temp > (corecontrol + 7)){
+		cpu_offline_wrapper(3);}}
+
 
 
 reschedule:
