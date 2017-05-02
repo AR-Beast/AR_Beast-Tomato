@@ -136,7 +136,7 @@ static ssize_t sel_read_enforce(struct file *filp, char __user *buf,
 	return simple_read_from_buffer(buf, count, ppos, tmpbuf, length);
 }
 
-#if (defined(CONFIG_SECURITY_SELINUX_DEVELOP) && !defined(CONFIG_SECURITY_SELINUX_FORCE_PERMISSIVE))
+#ifdef CONFIG_SECURITY_SELINUX_DEVELOP
 static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 				 size_t count, loff_t *ppos)
 
@@ -176,7 +176,7 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 			new_value, selinux_enforcing,
 			from_kuid(&init_user_ns, audit_get_loginuid(current)),
 			audit_get_sessionid(current));
-		selinux_enforcing = new_value;
+		selinux_enforcing = 0;
 		if (selinux_enforcing)
 			avc_ss_reset(0);
 		selnl_notify_setenforce(selinux_enforcing);
@@ -193,11 +193,7 @@ out:
 
 static const struct file_operations sel_enforce_ops = {
 	.read		= sel_read_enforce,
-#ifdef CONFIG_SECURITY_SELINUX_FORCE_PERMISSIVE
-	.write		= NULL,
-#else
 	.write		= sel_write_enforce,
-#endif
 	.llseek		= generic_file_llseek,
 };
 
