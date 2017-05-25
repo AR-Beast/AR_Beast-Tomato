@@ -82,7 +82,7 @@ echo "**** Copying Image ****"
 cp $KERNEL_DIR/arch/arm64/boot/Image $ZIP_MAKER_DIR/
 mv $ZIP_MAKER_DIR/{Image,zImage}
 echo "**** Copying dtb ****"
-cp $KERNEL_DIR/arch/arm64/boot/dt.img $ZIP_MAKER_DIR/tools/
+cp $KERNEL_DIR/arch/arm64/boot/dt.img $ZIP_MAKER_DIR/
 echo "**** Copying tweaks ****"
 cp $KERNEL_DIR/spectrum/init.spectrum.sh $ZIP_MAKER_DIR/ramdisk/
 cp $KERNEL_DIR/spectrum/init.spectrum.rc $ZIP_MAKER_DIR/ramdisk/
@@ -95,6 +95,7 @@ rm -rf /home/beast12/ARBeast/$FINAL_KERNEL_ZIP
 cp /home/ayushr1/AR_Beast/ARB-Anykernel2/$FINAL_KERNEL_ZIP /home/ayushr1/AR_Beast/out/lettuce/$FINAL_KERNEL_ZIP
 
 echo "**** Good Bye!! ****"
+rm -rf $KERNEL_DIR/arch/arm64/boot/dt.img
 rm -rf $ZIP_MAKER_DIR/tools/dt.img
 rm -rf $ZIP_MAKER_DIR/zImage
 rm -rf $ZIP_MAKER_DIR/$FINAL_KERNEL_ZIP
