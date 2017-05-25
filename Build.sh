@@ -19,7 +19,7 @@ KERNEL_DIR=$PWD
 KERN_IMG=$KERNEL_DIR/arch/arm64/boot/Image
 DTBTOOL=$KERNEL_DIR/tools/dtbToolCM
 FINAL_KERNEL_ZIP=AR_Beast™-$(date +"%Y%m%d-%T")-tomato.zip
-ZIP_MAKER_DIR=$KERNEL_DIR/ZipMaker/
+ZIP_MAKER_DIR=/home/ayushr1/AR_Beast/ARB-Anykernel2
 
 BUILD_START=$(date +"%s")
 blue='\033[0;34m'
@@ -28,13 +28,13 @@ yellow='\033[0;33m'
 red='\033[0;31m'
 nocol='\033[0m'
 
-export CROSS_COMPILE="/home/ayush/ARBeast/aarch64-linux-android-6.x/bin/aarch64-linux-android-"
+export CROSS_COMPILE="/home/ayushr1/AR_Beast/ubertc/bin/aarch64-linux-android-"
 export ARCH=arm64
 export USE_CCACHE=1
 export SUBARCH=arm64
 export KBUILD_BUILD_USER="Ayush"
 export KBUILD_BUILD_HOST="Beast"
-STRIP="/home/ayush/ARBeast/aarch64-linux-android-6.x/bin/aarch64-linux-android-strip"
+STRIP="/home/ayushr1/AR_Beast/ubertc/bin/aarch64-linux-android-strip"
 MODULES_DIR=$KERNEL_DIR/drivers/staging/prima/
 
 compile_kernel ()
@@ -77,30 +77,34 @@ echo "**** Verifying ZIP MAKER Directory ****"
 ls $ZIP_MAKER_DIR
 echo "**** Removing leftovers ****"
 rm -rf $ZIP_MAKER_DIR/tools/dt.img
-rm -rf $ZIP_MAKER_DIR/tools/Image
-rm -rf $ZIP_MAKER_DIR/system/lib/modules/wlan.ko
-rm -rf $ZIP_MAKER_DIR/$FINAL_KERNEL_ZIP
+rm -rf $ZIP_MAKER_DIR/Image
+rm -rf $ZIP_MAKER_DIR/modules/wlan.ko
 
 echo "**** Copying Image ****"
-cp $KERNEL_DIR/arch/arm64/boot/Image $ZIP_MAKER_DIR/tools/
+cp $KERNEL_DIR/arch/arm64/boot/Image $ZIP_MAKER_DIR/
+mv $ZIP_MAKER_DIR/{Image,zImage}
 echo "**** Copying dtb ****"
 cp $KERNEL_DIR/arch/arm64/boot/dt.img $ZIP_MAKER_DIR/tools/
 echo "**** Copying modules ****"
-cp $KERNEL_DIR/drivers/staging/prima/wlan.ko $ZIP_MAKER_DIR/system/lib/modules/
+cp $KERNEL_DIR/drivers/staging/prima/wlan.ko $ZIP_MAKER_DIR/modules/
+echo "**** Copying tweaks ****"
+cp $KERNEL_DIR/spectrum/init.spectrum.sh $ZIP_MAKER_DIR/ramdisk/
+cp $KERNEL_DIR/spectrum/init.spectrum.rc $ZIP_MAKER_DIR/ramdisk/
+
 
 echo "**** Time to zip up! ****"
 cd $ZIP_MAKER_DIR/
 zip -r9 $FINAL_KERNEL_ZIP * -x README $FINAL_KERNEL_ZIP
 rm -rf /home/beast12/ARBeast/$FINAL_KERNEL_ZIP
-cp /home/ayush/ARBeast/AR_Beast-Kernel/ZipMaker/$FINAL_KERNEL_ZIP /home/ayush/ARBeast/tomato/$FINAL_KERNEL_ZIP
+cp /home/ayushr1/AR_Beast/ARB-Anykernel2/$FINAL_KERNEL_ZIP /home/ayushr1/AR_Beast/out/tomato/$FINAL_KERNEL_ZIP
 
 echo "**** Good Bye!! ****"
-cd $KERNEL_DIR
-rm -rf arch/arm64/boot/dt.img		
+rm -rf $ZIP_MAKER_DIR/tools/dt.img
+rm -rf $ZIP_MAKER_DIR/zImage
+rm -rf $ZIP_MAKER_DIR/modules/wlan.ko
 rm -rf $ZIP_MAKER_DIR/$FINAL_KERNEL_ZIP
-rm -rf ZipMaker/tools/Image
-rm -rf ZipMaker/tools/dt.img
 
 # Clearing For Commiting
 echo "**** Cleaning ****"
+cd $KERNEL_DIR
 make clean && make mrproper
