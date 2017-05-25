@@ -84,7 +84,7 @@ echo "**** Copying Image ****"
 cp $KERNEL_DIR/arch/arm64/boot/Image $ZIP_MAKER_DIR/
 mv $ZIP_MAKER_DIR/{Image,zImage}
 echo "**** Copying dtb ****"
-cp $KERNEL_DIR/arch/arm64/boot/dt.img $ZIP_MAKER_DIR/tools/
+cp $KERNEL_DIR/arch/arm64/boot/dt.img $ZIP_MAKER_DIR/
 echo "**** Copying modules ****"
 cp $KERNEL_DIR/drivers/staging/prima/wlan.ko $ZIP_MAKER_DIR/modules/
 echo "**** Copying tweaks ****"
@@ -99,6 +99,7 @@ rm -rf /home/beast12/ARBeast/$FINAL_KERNEL_ZIP
 cp /home/ayushr1/AR_Beast/ARB-Anykernel2/$FINAL_KERNEL_ZIP /home/ayushr1/AR_Beast/out/tomato/$FINAL_KERNEL_ZIP
 
 echo "**** Good Bye!! ****"
+rm -rf $KERNEL_DIR/arch/arm64/boot/dt.img
 rm -rf $ZIP_MAKER_DIR/tools/dt.img
 rm -rf $ZIP_MAKER_DIR/zImage
 rm -rf $ZIP_MAKER_DIR/modules/wlan.ko
