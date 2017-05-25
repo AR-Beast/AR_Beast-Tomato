@@ -80,28 +80,28 @@ static struct thermal_info {
 unsigned int FREQ_ZONEH	= 200000;
 module_param(FREQ_ZONEH, int, 0644);
 
-unsigned int FREQ_ZONEG	= 400000;
+unsigned int FREQ_ZONEG	= 345600;
 module_param(FREQ_ZONEG, int, 0644);
 
-unsigned int FREQ_ZONEF	= 600000;
+unsigned int FREQ_ZONEF	= 533330;
 module_param(FREQ_ZONEF, int, 0644);
 
 unsigned int FREQ_ZONEE	= 800000;
 module_param(FREQ_ZONEE, int, 0644);
 
-unsigned int FREQ_ZONED	= 1000000;
+unsigned int FREQ_ZONED	= 1113600;
 module_param(FREQ_ZONED, int, 0644);
 
-unsigned int FREQ_ZONEC	= 1200000;
+unsigned int FREQ_ZONEC	= 1344000;
 module_param(FREQ_ZONEC, int, 0644);
 
-unsigned int FREQ_ZONEB	= 1350000;
+unsigned int FREQ_ZONEB	= 1459200;
 module_param(FREQ_ZONEB, int, 0644);
 
-unsigned int FREQ_ZONEA	= 1500000;
+unsigned int FREQ_ZONEA	= 1574000;
 module_param(FREQ_ZONEA, int, 0644);
-
-unsigned int FREQ_ZONE = 1700000;
+ 
+unsigned int FREQ_ZONE = 1708000;
 module_param(FREQ_ZONE, int, 0644);
 
 
@@ -253,10 +253,10 @@ if(enabled==1){
 		cpu_offline_wrapper(1);}}
 	    cpu_offline_wrapper(2);
 		cpu_offline_wrapper(3);
-	    cpu_offline_wrapper(4);
-		cpu_offline_wrapper(5);
-		cpu_online_wrapper(6);
-		cpu_online_wrapper(7);}
+	    cpu_offline_wrapper(6);
+		cpu_offline_wrapper(7);
+		cpu_online_wrapper(4);
+		cpu_online_wrapper(5);}
 
 
 reschedule:
