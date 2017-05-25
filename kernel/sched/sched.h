@@ -1374,7 +1374,7 @@ static inline void inc_nr_running(struct rq *rq)
 {
 	sched_update_nr_prod(cpu_of(rq), 1, true);
 	rq->nr_running++;
-	
+
 if (rq->nr_running >= 2) {
 #ifdef CONFIG_SMP
  if (!rq->rd->overload)
@@ -1387,7 +1387,7 @@ if (rq->nr_running >= 2) {
 			smp_wmb();
 			smp_send_reschedule(rq->cpu);
 		}
-		
+
 #endif
        }
 }
