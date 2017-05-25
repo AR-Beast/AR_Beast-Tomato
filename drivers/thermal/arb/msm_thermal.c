@@ -94,6 +94,7 @@ module_param(FREQ_ZONEC, int, 0644);
 
 unsigned int FREQ_ZONEB	= 1200000;
 module_param(FREQ_ZONEB, int, 0644);
+
 unsigned int FREQ_ZONEA	= 1400000;
 module_param(FREQ_ZONEA, int, 0644);
 
@@ -241,7 +242,6 @@ if(enabled==1){
 		if(temp_safety==1){
 	    if (temp > (corecontrol + 7)){
 		cpu_offline_wrapper(3);}}
-
 
 
 reschedule:
