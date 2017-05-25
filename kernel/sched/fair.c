@@ -6425,11 +6425,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
 		sgs->sum_weighted_load += weighted_cpuload(i);
 
 		if (rq->nr_running > 1)
-<<<<<<< HEAD
 		 *overload = true;
-=======
-			*overload = true;
->>>>>>> 35dc78eb543... sched/fair: Implement fast idling of CPUs when the system is partially loaded
 
 		if (idle_cpu(i))
 			sgs->idle_cpus++;
@@ -6571,12 +6567,8 @@ static inline void update_sd_lb_stats(struct lb_env *env,
 		local_group = cpumask_test_cpu(env->dst_cpu, sched_group_cpus(sg));
 		memset(&sgs, 0, sizeof(sgs));
 		update_sg_lb_stats(env, sg, load_idx, local_group, balance, &sgs,
-<<<<<<< HEAD
 
  &overload);
-=======
-						&overload);
->>>>>>> 35dc78eb543... sched/fair: Implement fast idling of CPUs when the system is partially loaded
 
 		if (local_group && !(*balance))
 			return;
@@ -6625,19 +6617,11 @@ static inline void update_sd_lb_stats(struct lb_env *env,
 		sg = sg->next;
 	} while (sg != env->sd->groups);
 
-<<<<<<< HEAD
 if (!env->sd->parent) {
  /* update overload indicator if we are at root domain */
  if (env->dst_rq->rd->overload != overload)
  env->dst_rq->rd->overload = overload;
  }
-=======
-	if (!env->sd->parent) {
-		/* update overload indicator if we are at root domain */
-		if (env->dst_rq->rd->overload != overload)
-			env->dst_rq->rd->overload = overload;
-	}
->>>>>>> 35dc78eb543... sched/fair: Implement fast idling of CPUs when the system is partially loaded
 }
 
 /**
@@ -7327,11 +7311,7 @@ void idle_balance(int this_cpu, struct rq *this_rq)
 	this_rq->idle_stamp = this_rq->clock;
 
 	if (this_rq->avg_idle < sysctl_sched_migration_cost ||
-<<<<<<< HEAD
  !this_rq->rd->overload)
-=======
-	    !this_rq->rd->overload)
->>>>>>> 35dc78eb543... sched/fair: Implement fast idling of CPUs when the system is partially loaded
 		return;
 
 	/* If this CPU is not the most power-efficient idle CPU in the
