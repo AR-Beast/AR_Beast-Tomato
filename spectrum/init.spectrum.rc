@@ -63,7 +63,8 @@ write /sys/block/mmcblk1/queue/read_ahead_kb 1024
 write /sys/block/mmcblk0/queue/scheduler bfq
 write /sys/block/mmcblk0/queue/read_ahead_kb 1024
 write /sys/module/msm_thermal/parameters/temp_threshold 44
-write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 465000000
+write /sys/module/msm_thermal/parameters/enabled 0
+write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 400000000
 write /sys/module/adreno_idler/parameters/adreno_idler_active 1
 write /sys/kernel/sched/arch_power 1
 write /sys/module/state_notifier/parameters/enabled Y
@@ -86,10 +87,10 @@ write /sys/block/mmcblk1/queue/scheduler fiops
 write /sys/block/mmcblk1/queue/read_ahead_kb 2048
 write /sys/block/mmcblk0/queue/scheduler fiops
 write /sys/block/mmcblk0/queue/read_ahead_kb 2048
-write /sys/module/msm_thermal/parameters/enabled 0
 write /sys/module/msm_thermal/parameters/temp_safety 0
 write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor performance
-write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 650000000
+write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 550000000
+write /sys/module/adreno_idler/parameters/adreno_idler_active 0
 
 # Battery
 on property:persist.spectrum.profile=2
@@ -103,7 +104,7 @@ write /sys/block/mmcblk0/queue/scheduler noop
 write /sys/block/mmcblk0/queue/read_ahead_kb 1024
 write /sys/module/msm_thermal/parameters/temp_safety 1
 write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor simple_ondemand
-write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 220000000
+write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 310000000
 
 # Gaming
 on property:persist.spectrum.profile=3
@@ -126,5 +127,5 @@ write /sys/block/mmcblk0/queue/read_ahead_kb 1536
 write /sys/module/msm_thermal/parameters/enabled 0
 write /sys/module/msm_thermal/parameters/temp_safety 0
 write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor msm-adreno-tz
-write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 650000000
+write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 550000000
 write /sys/module/adreno_idler/parameters/adreno_idler_active 0
