@@ -100,7 +100,9 @@ cp /home/ayushr1/AR_Beast/ARB-Anykernel2/$FINAL_KERNEL_ZIP /home/ayushr1/AR_Beas
 
 echo "**** Good Bye!! ****"
 rm -rf $KERNEL_DIR/arch/arm64/boot/dt.img
-rm -rf $ZIP_MAKER_DIR/tools/dt.img
+rm -rf $ZIP_MAKER_DIR/ramdisk/init.spectrum.sh
+rm -rf $ZIP_MAKER_DIR/ramdisk/init.spectrum.rc
+rm -rf $ZIP_MAKER_DIR/dt.img
 rm -rf $ZIP_MAKER_DIR/zImage
 rm -rf $ZIP_MAKER_DIR/modules/wlan.ko
 rm -rf $ZIP_MAKER_DIR/$FINAL_KERNEL_ZIP
