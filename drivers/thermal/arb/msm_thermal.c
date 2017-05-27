@@ -59,7 +59,7 @@
 #define CPU_DEVICE "cpu%d"
 
 /* Throttle CPU when it reaches a certain temp*/
-unsigned int temp_threshold = 50;
+unsigned int temp_threshold = 55;
 module_param(temp_threshold, int, 0644);
 
 static struct thermal_info {
@@ -77,28 +77,31 @@ static struct thermal_info {
 };
 
 /* throttle points in MHz */
-unsigned int FREQ_ZONEG	= 200000;
+unsigned int FREQ_ZONEH	= 200000;
+module_param(FREQ_ZONEH, int, 0644);
+
+unsigned int FREQ_ZONEG	= 400000;
 module_param(FREQ_ZONEG, int, 0644);
 
-unsigned int FREQ_ZONEF	= 400000;
+unsigned int FREQ_ZONEF	= 533330;
 module_param(FREQ_ZONEF, int, 0644);
 
-unsigned int FREQ_ZONEE	= 600000;
+unsigned int FREQ_ZONEE	= 800000;
 module_param(FREQ_ZONEE, int, 0644);
 
-unsigned int FREQ_ZONED	= 800000;
+unsigned int FREQ_ZONED	= 998400;
 module_param(FREQ_ZONED, int, 0644);
 
-unsigned int FREQ_ZONEC	= 1000000;
+unsigned int FREQ_ZONEC	= 1094400;
 module_param(FREQ_ZONEC, int, 0644);
 
-unsigned int FREQ_ZONEB	= 1200000;
+unsigned int FREQ_ZONEB	= 1209600;
 module_param(FREQ_ZONEB, int, 0644);
 
-unsigned int FREQ_ZONEA	= 1400000;
+unsigned int FREQ_ZONEA	= 1363200;
 module_param(FREQ_ZONEA, int, 0644);
 
-unsigned int FREQ_ZONE = 1600000;
+unsigned int FREQ_ZONE = 1401600;
 module_param(FREQ_ZONE, int, 0644);
 
 
@@ -190,8 +193,9 @@ static void check_temp(struct work_struct *work)
 			goto reschedule;
 		}
 	}
-
-	if (temp >= temp_threshold + (temp_step * 6))
+    if (temp >= temp_threshold + (temp_step * 7))
+		freq = FREQ_ZONEH;
+	else if (temp >= temp_threshold + (temp_step * 6))
 		freq = FREQ_ZONEG;
 	else if (temp >= temp_threshold + (temp_step * 5))
 		freq = FREQ_ZONEF;
