@@ -95,10 +95,10 @@ module_param(FREQ_ZONED, int, 0644);
 unsigned int FREQ_ZONEC	= 1094400;
 module_param(FREQ_ZONEC, int, 0644);
 
-unsigned int FREQ_ZONEB	= 1209600;
+unsigned int FREQ_ZONEB	= 1152000;
 module_param(FREQ_ZONEB, int, 0644);
 
-unsigned int FREQ_ZONEA	= 1363200;
+unsigned int FREQ_ZONEA	= 1209600;
 module_param(FREQ_ZONEA, int, 0644);
 
 unsigned int FREQ_ZONE = 1401600;
@@ -106,11 +106,11 @@ module_param(FREQ_ZONE, int, 0644);
 
 
 /* Temp Diferrence */
-unsigned int temp_step = 5;
+unsigned int temp_step = 3;
 module_param(temp_step, int, 0644);
 
 /* Core control temp */
-int corecontrol = 63;
+int corecontrol = 60;
 
 /* CPU Hotplugging Switch */
 unsigned int temp_safety = 1;
