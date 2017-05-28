@@ -51,6 +51,7 @@ write /sys/module/msm_thermal/parameters/temp_threshold 44
 write /sys/module/msm_thermal/parameters/enabled 0
 write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 465000000
 write /sys/module/adreno_idler/parameters/adreno_idler_active 1
+write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor msm-adreno-tz
 write /sys/kernel/sched/arch_power 1
 write /sys/module/state_notifier/parameters/enabled Y
 
