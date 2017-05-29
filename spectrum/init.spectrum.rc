@@ -28,7 +28,7 @@ write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
 write /sys/devices/system/cpu/cpufreq/interactive/min_sample_time 30000
 write /sys/devices/system/cpu/cpufreq/interactive/timer_rate 40000
 write /sys/devices/system/cpu/cpufreq/interactive/timer_slack 60000
-write /sys/devices/system/cpu/cpufreq/interactive/fast_ramp_down  1
+write /sys/devices/system/cpu/cpufreq/interactive/fast_ramp_down 1
 write /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay 20000 300000:45000 400000:55000 800000:75000 998400:110000 1094400:175000 1209600:200000
 write /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq 200000
 write /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load 111

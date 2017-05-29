@@ -1,6 +1,6 @@
  #
  # Copyright © 2016, Varun Chitre "varun.chitre15" <varun.chitre15@gmail.com>
- # 
+ # Copyright © 2016, Ayush Rathore "AyushR1" <ayushrathore12501@gmail.com>
  # If Anyone Use this Scrips Maintain Proper Credits
  #
  # This software is licensed under the terms of the GNU General Public
