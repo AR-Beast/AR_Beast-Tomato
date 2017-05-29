@@ -177,9 +177,6 @@ config IOMMU_HELPER
 
 config KERNEL_MODE_NEON
 	def_bool y
-	
-config RWSEM_XCHGADD_ALGORITHM
-	def_bool y
 
 config ARCH_HAS_CPUFREQ
 	bool
