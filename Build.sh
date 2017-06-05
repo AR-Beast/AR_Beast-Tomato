@@ -72,7 +72,6 @@ BUILD_END=$(date +"%s")
 DIFF=$(($BUILD_END - $BUILD_START))
 echo -e "$yellow Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds.$nocol"
 
-#ZIP MAKER time!
 echo "**** Verifying ZIP MAKER Directory ****"
 ls $ZIP_MAKER_DIR
 echo "**** Removing leftovers ****"
@@ -87,6 +86,8 @@ echo "**** Copying dtb ****"
 cp $KERNEL_DIR/arch/arm64/boot/dt.img $ZIP_MAKER_DIR/
 echo "**** Copying modules ****"
 cp $KERNEL_DIR/drivers/staging/prima/wlan.ko $ZIP_MAKER_DIR/modules/
+cp $KERNEL_DIR/net/ipv4/tcp_bic.ko $ZIP_MAKER_DIR/modules/
+cp $KERNEL_DIR/net/ipv4/tcp_htcp.ko $ZIP_MAKER_DIR/modules/
 echo "**** Copying tweaks ****"
 cp $KERNEL_DIR/spectrum/init.spectrum.sh $ZIP_MAKER_DIR/ramdisk/
 cp $KERNEL_DIR/spectrum/init.spectrum.rc $ZIP_MAKER_DIR/ramdisk/
@@ -105,9 +106,8 @@ rm -rf $ZIP_MAKER_DIR/ramdisk/init.spectrum.rc
 rm -rf $ZIP_MAKER_DIR/dt.img
 rm -rf $ZIP_MAKER_DIR/zImage
 rm -rf $ZIP_MAKER_DIR/modules/wlan.ko
+rm -rf $ZIP_MAKER_DIR/modules/tcp_bic.ko
+rm -rf $ZIP_MAKER_DIR/modules/tcp_htcp.ko
 rm -rf $ZIP_MAKER_DIR/$FINAL_KERNEL_ZIP
-
-# Clearing For Commiting
-echo "**** Cleaning ****"
 cd $KERNEL_DIR
 make clean && make mrproper
