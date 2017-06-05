@@ -17,20 +17,34 @@
 #include <trace/events/power.h>
 #include <linux/moduleparam.h>
 
-static bool enable_si_ws = true;
-module_param(enable_si_ws, bool, 0644);
-static bool enable_msm_hsic_ws = true;
-module_param(enable_msm_hsic_ws, bool, 0644);
-static bool enable_wlan_rx_wake_ws = true;
-module_param(enable_wlan_rx_wake_ws, bool, 0644);
-static bool enable_wlan_ctrl_wake_ws = true;
-module_param(enable_wlan_ctrl_wake_ws, bool, 0644);
-static bool enable_wlan_wake_ws = true;
-module_param(enable_wlan_wake_ws, bool, 0644);
-static bool enable_smb135x_wake_ws = true;
-module_param(enable_smb135x_wake_ws, bool, 0644);
-
 #include "power.h"
+
+static bool enable_wlan_rx_wake_ws = false;
+module_param(enable_wlan_rx_wake_ws, bool, 0644);
+
+static bool enable_wlan_ctrl_wake_ws = false;
+module_param(enable_wlan_ctrl_wake_ws, bool, 0644);
+
+static bool enable_wlan_wake_ws = false;
+module_param(enable_wlan_wake_ws, bool, 0644);
+
+static bool enable_bluedroid_timer_ws = false;
+module_param(enable_bluedroid_timer_ws, bool, 0644);
+
+static bool enable_bluesleep_ws = false;
+module_param(enable_bluesleep_ws, bool, 0644);
+
+static bool enable_ipa_ws = false;
+module_param(enable_ipa_ws, bool, 0644);
+
+static bool enable_si_ws = false;
+module_param(enable_si_ws, bool, 0644);
+
+static bool enable_msm_hsic_ws = false;
+module_param(enable_msm_hsic_ws, bool, 0644);
+
+static bool enable_smb135x_wake_ws = false;
+module_param(enable_smb135x_wake_ws, bool, 0644);
 
 /*
  * If set, the suspend/hibernate code will abort transitions to a sleep state
@@ -361,16 +375,10 @@ int device_init_wakeup(struct device *dev, bool enable)
 {
 	int ret = 0;
 
-	if (!dev)
-		return -EINVAL;
-
 	if (enable) {
 		device_set_wakeup_capable(dev, true);
 		ret = device_wakeup_enable(dev);
 	} else {
-		if (dev->power.can_wakeup)
-			device_wakeup_disable(dev);
-
 		device_set_wakeup_capable(dev, false);
 	}
 
@@ -391,18 +399,71 @@ int device_set_wakeup_enable(struct device *dev, bool enable)
 }
 EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
 
-/**
- * wakeup_source_not_registered - validate the given wakeup source.
- * @ws: Wakeup source to be validated.
- */
-static bool wakeup_source_not_registered(struct wakeup_source *ws)
+#ifdef CONFIG_PM_AUTOSLEEP
+static void update_prevent_sleep_time(struct wakeup_source *ws, ktime_t now)
 {
-	/*
-	 * Use timer struct to check if the given source is initialized
-	 * by wakeup_source_add.
-	 */
-	return ws->timer.function != pm_wakeup_timer_fn ||
-		   ws->timer.data != (unsigned long)ws;
+        ktime_t delta = ktime_sub(now, ws->start_prevent_time);
+        ws->prevent_sleep_time = ktime_add(ws->prevent_sleep_time, delta);
+}
+#else
+static inline void update_prevent_sleep_time(struct wakeup_source *ws,
+                                             ktime_t now) {}
+#endif
+
+/**
+ * wakup_source_deactivate - Mark given wakeup source as inactive.
+ * @ws: Wakeup source to handle.
+ *
+ * Update the @ws' statistics and notify the PM core that the wakeup source has
+ * become inactive by decrementing the counter of wakeup events being processed
+ * and incrementing the counter of registered wakeup events.
+ */
+static void wakeup_source_deactivate(struct wakeup_source *ws)
+{
+        unsigned int cnt, inpr, cec;
+        ktime_t duration;
+        ktime_t now;
+
+        ws->relax_count++;
+        /*
+         * __pm_relax() may be called directly or from a timer function.
+         * If it is called directly right after the timer function has been
+         * started, but before the timer function calls __pm_relax(), it is
+         * possible that __pm_stay_awake() will be called in the meantime and
+         * will set ws->active.  Then, ws->active may be cleared immediately
+         * by the __pm_relax() called from the timer function, but in such a
+         * case ws->relax_count will be different from ws->active_count.
+         */
+        if (ws->relax_count != ws->active_count) {
+                ws->relax_count--;
+                return;
+        }
+
+        ws->active = false;
+
+        now = ktime_get();
+        duration = ktime_sub(now, ws->last_time);
+        ws->total_time = ktime_add(ws->total_time, duration);
+        if (ktime_to_ns(duration) > ktime_to_ns(ws->max_time))
+                ws->max_time = duration;
+
+        ws->last_time = now;
+        del_timer(&ws->timer);
+        ws->timer_expires = 0;
+
+        if (ws->autosleep_enabled)
+                update_prevent_sleep_time(ws, now);
+
+        /*
+         * Increment the counter of registered wakeup events and decrement the
+         * couter of wakeup events in progress simultaneously.
+         */
+        cec = atomic_add_return(MAX_IN_PROGRESS, &combined_event_count);
+        trace_wakeup_source_deactivate(ws->name, cec);
+
+        split_counters(&cnt, &inpr);
+        if (!inpr && waitqueue_active(&wakeup_count_wait_queue))
+                wake_up(&wakeup_count_wait_queue);
 }
 
 /*
@@ -444,25 +505,26 @@ static bool wakeup_source_not_registered(struct wakeup_source *ws)
 static void wakeup_source_activate(struct wakeup_source *ws)
 {
 	unsigned int cec;
-	
-	if (!enable_si_ws && !strcmp(ws->name, "sensor_ind"))
-		return;
 
-	if (!enable_msm_hsic_ws && !strcmp(ws->name, "msm_hsic_host"))
-		return;
+	if ((!enable_wlan_rx_wake_ws && !strcmp(ws->name, "wlan_rx_wake")) ||
+		(!enable_wlan_ctrl_wake_ws && !strcmp(ws->name, "wlan_ctrl_wake")) ||
+		(!enable_wlan_wake_ws && !strcmp(ws->name, "wlan_wake")) ||
+		(!enable_bluedroid_timer_ws && !strcmp(ws->name, "bluedroid_timer"))||
+	    (!enable_bluesleep_ws && !strcmp(ws->name, "bluesleep")) ||
+	    (!enable_ipa_ws && !strcmp(ws->name, "IPA_WS")) ||
+        (!enable_si_ws && !strcmp(ws->name, "sensor_ind")) ||
+        (!enable_msm_hsic_ws && !strcmp(ws->name, "msm_hsic_host")) ||
+        (!enable_smb135x_wake_ws && !strcmp(ws->name, "smb135x_wake_ws"))) {
+		/*
+		 * let's try and deactivate this wakeup source since the user
+		 * clearly doesn't want it. The user is responsible for any
+		 * adverse effects and has been warned about it
+		 */
+		if (ws->active)
+			wakeup_source_deactivate(ws);
 
-	if (!enable_wlan_rx_wake_ws && !strcmp(ws->name, "wlan_rx_wake"))
 		return;
-
-	if (!enable_wlan_ctrl_wake_ws && !strcmp(ws->name, "wlan_ctrl_wake"))
-		return;
-
-	if (!enable_wlan_wake_ws && !strcmp(ws->name, "wlan_wake"))
-		return;
-
-	if (WARN(wakeup_source_not_registered(ws),
-			"unregistered wakeup source\n"))
-		return;
+	}
 
 	/*
 	 * active wakeup source should bring the system
@@ -543,73 +605,6 @@ void pm_stay_awake(struct device *dev)
 	spin_unlock_irqrestore(&dev->power.lock, flags);
 }
 EXPORT_SYMBOL_GPL(pm_stay_awake);
-
-#ifdef CONFIG_PM_AUTOSLEEP
-static void update_prevent_sleep_time(struct wakeup_source *ws, ktime_t now)
-{
-	ktime_t delta = ktime_sub(now, ws->start_prevent_time);
-	ws->prevent_sleep_time = ktime_add(ws->prevent_sleep_time, delta);
-}
-#else
-static inline void update_prevent_sleep_time(struct wakeup_source *ws,
-					     ktime_t now) {}
-#endif
-
-/**
- * wakup_source_deactivate - Mark given wakeup source as inactive.
- * @ws: Wakeup source to handle.
- *
- * Update the @ws' statistics and notify the PM core that the wakeup source has
- * become inactive by decrementing the counter of wakeup events being processed
- * and incrementing the counter of registered wakeup events.
- */
-static void wakeup_source_deactivate(struct wakeup_source *ws)
-{
-	unsigned int cnt, inpr, cec;
-	ktime_t duration;
-	ktime_t now;
-
-	ws->relax_count++;
-	/*
-	 * __pm_relax() may be called directly or from a timer function.
-	 * If it is called directly right after the timer function has been
-	 * started, but before the timer function calls __pm_relax(), it is
-	 * possible that __pm_stay_awake() will be called in the meantime and
-	 * will set ws->active.  Then, ws->active may be cleared immediately
-	 * by the __pm_relax() called from the timer function, but in such a
-	 * case ws->relax_count will be different from ws->active_count.
-	 */
-	if (ws->relax_count != ws->active_count) {
-		ws->relax_count--;
-		return;
-	}
-
-	ws->active = false;
-
-	now = ktime_get();
-	duration = ktime_sub(now, ws->last_time);
-	ws->total_time = ktime_add(ws->total_time, duration);
-	if (ktime_to_ns(duration) > ktime_to_ns(ws->max_time))
-		ws->max_time = duration;
-
-	ws->last_time = now;
-	del_timer(&ws->timer);
-	ws->timer_expires = 0;
-
-	if (ws->autosleep_enabled)
-		update_prevent_sleep_time(ws, now);
-
-	/*
-	 * Increment the counter of registered wakeup events and decrement the
-	 * couter of wakeup events in progress simultaneously.
-	 */
-	cec = atomic_add_return(MAX_IN_PROGRESS, &combined_event_count);
-	trace_wakeup_source_deactivate(ws->name, cec);
-
-	split_counters(&cnt, &inpr);
-	if (!inpr && waitqueue_active(&wakeup_count_wait_queue))
-		wake_up(&wakeup_count_wait_queue);
-}
 
 /**
  * __pm_relax - Notify the PM core that processing of a wakeup event has ended.
