@@ -64,7 +64,7 @@
 #define CPU_DEVICE "cpu%d"
 
 /* Throttle CPU when it reaches a certain temp*/
-unsigned int temp_threshold = 40;
+unsigned int temp_threshold = 50;
 module_param(temp_threshold, int, 0644);
 
 static struct thermal_info {
@@ -88,7 +88,7 @@ module_param(FREQ_ZONEH, int, 0644);
 unsigned int FREQ_ZONEG	= 345600;
 module_param(FREQ_ZONEG, int, 0644);
 
-unsigned int FREQ_ZONEF	= 533330;
+unsigned int FREQ_ZONEF	= 533333;
 module_param(FREQ_ZONEF, int, 0644);
 
 unsigned int FREQ_ZONEE	= 800000;
@@ -111,7 +111,7 @@ module_param(FREQ_ZONE, int, 0644);
 
 
 /* Temp Diferrence */
-unsigned int temp_step = 4;
+unsigned int temp_step = 3;
 module_param(temp_step, int, 0644);
 
 /* Core control temp */
