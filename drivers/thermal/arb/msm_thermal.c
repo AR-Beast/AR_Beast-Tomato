@@ -110,7 +110,7 @@ unsigned int temp_step = 3;
 module_param(temp_step, int, 0644);
 
 /* Core control temp */
-int corecontrol = 60;
+int corecontrol = 63;
 
 /* CPU Hotplugging Switch */
 unsigned int temp_safety = 1;
