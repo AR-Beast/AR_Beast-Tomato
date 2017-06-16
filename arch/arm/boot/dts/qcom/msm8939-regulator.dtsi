@@ -21,7 +21,7 @@
 		onnn,step-size = <6250>;
 		onnn,min-slew-ns = <416>;
 		onnn,max-slew-ns = <3333>;
-		regulator-min-microvolt = <1000000>;
+		regulator-min-microvolt = <1050000>;
 		regulator-max-microvolt = <1350000>;
 		onnn,min-setpoint = <600000>;
 		pintrl-names = "default";
@@ -35,7 +35,7 @@
 		compatible = "fairchild,fan53555-regulator";
 		reg = <0x60>;
 		fairchild,backup-vsel = <1>;
-		regulator-min-microvolt = <1000000>;
+		regulator-min-microvolt = <1050000>;
 		regulator-max-microvolt = <1350000>;
 		regulator-ramp-delay = <1250>;
 		pintrl-names = "default";
@@ -84,8 +84,8 @@
 		regulator-max-microvolt = <28>;
 
 		qcom,cpr-fuse-corners = <3>;
-		qcom,cpr-voltage-ceiling = <1050000 1150000 1300000>;
-		qcom,cpr-voltage-floor = <1000000 1000000 1100000>;
+		qcom,cpr-voltage-ceiling = <1050000 1150000 1350000>;
+		qcom,cpr-voltage-floor = <1050000 1050000 1137500>;
 		vdd-apc-supply = <&ncp6335d>;
 
 		qcom,vdd-mx-corner-map = <4 5 7>;
@@ -113,7 +113,7 @@
 		qcom,cpr-fuse-target-quot = <42 24 6>;
 		qcom,cpr-fuse-ro-sel = <54 54 54>;
 		qcom,cpr-quot-min-diff = <0>;
-		qcom,cpr-init-voltage-ref = <1030000 1100000 1280000>;
+		qcom,cpr-init-voltage-ref = <1050000 1150000 1350000>;
 		qcom,cpr-fuse-init-voltage =
 					<27 36 6 0>,
 					<27 18 6 0>,
@@ -143,8 +143,8 @@
 					<18 1363200000>,
 					<19 1420800000>,
 					<20 1459200000>,
-					<21 1574000000>,
-					<22 1708000000>,
+					<21 1497600000>,
+					<22 1536000000>,
 					<23 1574400000>,
 					<24 1612800000>,
 					<25 1632000000>,
@@ -154,8 +154,8 @@
 		qcom,speed-bin-fuse-sel = <1 34 3 0>;
 		qcom,cpr-speed-bin-max-corners =
 					<0 0 3 14 21>,
-					<2 0 3 14 22>,
-					<2 2 3 14 22>,
+					<2 0 3 14 21>,
+					<2 2 3 14 20>,
 					<4 0 3 14 28>,
 					<5 0 3 14 26>,
 					<5 6 3 14 26>;
