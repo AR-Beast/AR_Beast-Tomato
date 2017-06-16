@@ -1,9 +1,5 @@
 /* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
- * 
- * Copyright (c) 2017 Francisco Franco <franciscofranco.1990@gmail.com>
- * 
- * Copyright (c) 2017 Ayush Rathore <ayushrathore12501@gmail.com>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
  * only version 2 as published by the Free Software Foundation.
@@ -47,7 +43,6 @@
 #include <soc/qcom/scm.h>
 #include <linux/sched/rt.h>
 #include <linux/ratelimit.h>
-#include <linux/display_state.h>
 
 #define CREATE_TRACE_POINTS
 #define TRACE_MSM_THERMAL
@@ -124,12 +119,6 @@ module_param(temp_safety, int, 0644);
 /* Extras */
 unsigned int enabled = 0;
 module_param(enabled, int, 0664);
-
-unsigned int screen_off_max = 200000;
-module_param(screen_off_max, int, 0664);
-
-/* Boolean to let us know if the display is on*/
-bool is_display_on();
 
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
@@ -257,9 +246,8 @@ if(temp_safety==1){
 }
 
 
-/* Beast hot plug */
+/* Quad core Mode */
 if(enabled==1){
-	    /* Quad core mode*/
 		cpu_online_wrapper(1);
 		if(temp_safety==1){
 	    if (temp > (corecontrol)){
@@ -269,20 +257,7 @@ if(enabled==1){
 	    cpu_offline_wrapper(6);
 		cpu_offline_wrapper(7);
 		cpu_online_wrapper(4);
-		cpu_online_wrapper(5);
-		
-		 /* Reducing cores to 1 on screen off */
-		if (!is_display_on()){
-		freq = screen_off_max;
-		cpu_offline_wrapper(1);
-	    cpu_offline_wrapper(2);
-		cpu_offline_wrapper(3);
-	    cpu_offline_wrapper(4);
-	    cpu_offline_wrapper(5);
-		cpu_offline_wrapper(6);
-		cpu_offline_wrapper(7);}
-		}
-		
+		cpu_online_wrapper(5);}
 
 
 reschedule:
