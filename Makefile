@@ -158,7 +158,7 @@ VPATH		:= $(srctree)$(if $(KBUILD_EXTMOD),:$(KBUILD_EXTMOD))
 
 export srctree objtree VPATH
 
-CCACHE := ccache
+CCACHE := $(shell which ccache)
 
 # SUBARCH tells the usermode build what the underlying arch is.  That is set
 # first, and if a usermode build is happening, the "ARCH=um" on the command
@@ -596,6 +596,9 @@ all: vmlinux
 
 KBUILD_CFLAGS	+= $(call cc-disable-warning,switch,)
 KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS	+= $(call cc-disable-warning,unused-const-variable,)
+KBUILD_CFLAGS   += $(call cc-disable-warning,format-truncation,)
+KBUILD_CFLAGS   += $(call cc-disable-warning,incompatible-pointer-types,)
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os
@@ -694,6 +697,15 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
 
 # warn about C99 declaration after statement
 KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
+
+# Disable unused constant variable warning
+KBUILD_CFLAGS += $(call cc-disable-warning, unused-const-variable)
+
+# Disable unused variable warning
+KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
+
+# Disabled misleading indentation warning
+KBUILD_CFLAGS += $(call cc-disable-warning, misleading-indentation)
 
 # disable pointer signed / unsigned warnings in gcc 4.0
 KBUILD_CFLAGS += $(call cc-disable-warning, pointer-sign)
