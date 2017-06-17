@@ -3753,7 +3753,7 @@ static int __meminit goodix_ts_init(void)
 
 	GTP_DEBUG_FUNC();
 	GTP_INFO("GTP driver installing...");
-	goodix_wq = create_singlethread_workqueue("goodix_wq");
+	goodix_wq = alloc_ordered_workqueue("goodix_wq", WQ_HIGHPRI);
 
 	if (!goodix_wq)
 	{
