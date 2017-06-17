@@ -2,8 +2,10 @@
  * Hexa/Octa-Core big.LITTLE SoCs.
  *
  * Copyright (c) 2017, Shoaib Anwar <Shoaib0595@gmail.com>
- *
+ * 
  * Based on State_Helper HotPlug, by Pranav Vashi <neobuddy89@gmail.com>
+ * 
+ * Copyright (c) 2017, Ayush Rathore <ayushrathore12501@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -54,23 +56,6 @@ static struct delayed_work AiO_work;
 static struct workqueue_struct *AiO_wq;
 
 int AiO_HotPlug;
-
-#ifdef CONFIG_FRANCO_THERMAL
-#if (NR_CPUS == 6 || NR_CPUS == 8)
-// Variable required to know whether the Thermal Frequency Table has been altered by the user on a big.LITTLE SoC.
-extern int flag;
-#endif
-#endif
-
-#ifdef CONFIG_CORE_CONTROL
-// Variable required to know the status of Shoaib's Core Control.
-extern bool core_control;
-#endif
-
-#if (NR_CPUS == 6 || NR_CPUS == 8)
-// "Permission to Disable Core 0" Toggle.
-extern bool hotplug_boost;
-#endif
 
 static void __ref AiO_HotPlug_work(struct work_struct *work)
 {
@@ -124,15 +109,10 @@ static void __ref AiO_HotPlug_work(struct work_struct *work)
 	   	   if (cpu_online(2))
 	      	      cpu_down(2);
 	   	   if (cpu_online(1)) 
-              	      cpu_down(1);
-	   	   if (cpu_online(0))
-	      	      cpu_down(0);
+              	  cpu_down(1);
 	        }
 	        else if (AiO.big_cores == 1)
-	        {
-	                if (!cpu_online(0))
-	                   cpu_up(0);
-	   
+	        {	   
 	                if (cpu_online(3))
 	          	   cpu_down(3);
 	      	        if (cpu_online(2))
@@ -142,8 +122,6 @@ static void __ref AiO_HotPlug_work(struct work_struct *work)
 		}
 		else if (AiO.big_cores == 2)
 		{
-	        	if (!cpu_online(0))
-	           	   cpu_up(0);
 	   		if (!cpu_online(1))
 	      	   	   cpu_up(1);
 	   
@@ -154,20 +132,15 @@ static void __ref AiO_HotPlug_work(struct work_struct *work)
 		}
 		else if (AiO.big_cores == 3)
 		{
-	   		if (!cpu_online(0))
-	           	   cpu_up(0);
 	   		if (!cpu_online(1))
 	      	   	   cpu_up(1);
 	   		if (!cpu_online(2))
 	      	   	   cpu_up(2);
-	   
 	   		if (cpu_online(3))
 	      	   	   cpu_down(3);
 		}
 		else if (AiO.big_cores == 4)
 		{
-	   		if (!cpu_online(0))
-	      	   	   cpu_up(0);
 	   		if (!cpu_online(1))
 	      	   	   cpu_up(1);
 	   		if (!cpu_online(2))
@@ -191,13 +164,12 @@ static void __ref AiO_HotPlug_work(struct work_struct *work)
 		{
 	   		if (!cpu_online(4))
 	      	   	   cpu_up(4);
-	   
 	   		if (cpu_online(7))
 	      	   	   cpu_down(7);
 	   		if (cpu_online(6))
 	      	   	   cpu_down(6);
 	   		if (cpu_online(5)) 
-              	   	   cpu_down(5);
+              	   cpu_down(5);
 		}
 		else if (AiO.LITTLE_cores == 2)
 		{
@@ -296,12 +268,6 @@ static ssize_t store_toggle(struct kobject *kobj,
 	ret = sscanf(buf, "%u", &val);
 	if (ret != 1 || val < 0 || val > 1)
 	   return -EINVAL;
-	
-	#ifdef CONFIG_CORE_CONTROL
-	// Allow AiO HotPlug to be Enabled only when Shoaib's Core Control is Disabled.
-	if (core_control)
-	   return -EINVAL;
-	#endif
 
 	if (val == AiO.toggle)
 	   return count;
@@ -359,29 +325,16 @@ static ssize_t store_big_cores(struct kobject *kobj,
 
 	ret = sscanf(buf, "%u", &val);
 
-	#ifdef CONFIG_FRANCO_THERMAL
 	if (NR_CPUS == 6)
 	{
-	   if (ret != 1 || val < 0 || val > 2 || (val == 0 && (hotplug_boost == false || flag == 1 || AiO.LITTLE_cores == 0)))
+	   if (ret != 1 || val < 1 || val > 2 )
 	      return -EINVAL;
 	}
 	else if (NR_CPUS == 8)
 	{
-	        if (ret != 1 || val < 0 || val > 4 || (val == 0 && (hotplug_boost == false || flag == 1 || AiO.LITTLE_cores == 0)))
+		if (ret != 1 || val < 1 || val > 4 )
 	           return -EINVAL;
 	}
-	#else
-	if (NR_CPUS == 6)
-	{
-	   if (ret != 1 || val < 0 || val > 2 || (val == 0 && (hotplug_boost == false || AiO.LITTLE_cores == 0)))
-	      return -EINVAL;
-	}
-	else if (NR_CPUS == 8)
-	{
-		if (ret != 1 || val < 0 || val > 4 || (val == 0 && (hotplug_boost == false || AiO.LITTLE_cores == 0)))
-	           return -EINVAL;
-	}
-	#endif
 
 	AiO.big_cores = val;
 
@@ -406,7 +359,7 @@ static ssize_t store_LITTLE_cores(struct kobject *kobj,
 
 	ret = sscanf(buf, "%u", &val);
 	
-	if (ret != 1 || val < 0 || val > 4 || (val == 0 && AiO.big_cores == 0))
+	if (ret != 1 || val < 0 || val > 4 )
 	   return -EINVAL;
 
 	AiO.LITTLE_cores = val;
