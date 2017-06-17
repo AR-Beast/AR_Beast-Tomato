@@ -14,7 +14,7 @@
  */
  
  /* ARB THERMAL CONFIGURARTION */
-
+#define pr_fmt(fmt) "%s:%s " fmt, KBUILD_MODNAME, __func__
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
@@ -45,7 +45,6 @@
 #include <trace/trace_thermal.h>
 
 #define MAX_CURRENT_UA 100000
-#define pr_fmt(fmt) "%s:%s " fmt, KBUILD_MODNAME, __func__
 #define MAX_RAILS 5
 #define MAX_THRESHOLD 2
 #define MONITOR_ALL_TSENS -1
@@ -300,26 +299,28 @@ static void check_temp(struct work_struct *work)
 			info.throttling = true;
 	}
 	
-    if(TEMP_SAFETY==1){
-	
- 	if (temp >= 63){
+   if(TEMP_SAFETY==1){
+ 	if (temp >= 69){
+ 	    cpu_offline_wrapper(6);
+ 		cpu_offline_wrapper(7);
+ 		cpu_offline_wrapper(1);
+ 		cpu_offline_wrapper(2);
+ 		cpu_offline_wrapper(3);}
+ 	else if (temp >= 63){
+		cpu_online_wrapper(6);
+ 		cpu_online_wrapper(7);
  	    cpu_offline_wrapper(1);
  		cpu_offline_wrapper(2);
  		cpu_offline_wrapper(3);}
- 	else if (temp >= 70){
- 	    cpu_offline_wrapper(6);
- 		cpu_offline_wrapper(7);}
  	else if (temp < 63){
- 	    cpu_online_wrapper(1);
+        cpu_online_wrapper(1);
  		cpu_online_wrapper(2);
- 		cpu_online_wrapper(3);}
-    else if (temp < 70){
- 	    cpu_online_wrapper(6);
- 		cpu_online_wrapper(7);}
+ 		cpu_online_wrapper(3);
+	           }
  }
-
+ 
 reschedule:
-	queue_delayed_work(system_power_efficient_wq, &check_temp_work, msecs_to_jiffies(250));
+	queue_delayed_work(thermal_wq, &check_temp_work, msecs_to_jiffies(250));
 }
 
 static int msm_thermal_dev_probe(struct platform_device *pdev)
@@ -350,7 +351,7 @@ static int msm_thermal_dev_probe(struct platform_device *pdev)
 	}
 
 	INIT_DELAYED_WORK(&check_temp_work, check_temp);
-	queue_delayed_work(system_power_efficient_wq, &check_temp_work, 5);
+	queue_delayed_work(thermal_wq, &check_temp_work, 5);
 
 err:
 	return ret;
