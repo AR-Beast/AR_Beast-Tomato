@@ -15,8 +15,6 @@
  
  /* ARB THERMAL CONFIGURARTION */
 
-#define pr_fmt(fmt) "%s:%s " fmt, KBUILD_MODNAME, __func__
-
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
@@ -47,6 +45,7 @@
 #include <trace/trace_thermal.h>
 
 #define MAX_CURRENT_UA 100000
+#define pr_fmt(fmt) "%s:%s " fmt, KBUILD_MODNAME, __func__
 #define MAX_RAILS 5
 #define MAX_THRESHOLD 2
 #define MONITOR_ALL_TSENS -1
@@ -74,17 +73,16 @@ static struct thermal_info {
 	.pending_change = false,
 };
 
-int ENABLED = 1;
+int TEMP_SAFETY = 1;
 int TEMP_THRESHOLD = _temp_threshold;
 int TEMP_STEP = _temp_step;
 int LEVEL_VERY_HOT = _temp_threshold + _temp_step;
 int LEVEL_HOT = _temp_threshold + (_temp_step * 2);
 int LEVEL_HELL = _temp_threshold + (_temp_step * 3);
-int FREQ_HELL = 1113600;
-int FREQ_VERY_HOT = 1344000;
-int FREQ_HOT = 1459200;
-int FREQ_WARM = 1574000;
-int FREQ_MAX = 1708000;
+int FREQ_HELL = 800000;
+int FREQ_VERY_HOT = 1113600;
+int FREQ_HOT = 1344000;
+int FREQ_WARM = 1497600;
 
 static int set_temp_threshold(const char *val, const struct kernel_param *kp)
 {
@@ -189,9 +187,44 @@ module_param_cb(freq_very_hot, &freq_limit_ops, &FREQ_VERY_HOT, 0644);
 module_param_cb(freq_hot, &freq_limit_ops, &FREQ_HOT, 0644);
 module_param_cb(freq_warm, &freq_limit_ops, &FREQ_WARM, 0644);
 
+static int set_temp_safety(const char *val, const struct kernel_param *kp)
+{
+	int ret = 0;
+	int i;
+
+	ret = kstrtouint(val, 10, &i);
+	if (ret)
+		return -EINVAL;
+	if (i < 0 || i > 1)
+		return -EINVAL;
+		
+	ret = param_set_int(val, kp);
+
+	return ret;
+}
+
+static struct kernel_param_ops temp_safety_ops = {
+	.set = set_temp_safety,
+	.get = param_get_int,
+};
+
+module_param_cb(temp_safety, &temp_safety_ops, &TEMP_SAFETY, 0644);
+
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
 static struct workqueue_struct *thermal_wq;
+
+static void cpu_offline_wrapper(int cpu)
+{
+        if (cpu_online(cpu))
+		cpu_down(cpu);
+}
+
+static void __ref cpu_online_wrapper(int cpu)
+{
+        if (!cpu_online(cpu))
+		cpu_up(cpu);
+}
 
 static int msm_thermal_cpufreq_callback(struct notifier_block *nfb,
 		unsigned long event, void *data)
@@ -259,8 +292,6 @@ static void check_temp(struct work_struct *work)
 		freq = FREQ_HOT;
 	else if (temp >= TEMP_THRESHOLD)
 		freq = FREQ_WARM;
-	else if (temp < TEMP_THRESHOLD)
-		freq = FREQ_MAX;
 
 	if (freq) {
 		limit_cpu_freqs(freq);
@@ -268,6 +299,24 @@ static void check_temp(struct work_struct *work)
 		if (!info.throttling)
 			info.throttling = true;
 	}
+	
+    if(TEMP_SAFETY==1){
+	
+ 	if (temp >= 63){
+ 	    cpu_offline_wrapper(1);
+ 		cpu_offline_wrapper(2);
+ 		cpu_offline_wrapper(3);}
+ 	else if (temp >= 70){
+ 	    cpu_offline_wrapper(6);
+ 		cpu_offline_wrapper(7);}
+ 	else if (temp < 63){
+ 	    cpu_online_wrapper(1);
+ 		cpu_online_wrapper(2);
+ 		cpu_online_wrapper(3);}
+    else if (temp < 70){
+ 	    cpu_online_wrapper(6);
+ 		cpu_online_wrapper(7);}
+ }
 
 reschedule:
 	queue_delayed_work(system_power_efficient_wq, &check_temp_work, msecs_to_jiffies(250));
