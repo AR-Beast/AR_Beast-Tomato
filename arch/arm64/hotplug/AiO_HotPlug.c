@@ -56,6 +56,7 @@ static struct delayed_work AiO_work;
 static struct workqueue_struct *AiO_wq;
 
 int AiO_HotPlug;
+extern int TEMP_SAFETY;
 
 static void cpu_offline_wrapper(int cpu)
 {
@@ -213,6 +214,9 @@ static ssize_t store_toggle(struct kobject *kobj,
 
 	ret = sscanf(buf, "%u", &val);
 	if (ret != 1 || val < 0 || val > 1)
+	   return -EINVAL;
+	
+	if (TEMP_SAFETY)
 	   return -EINVAL;
 
 	if (val == AiO.toggle)

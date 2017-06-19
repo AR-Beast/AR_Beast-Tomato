@@ -82,6 +82,7 @@ int FREQ_HELL = 800000;
 int FREQ_VERY_HOT = 1113600;
 int FREQ_HOT = 1344000;
 int FREQ_WARM = 1459200;
+extern int AiO_HotPlug;
 
 static int set_temp_threshold(const char *val, const struct kernel_param *kp)
 {
@@ -196,7 +197,9 @@ static int set_temp_safety(const char *val, const struct kernel_param *kp)
 		return -EINVAL;
 	if (i < 0 || i > 1)
 		return -EINVAL;
-		
+	
+	if (AiO_HotPlug)
+		return -EINVAL;	
 	ret = param_set_int(val, kp);
 
 	return ret;
