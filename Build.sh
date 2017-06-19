@@ -45,7 +45,6 @@ echo -e "***********************************************$nocol"
 rm -f $KERN_IMG
 make ARBeast_tomato_defconfig -j4
 make Image -j4
-make dtbs -j4
 make modules -j4
 if ! [ -a $KERN_IMG ];
 then
