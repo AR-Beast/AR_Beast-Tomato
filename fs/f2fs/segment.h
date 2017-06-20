@@ -507,7 +507,7 @@ static inline bool need_SSR(struct f2fs_sb_info *sbi)
 		return false;
 
 	return free_sections(sbi) <= (node_secs + 2 * dent_secs + imeta_secs +
-						reserved_sections(sbi) + 1);
+						2 * reserved_sections(sbi));
 }
 
 static inline bool has_not_enough_free_secs(struct f2fs_sb_info *sbi,
@@ -552,6 +552,7 @@ static inline int utilization(struct f2fs_sb_info *sbi)
  */
 #define DEF_MIN_IPU_UTIL	70
 #define DEF_MIN_FSYNC_BLOCKS	8
+#define DEF_MIN_HOT_BLOCKS	16
 
 enum {
 	F2FS_IPU_FORCE,
@@ -559,16 +560,14 @@ enum {
 	F2FS_IPU_UTIL,
 	F2FS_IPU_SSR_UTIL,
 	F2FS_IPU_FSYNC,
+	F2FS_IPU_ASYNC,
 };
 
-static inline bool need_inplace_update(struct inode *inode)
+static inline bool need_inplace_update_policy(struct inode *inode,
+				struct f2fs_io_info *fio)
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
 	unsigned int policy = SM_I(sbi)->ipu_policy;
-
-	/* IPU can be done only for the user data */
-	if (S_ISDIR(inode->i_mode) || f2fs_is_atomic_file(inode))
-		return false;
 
 	if (test_opt(sbi, LFS))
 		return false;
@@ -582,6 +581,15 @@ static inline bool need_inplace_update(struct inode *inode)
 		return true;
 	if (policy & (0x1 << F2FS_IPU_SSR_UTIL) && need_SSR(sbi) &&
 			utilization(sbi) > SM_I(sbi)->min_ipu_util)
+		return true;
+
+	/*
+	 * IPU for rewrite async pages
+	 */
+	if (policy & (0x1 << F2FS_IPU_ASYNC) &&
+			fio && fio->op == REQ_OP_WRITE &&
+			!(fio->op_flags & REQ_SYNC) &&
+			!f2fs_encrypted_inode(inode))
 		return true;
 
 	/* this is only set during fdatasync */
