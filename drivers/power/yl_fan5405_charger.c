@@ -1465,7 +1465,14 @@ static int fan5405_parse_dt(struct fan5405_chip *chip)
 		return -EINVAL;
 
 #ifdef CONFIG_THUNDERCHARGE_CONTROL
-	chip->chg_curr_max = custom_current;
+	if (mswitch == 1)
+	   chip->chg_curr_max = custom_current;
+	else
+	{
+	   rc = of_property_read_u32(node, "yl,max-charge-current-mA", &chip->chg_curr_max);
+	   if (rc < 0)
+	      return -EINVAL;
+	}
 #else
 	rc = of_property_read_u32(node, "yl,max-charge-current-mA", &chip->chg_curr_max);
 	if (rc < 0)

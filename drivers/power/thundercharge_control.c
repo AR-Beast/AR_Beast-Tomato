@@ -30,7 +30,7 @@ int custom_current = AC_CURRENT;
 int custom_usb_current = USB_CURRENT;
 
 #define DRIVER_VERSION  2
-#define DRIVER_SUBVER 1
+#define DRIVER_SUBVER   5
 
 static ssize_t mswitch_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
@@ -164,4 +164,4 @@ module_init(charger_control_probe);
 module_exit(charger_control_remove);
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Varun Chitre <varun.chitre15@gmail.com>");
-MODULE_DESCRIPTION("BQ24157 Charger control driver");
+MODULE_DESCRIPTION("BQ24157/FAN5405 Charger control driver");
