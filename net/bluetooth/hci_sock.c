@@ -788,9 +788,12 @@ static int hci_sock_sendmsg(struct kiocb *iocb, struct socket *sock,
 
 	if (msg->msg_flags & MSG_OOB)
 		return -EOPNOTSUPP;
-
+#ifdef CONFIG_ARM
+	if (msg->msg_flags & ~(MSG_DONTWAIT|MSG_NOSIGNAL|MSG_ERRQUEUE))
+#else
 	if (msg->msg_flags & ~(MSG_DONTWAIT|MSG_NOSIGNAL|MSG_ERRQUEUE|
 			       MSG_CMSG_COMPAT))
+#endif
 		return -EINVAL;
 
 	if (len < 4 || len > HCI_MAX_FRAME_SIZE)
