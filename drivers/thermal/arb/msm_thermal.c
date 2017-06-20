@@ -84,134 +84,6 @@ int FREQ_HOT = 1344000;
 int FREQ_WARM = 1459200;
 extern int AiO_HotPlug;
 
-static int set_temp_threshold(const char *val, const struct kernel_param *kp)
-{
-	int ret = 0;
-	int i;
-
-	ret = kstrtouint(val, 10, &i);
-	if (ret)
-		return -EINVAL;
-	if (i < 20 || i > 100)
-		return -EINVAL;
-	
-	LEVEL_VERY_HOT = i + TEMP_STEP;
-	LEVEL_HOT = i + (TEMP_STEP * 2);
-	LEVEL_HELL = i + (TEMP_STEP * 3);
-	
-	ret = param_set_int(val, kp);
-
-	return ret;
-}
-
-static struct kernel_param_ops temp_threshold_ops = {
-	.set = set_temp_threshold,
-	.get = param_get_int,
-};
-
-module_param_cb(temp_threshold, &temp_threshold_ops, &TEMP_THRESHOLD, 0644);
-
-static int set_temp_step(const char *val, const struct kernel_param *kp)
-{
-	int ret = 0;
-	int i;
-
-	ret = kstrtouint(val, 10, &i);
-	if (ret)
-		return -EINVAL;
-	/*	Restrict the values to 1-6 as this will result in threshold + value - value *3
-		without a restriction this could result in significanty higher than expected values*/
-	if (i < 1 || i > 6)
-		return -EINVAL;
-	
-	LEVEL_VERY_HOT = TEMP_THRESHOLD + i;
-	LEVEL_HOT = TEMP_THRESHOLD + (i * 2);
-	LEVEL_HELL = TEMP_THRESHOLD + (i * 3);
-	
-	ret = param_set_int(val, kp);
-
-	return ret;
-}
-
-static struct kernel_param_ops temp_step_ops = {
-	.set = set_temp_step,
-	.get = param_get_int,
-};
-
-module_param_cb(temp_step, &temp_step_ops, &TEMP_STEP, 0644);
-
-static int set_freq_limit(const char *val, const struct kernel_param *kp)
-{
-	int ret = 0;
-	int i, cnt;
-	int valid = 0;
-	struct cpufreq_policy *policy;
-	static struct cpufreq_frequency_table *tbl = NULL;
-	
-	ret = kstrtouint(val, 10, &i);
-	if (ret)
-		return -EINVAL;
-
-	policy = cpufreq_cpu_get(0);
-	tbl = cpufreq_frequency_get_table(0);
-	for (cnt = 0; (tbl[cnt].frequency != CPUFREQ_TABLE_END); cnt++) {
-		if (cnt > 0)
-			if (tbl[cnt].frequency == i)
-				valid = 1;
-	}
-			
-	if (strcmp( kp->name, "msm_thermal.freq_warm") == 0 && i <= FREQ_HOT) 
-		return -EINVAL;
-	if ( strcmp( kp->name, "msm_thermal.freq_hot") == 0 &&  ( i >= FREQ_WARM || i <= FREQ_VERY_HOT ))
-		return -EINVAL;	
-	if ( strcmp( kp->name, "msm_thermal.freq_very_hot") == 0 && ( i >= FREQ_HOT || i <= FREQ_HELL ))
-		return -EINVAL;		
-	if ( strcmp( kp->name, "msm_thermal.freq_hell") == 0 && i >= FREQ_VERY_HOT ) 
-		return -EINVAL;		
-
-	if (!valid)
-		return -EINVAL;
-	
-	ret = param_set_int(val, kp);
-
-	return ret;
-}
-
-static struct kernel_param_ops freq_limit_ops = {
-	.set = set_freq_limit,
-	.get = param_get_int,
-};
-
-module_param_cb(freq_hell, &freq_limit_ops, &FREQ_HELL, 0644);
-module_param_cb(freq_very_hot, &freq_limit_ops, &FREQ_VERY_HOT, 0644);
-module_param_cb(freq_hot, &freq_limit_ops, &FREQ_HOT, 0644);
-module_param_cb(freq_warm, &freq_limit_ops, &FREQ_WARM, 0644);
-
-static int set_temp_safety(const char *val, const struct kernel_param *kp)
-{
-	int ret = 0;
-	int i;
-
-	ret = kstrtouint(val, 10, &i);
-	if (ret)
-		return -EINVAL;
-	if (i < 0 || i > 1)
-		return -EINVAL;
-	
-	if (AiO_HotPlug)
-		return -EINVAL;	
-	ret = param_set_int(val, kp);
-
-	return ret;
-}
-
-static struct kernel_param_ops temp_safety_ops = {
-	.set = set_temp_safety,
-	.get = param_get_int,
-};
-
-module_param_cb(temp_safety, &temp_safety_ops, &TEMP_SAFETY, 0644);
-
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
 static struct workqueue_struct *thermal_wq;
@@ -342,6 +214,140 @@ static void check_temp(struct work_struct *work)
 reschedule:
 	queue_delayed_work(thermal_wq, &check_temp_work, msecs_to_jiffies(250));
 }
+static int set_temp_threshold(const char *val, const struct kernel_param *kp)
+{
+	int ret = 0;
+	int i;
+
+	ret = kstrtouint(val, 10, &i);
+	if (ret)
+		return -EINVAL;
+	if (i < 20 || i > 100)
+		return -EINVAL;
+	
+	LEVEL_VERY_HOT = i + TEMP_STEP;
+	LEVEL_HOT = i + (TEMP_STEP * 2);
+	LEVEL_HELL = i + (TEMP_STEP * 3);
+	
+	ret = param_set_int(val, kp);
+
+	return ret;
+}
+
+static struct kernel_param_ops temp_threshold_ops = {
+	.set = set_temp_threshold,
+	.get = param_get_int,
+};
+
+module_param_cb(temp_threshold, &temp_threshold_ops, &TEMP_THRESHOLD, 0644);
+
+static int set_temp_step(const char *val, const struct kernel_param *kp)
+{
+	int ret = 0;
+	int i;
+
+	ret = kstrtouint(val, 10, &i);
+	if (ret)
+		return -EINVAL;
+	/*	Restrict the values to 1-6 as this will result in threshold + value - value *3
+		without a restriction this could result in significanty higher than expected values*/
+	if (i < 1 || i > 6)
+		return -EINVAL;
+	
+	LEVEL_VERY_HOT = TEMP_THRESHOLD + i;
+	LEVEL_HOT = TEMP_THRESHOLD + (i * 2);
+	LEVEL_HELL = TEMP_THRESHOLD + (i * 3);
+	
+	ret = param_set_int(val, kp);
+
+	return ret;
+}
+
+static struct kernel_param_ops temp_step_ops = {
+	.set = set_temp_step,
+	.get = param_get_int,
+};
+
+module_param_cb(temp_step, &temp_step_ops, &TEMP_STEP, 0644);
+
+static int set_freq_limit(const char *val, const struct kernel_param *kp)
+{
+	int ret = 0;
+	int i, cnt;
+	int valid = 0;
+	struct cpufreq_policy *policy;
+	static struct cpufreq_frequency_table *tbl = NULL;
+	
+	ret = kstrtouint(val, 10, &i);
+	if (ret)
+		return -EINVAL;
+
+	policy = cpufreq_cpu_get(0);
+	tbl = cpufreq_frequency_get_table(0);
+	for (cnt = 0; (tbl[cnt].frequency != CPUFREQ_TABLE_END); cnt++) {
+		if (cnt > 0)
+			if (tbl[cnt].frequency == i)
+				valid = 1;
+	}
+			
+	if (strcmp( kp->name, "msm_thermal.freq_warm") == 0 && i <= FREQ_HOT) 
+		return -EINVAL;
+	if ( strcmp( kp->name, "msm_thermal.freq_hot") == 0 &&  ( i >= FREQ_WARM || i <= FREQ_VERY_HOT ))
+		return -EINVAL;	
+	if ( strcmp( kp->name, "msm_thermal.freq_very_hot") == 0 && ( i >= FREQ_HOT || i <= FREQ_HELL ))
+		return -EINVAL;		
+	if ( strcmp( kp->name, "msm_thermal.freq_hell") == 0 && i >= FREQ_VERY_HOT ) 
+		return -EINVAL;		
+
+	if (!valid)
+		return -EINVAL;
+	
+	ret = param_set_int(val, kp);
+
+	return ret;
+}
+
+static struct kernel_param_ops freq_limit_ops = {
+	.set = set_freq_limit,
+	.get = param_get_int,
+};
+
+module_param_cb(freq_hell, &freq_limit_ops, &FREQ_HELL, 0644);
+module_param_cb(freq_very_hot, &freq_limit_ops, &FREQ_VERY_HOT, 0644);
+module_param_cb(freq_hot, &freq_limit_ops, &FREQ_HOT, 0644);
+module_param_cb(freq_warm, &freq_limit_ops, &FREQ_WARM, 0644);
+
+static int set_temp_safety(const char *val, const struct kernel_param *kp)
+{
+	int ret = 0;
+	int i;
+
+	ret = kstrtouint(val, 10, &i);
+	if (ret)
+		return -EINVAL;
+	if (i < 0 || i > 1)
+		return -EINVAL;
+	if (AiO_HotPlug)
+		return -EINVAL;	
+	ret = param_set_int(val, kp);
+    if (!TEMP_SAFETY)
+	{
+	   int cpu;
+	   for_each_possible_cpu(cpu)
+	       if (!cpu_online(cpu))
+		  cpu_online_wrapper(cpu);
+	} 
+
+	return ret;
+}
+
+static struct kernel_param_ops temp_safety_ops = {
+	.set = set_temp_safety,
+	.get = param_get_int,
+};
+
+module_param_cb(temp_safety, &temp_safety_ops, &TEMP_SAFETY, 0644);
+
 
 static int msm_thermal_dev_probe(struct platform_device *pdev)
 {
