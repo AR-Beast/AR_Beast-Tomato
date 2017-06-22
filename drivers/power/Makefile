@@ -87,6 +87,9 @@ obj-$(CONFIG_BATTERY_BCL)	+= battery_current_limit.o
 obj-$(CONFIG_MSM_BCL_CTL)	+= msm_bcl.o
 obj-$(CONFIG_MSM_BCL_PERIPHERAL_CTL) += bcl_peripheral.o
 obj-$(CONFIG_POWER_RESET)	+= reset/
+
+obj-$(CONFIG_QUICK_CHARGE)      += Quick_Charge.o
+
 obj-y				+= qcom/
 obj-$(CONFIG_YL_PM8916_VBUS)	+= yl_pm8916_vbus.o
 obj-$(CONFIG_YL_BQ24157_CHARGER)	+= yl_bq24157_charger.o
