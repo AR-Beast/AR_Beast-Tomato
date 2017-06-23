@@ -1062,9 +1062,23 @@ static int bq24157_get_prop_batt_status(struct bq24157_chip *chip)
 		if (chip->batt_capa >= 100)
 			ret.intval = POWER_SUPPLY_STATUS_FULL;
 		else
-			ret.intval = POWER_SUPPLY_STATUS_CHARGING;	
+		#ifdef CONFIG_QUICK_CHARGE
+		{
+		   // Report the Status of Charging to Quick Charge Driver.
+		   charging (1);
+
+		   ret.intval = POWER_SUPPLY_STATUS_CHARGING;
+		}
+		#else
+			ret.intval = POWER_SUPPLY_STATUS_CHARGING;
+		#endif
 	} else {
 		ret.intval = POWER_SUPPLY_STATUS_DISCHARGING;
+		
+		#ifdef CONFIG_QUICK_CHARGE
+		// Report the Status of Dis-Charging to Quick Charger Driver.
+		charging (0);
+		#endif
 	}
 #if 0	
 	chip->charge_stat = bq24157_get_stat(chip);
@@ -1142,6 +1156,8 @@ static int bq24157_get_prop_current_now(struct bq24157_chip *chip)
 	union power_supply_propval ret = {0, };
 
 	ret.intval = chip->chg_curr_now;
+
+	actual_current (ret.intval);
 
 	return ret.intval;
 }
@@ -1221,8 +1237,9 @@ static int bq24157_get_prop_batt_capa(struct bq24157_chip *chip)
 	batt_level_notify(chip->batt_capa);
 	#endif
 	#ifdef CONFIG_QUICK_CHARGE
-	// Report the Battery-Level to the Quick Charge Driver.
-	batt_level (chip->batt_capa);
+	// Report the Battery-Level to the Quick Charge Driver (only if it is Enabled).
+	if (QC_Toggle == 1)
+	   batt_level (chip->batt_capa);
 	#endif
 
         return chip->batt_capa;
