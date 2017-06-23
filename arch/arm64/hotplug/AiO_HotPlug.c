@@ -19,6 +19,7 @@
 #include <linux/module.h>
 #include <linux/workqueue.h>
 #include <linux/platform_device.h>
+#include <linux/state_notifier.h>
 
 #define AIO_HOTPLUG			"AiO_HotPlug"
 #define AIO_TOGGLE			0
@@ -74,6 +75,14 @@ static void AiO_HotPlug_work(struct work_struct *work)
 {
          // Operations for a Traditional Quad-Core SoC.
 #if (NR_CPUS == 4)
+if (state_suspended) 
+	     {   cpu_offline_wrapper(3);
+	         cpu_offline_wrapper(2);
+             cpu_offline_wrapper(1);
+	     }
+	
+else if (!state_suspended) 
+                    {	     
 	     if (AiO.cores == 1)
 	     {   cpu_offline_wrapper(3);
 	         cpu_offline_wrapper(2);
@@ -94,9 +103,21 @@ static void AiO_HotPlug_work(struct work_struct *work)
 	      	 cpu_online_wrapper(2);
 	         cpu_online_wrapper(3);
 	     }
+	 }
 	  // Operations for a big.LITTLE SoC.
 #elif (NR_CPUS == 6 || NR_CPUS == 8)
 	    // Operations for big Cluster.
+if (state_suspended) 
+	     {   cpu_offline_wrapper(3);
+	         cpu_offline_wrapper(2);
+             cpu_offline_wrapper(1);
+             cpu_offline_wrapper(4);
+	         cpu_offline_wrapper(5);
+             cpu_offline_wrapper(6);
+             cpu_offline_wrapper(7);
+	     }
+else if (!state_suspended)
+                   {
         if (AiO.big_cores == 0)
 	    {         cpu_offline_wrapper(3);
 	      	      cpu_offline_wrapper(2);
@@ -153,6 +174,7 @@ static void AiO_HotPlug_work(struct work_struct *work)
 	           	 cpu_online_wrapper(6);
 	           	 cpu_online_wrapper(7);
                 }
+          }
           #endif
 }
 
