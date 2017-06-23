@@ -21,17 +21,47 @@
 #define QUICK_CHARGE        "Quick_Charge"
 #define CURRENT     	    1250
 
+// Enable/Disable Toggle.
 int QC_Toggle = ENABLED;
+// Variable to Store Different Values of Current (mA).
 int Dynamic_Current = CURRENT;
+// Variable to Store a Copy of Dynamic Current (mA).
+int Mirror_Current;
+// Variable to Know the Status of Charging (i.e., Charger Connected or Dis-Connected).
+int Charge_Status;
 
+// Function to Read the Status (%) of Battery.
 void batt_level (int Battery_Status)
 {
+	// Mechanism of Driver to Allocate Current (mA).
 	if (Battery_Status >= 0 && Battery_Status <= 60)
+	{
 	   Dynamic_Current = 1500;
+	   Mirror_Current = 1500;
+	}
 	else if (Battery_Status >= 61 && Battery_Status <= 90)
+	{
 		Dynamic_Current = 1250;
+		Mirror_Current = 1250;
+	}
 	else if (Battery_Status >= 91 && Battery_Status <= 100)
+	{
   	        Dynamic_Current = 1000;
+		Mirror_Current = 1000;
+	}
+}
+
+// Function to Read the Status (Charger Connected or Dis-Connected) of Charging.
+void charging (int flag)
+{
+	Charge_Status = flag;
+
+	if (Charge_Status == 1)
+	   // Read the Current (mA) Value from Copy-Variable.
+	   Dynamic_Current = Mirror_Current;
+	else
+	   // If the Battery is Dis-Charging, show 0 mA.
+	   Dynamic_Current = 0;
 }
 
 static ssize_t qc_toggle_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
@@ -46,8 +76,15 @@ static ssize_t qc_toggle_store(struct kobject *kobj, struct kobj_attribute *attr
 	switch (val)
 	{
 	case 0:
+	       QC_Toggle = val;
+	       // If the Driver is Disabled, show 0 mA.
+	       Dynamic_Current = val;
+	break;
 	case 1:
-		QC_Toggle = val;
+	       QC_Toggle = val;
+	       // If the Driver is Enabled and the Battery is Charging, then only, read the Current (mA) Value from Copy-Variable.
+	       if (Charge_Status == 1)
+	          Dynamic_Current = Mirror_Current;
 	break;
 	default:
 		pr_info("%s: Invalid Value", QUICK_CHARGE);

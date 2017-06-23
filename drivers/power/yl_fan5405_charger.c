@@ -1070,9 +1070,26 @@ static int fan5405_get_prop_batt_status(struct fan5405_chip *chip)
 		if (chip->batt_capa >= 100)
 			ret.intval = POWER_SUPPLY_STATUS_FULL;
 		else
-			ret.intval = POWER_SUPPLY_STATUS_CHARGING;	
+
+		#ifdef CONFIG_QUICK_CHARGE
+		{
+		   // Report the Status of Charging to Quick Charge Driver.
+		   charging (1);
+
+		   ret.intval = POWER_SUPPLY_STATUS_CHARGING;
+		}
+		#else
+			ret.intval = POWER_SUPPLY_STATUS_CHARGING;
+		#endif
+
 	} else {
 		ret.intval = POWER_SUPPLY_STATUS_DISCHARGING;
+		
+		#ifdef CONFIG_QUICK_CHARGE
+		// If the Quick Charge Driver is Enabled, report the Status of Dis-Charging.
+		if (QC_Toggle == 1)
+		   charging (0);
+		#endif
 	}
 #if 0	
 	chip->charge_stat = fan5405_get_stat(chip);
@@ -1230,8 +1247,9 @@ static int fan5405_get_prop_batt_capa(struct fan5405_chip *chip)
 	#endif
 	
 	#ifdef CONFIG_QUICK_CHARGE
-	// Report the Battery-Level to the Quick Charge Driver.
-	batt_level (chip->batt_capa);
+	// Report the Battery-Level to the Quick Charge Driver (only if it is Enabled).
+	if (QC_Toggle == 1)
+	   batt_level (chip->batt_capa);
 	#endif
 
         return chip->batt_capa;
