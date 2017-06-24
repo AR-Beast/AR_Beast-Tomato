@@ -1135,48 +1135,6 @@ unsigned long try_to_compact_pages(struct zonelist *zonelist,
 	return rc;
 }
 
-static struct workqueue_struct *compaction_wq;
-static struct delayed_work compaction_work;
-static bool screen_on = true;
-static int compaction_timeout_ms = 900000;
-module_param_named(compaction_forced_timeout_ms, compaction_timeout_ms, int,
-			0644);
-static int compaction_soff_delay_ms = 3000;
-module_param_named(compaction_screen_off_delay_ms, compaction_soff_delay_ms, int,
-			0644);
-static unsigned long compaction_forced_timeout;
-
-static int fb_notifier_callback(struct notifier_block *self, unsigned long event, void *data)
-{
-	struct fb_event *evdata = data;
-	int *blank;
-
-	if ((event == FB_EARLY_EVENT_BLANK) && evdata && evdata->data) {
-		blank = evdata->data;
-
-		switch (*blank) {
-		case FB_BLANK_POWERDOWN:
-			screen_on = false;
-			if (time_after(jiffies, compaction_forced_timeout) && !delayed_work_busy(&compaction_work)) {
-				compaction_forced_timeout = jiffies + msecs_to_jiffies(compaction_timeout_ms);
-				queue_delayed_work(compaction_wq, &compaction_work,
-					msecs_to_jiffies(compaction_soff_delay_ms));
-			}
-		break;
-		case FB_BLANK_UNBLANK:
-			screen_on = true;
-		break;
-		default:
-			screen_on = false;
-		}
-	}
-
-	return NOTIFY_OK;
-}
-
-static struct notifier_block compaction_notifier_block = {
-	.notifier_call = fb_notifier_callback,
-};
 
 /* Compact all zones within a node */
 static void __compact_pgdat(pg_data_t *pgdat, struct compact_control *cc)
