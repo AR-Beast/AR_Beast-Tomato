@@ -29,8 +29,8 @@
 int mswitch = ENABLED;
 int custom_usb_current = USB_CURRENT;
 
-#define DRIVER_VERSION  2
-#define DRIVER_SUBVER   5
+#define DRIVER_VERSION  3
+#define DRIVER_SUBVER   0
 
 static ssize_t mswitch_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
