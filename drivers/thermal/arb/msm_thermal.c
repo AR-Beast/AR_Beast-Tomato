@@ -83,6 +83,11 @@ int FREQ_VERY_HOT = 1113600;
 int FREQ_HOT = 1344000;
 int FREQ_WARM = 1459200;
 extern int AiO_HotPlug;
+#ifdef CONFIG_THUNDERCHARGE_CONTROL
+extern int mswitch;
+extern int custom_current;
+int custom_current;
+#endif
 
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
@@ -210,6 +215,18 @@ static void check_temp(struct work_struct *work)
  		cpu_online_wrapper(7);
 	}
  }
+ 
+#ifdef CONFIG_THUNDERCHARGE_CONTROL
+if (mswitch == 1){
+    if (temp >= 70)
+		custom_current = 1000;
+	else if (temp >= 60)
+		custom_current = 1250;
+	else if (temp >= 50)
+		custom_current = 1350;
+	else if (temp >= 40)
+		custom_current = 1500;}
+#endif
  
 reschedule:
 	queue_delayed_work(thermal_wq, &check_temp_work, msecs_to_jiffies(250));
