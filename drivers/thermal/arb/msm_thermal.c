@@ -43,6 +43,7 @@
 #include <linux/sched/rt.h>
 #include <linux/ratelimit.h>
 #include <trace/trace_thermal.h>
+#include <linux/thundercharge_control.h>
 
 #define MAX_CURRENT_UA 100000
 #define MAX_RAILS 5
@@ -57,6 +58,9 @@
 #define TRACE_MSM_THERMAL
 #define _temp_threshold		50
 #define _temp_step	3
+#ifdef CONFIG_THUNDERCHARGE_CONTROL
+#define customcurrent 1350
+#endif
 
 static struct thermal_info {
 	uint32_t cpuinfo_max_freq;
@@ -84,9 +88,7 @@ int FREQ_HOT = 1344000;
 int FREQ_WARM = 1459200;
 extern int AiO_HotPlug;
 #ifdef CONFIG_THUNDERCHARGE_CONTROL
-extern int mswitch;
-extern int custom_current;
-int custom_current;
+int custom_current = customcurrent;
 #endif
 
 static struct msm_thermal_data msm_thermal_info;
@@ -219,13 +221,14 @@ static void check_temp(struct work_struct *work)
 #ifdef CONFIG_THUNDERCHARGE_CONTROL
 if (mswitch == 1){
     if (temp >= 70)
-		custom_current = 1000;
+		customcurrent == 1000;
 	else if (temp >= 60)
-		custom_current = 1250;
+		customcurrent == 1250;
 	else if (temp >= 50)
-		custom_current = 1350;
+		customcurrent == 1350;
 	else if (temp >= 40)
-		custom_current = 1500;}
+		customcurrent == 1500;
+	}
 #endif
  
 reschedule:

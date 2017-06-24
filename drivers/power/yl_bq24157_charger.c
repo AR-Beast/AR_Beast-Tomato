@@ -37,7 +37,7 @@
 #include "yl_pm8916_vbus.h"
 
 #ifdef CONFIG_THUNDERCHARGE_CONTROL
-#include "thundercharge_control.h"
+#include <linux/thundercharge_control.h>
 #endif
 
 struct bq24157_chip {

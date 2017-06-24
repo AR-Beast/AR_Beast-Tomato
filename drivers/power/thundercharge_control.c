@@ -19,7 +19,7 @@
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
 #include <linux/kernel.h>
-#include "thundercharge_control.h"
+#include <linux/thundercharge_control.h>
 
 #define ENABLED             1
 #define USB_CURRENT         1000
