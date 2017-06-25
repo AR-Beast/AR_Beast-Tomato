@@ -14,48 +14,18 @@
  */
  
  /* ARB THERMAL CONFIGURARTION */
-#define pr_fmt(fmt) "%s:%s " fmt, KBUILD_MODNAME, __func__
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/kthread.h>
 #include <linux/mutex.h>
 #include <linux/msm_tsens.h>
 #include <linux/workqueue.h>
-#include <linux/completion.h>
 #include <linux/cpu.h>
 #include <linux/cpufreq.h>
-#include <linux/msm_tsens.h>
 #include <linux/msm_thermal.h>
 #include <linux/platform_device.h>
 #include <linux/of.h>
-#include <linux/err.h>
-#include <linux/slab.h>
-#include <linux/of.h>
-#include <linux/sysfs.h>
-#include <linux/types.h>
-#include <linux/thermal.h>
-#include <linux/regulator/rpm-smd-regulator.h>
-#include <linux/regulator/consumer.h>
-#include <linux/regulator/driver.h>
-#include <soc/qcom/rpm-smd.h>
-#include <soc/qcom/scm.h>
-#include <linux/sched/rt.h>
-#include <linux/ratelimit.h>
-#include <trace/trace_thermal.h>
 #include <linux/thundercharge_control.h>
-
-#define MAX_CURRENT_UA 100000
-#define MAX_RAILS 5
-#define MAX_THRESHOLD 2
-#define MONITOR_ALL_TSENS -1
-#define TSENS_NAME_MAX 20
-#define TSENS_NAME_FORMAT "tsens_tz_sensor%d"
-#define THERM_SECURE_BITE_CMD 8
-#define SENSOR_SCALING_FACTOR 1
-#define CPU_DEVICE "cpu%d"
-#define CREATE_TRACE_POINTS
-#define TRACE_MSM_THERMAL
 #define _temp_threshold		50
 #define _temp_step	3
 #ifdef CONFIG_THUNDERCHARGE_CONTROL
@@ -77,6 +47,7 @@ static struct thermal_info {
 };
 
 int TEMP_SAFETY = 1;
+static struct kobject *cc_kobj;
 int TEMP_THRESHOLD = _temp_threshold;
 int TEMP_STEP = _temp_step;
 int LEVEL_VERY_HOT = _temp_threshold + _temp_step;
@@ -86,14 +57,15 @@ int FREQ_HELL = 800000;
 int FREQ_VERY_HOT = 1113600;
 int FREQ_HOT = 1344000;
 int FREQ_WARM = 1459200;
+#ifdef CONFIG_AiO_HotPlug
 extern int AiO_HotPlug;
+#endif
 #ifdef CONFIG_THUNDERCHARGE_CONTROL
 int custom_current = customcurrent;
 #endif
 
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
-static struct workqueue_struct *thermal_wq;
 
 static void cpu_offline_wrapper(int cpu)
 {
@@ -130,25 +102,23 @@ static void limit_cpu_freqs(uint32_t max_freq)
 	unsigned int cpu;
 
 	if (info.limited_max_freq == max_freq)
-		return;
+	   return;
 
 	info.limited_max_freq = max_freq;
 	info.pending_change = true;
-	pr_info_ratelimited("%s: Setting cpu max frequency to %u\n",
-	KBUILD_MODNAME, max_freq);
 
 	get_online_cpus();
-	for_each_online_cpu(cpu) {
-		cpufreq_update_policy(cpu);
-		pr_info("%s: Setting cpu%d max frequency to %d\n",
-				KBUILD_MODNAME, cpu, info.limited_max_freq);
+	for_each_online_cpu(cpu) 
+        {
+	    cpufreq_update_policy(cpu);
+	    pr_info("%s: Setting cpu%d max frequency to %d\n", KBUILD_MODNAME, cpu, info.limited_max_freq);
 	}
 	put_online_cpus();
 
 	info.pending_change = false;
 }
 
-static void check_temp(struct work_struct *work)
+static void __ref check_temp(struct work_struct *work)
 {
 	struct tsens_device tsens_dev;
 	uint32_t freq = 0;
@@ -179,7 +149,7 @@ static void check_temp(struct work_struct *work)
 			info.throttling = true;
 	}
 	
-   if(TEMP_SAFETY==1){
+   if(TEMP_SAFETY){
 	if (temp >= 80){
  		cpu_offline_wrapper(1);
  		cpu_offline_wrapper(2);
@@ -224,16 +194,18 @@ if (mswitch == 1){
 		customcurrent == 1000;
 	else if (temp >= 60)
 		customcurrent == 1250;
-	else if (temp >= 50)
+	else if (temp >= 55)
 		customcurrent == 1350;
-	else if (temp >= 40)
+	else if (temp >= 20)
 		customcurrent == 1500;
 	}
 #endif
  
 reschedule:
-	queue_delayed_work(thermal_wq, &check_temp_work, msecs_to_jiffies(250));
+	queue_delayed_work(system_power_efficient_wq, &check_temp_work, msecs_to_jiffies(1000));
 }
+
+/* SysFS start*/
 static int set_temp_threshold(const char *val, const struct kernel_param *kp)
 {
 	int ret = 0;
@@ -367,7 +339,7 @@ static struct kernel_param_ops temp_safety_ops = {
 };
 
 module_param_cb(temp_safety, &temp_safety_ops, &TEMP_SAFETY, 0644);
-
+/* SysFS end */
 
 static int msm_thermal_dev_probe(struct platform_device *pdev)
 {
@@ -379,36 +351,23 @@ static int msm_thermal_dev_probe(struct platform_device *pdev)
 
 	ret = of_property_read_u32(node, "qcom,sensor-id", &data.sensor_id);
 	if (ret)
-		return ret;
+	   return ret;
 
 	WARN_ON(data.sensor_id >= TSENS_MAX_SENSORS);
 
         memcpy(&msm_thermal_info, &data, sizeof(struct msm_thermal_data));
 
-	ret = cpufreq_register_notifier(&msm_thermal_cpufreq_notifier,
-		CPUFREQ_POLICY_NOTIFIER);
-	if (ret)
-		pr_err("thermals: well, if this fails here, we're fucked\n");
+        INIT_DELAYED_WORK(&check_temp_work, check_temp);
+        schedule_delayed_work(&check_temp_work, 5);
 
-	thermal_wq = alloc_workqueue("thermal_wq", WQ_HIGHPRI, 0);
-	if (!thermal_wq) {
-		pr_err("thermals: don't worry, if this fails we're also bananas\n");
-		goto err;
-	}
+	cpufreq_register_notifier(&msm_thermal_cpufreq_notifier, CPUFREQ_POLICY_NOTIFIER);
 
-	INIT_DELAYED_WORK(&check_temp_work, check_temp);
-	queue_delayed_work(thermal_wq, &check_temp_work, 5);
-
-err:
 	return ret;
 }
 
 static int msm_thermal_dev_remove(struct platform_device *pdev)
 {
-	cancel_delayed_work_sync(&check_temp_work);
-	destroy_workqueue(thermal_wq);
-	cpufreq_unregister_notifier(&msm_thermal_cpufreq_notifier,
-                        CPUFREQ_POLICY_NOTIFIER);
+	cpufreq_unregister_notifier(&msm_thermal_cpufreq_notifier, CPUFREQ_POLICY_NOTIFIER);
 	return 0;
 }
 
@@ -437,5 +396,5 @@ static void __exit msm_thermal_device_exit(void)
 	platform_driver_unregister(&msm_thermal_device_driver);
 }
 
-arch_initcall(msm_thermal_device_init);
+late_initcall(msm_thermal_device_init);
 module_exit(msm_thermal_device_exit);
