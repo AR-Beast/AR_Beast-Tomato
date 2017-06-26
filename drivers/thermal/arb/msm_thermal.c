@@ -54,6 +54,10 @@ int FREQ_HOT = 1344000;
 int FREQ_WARM = 1459200;
 #ifdef CONFIG_AiO_HotPlug
 extern int AiO_HotPlug;
+#endif
+#ifdef CONFIG_ALUCARD_HOTPLUG
+extern int alucard;
+#endif
 
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
@@ -297,8 +301,15 @@ static int set_temp_safety(const char *val, const struct kernel_param *kp)
 		return -EINVAL;
 	if (i < 0 || i > 1)
 		return -EINVAL;
-	if (AiO_HotPlug)
-		return -EINVAL;	
+#ifdef CONFIG_AiO_HotPlug
+    if (AiO_HotPlug)
+		return -EINVAL;
+#endif		
+#ifdef CONFIG_ALUCARD_HOTPLUG
+	if (alucard)
+	   return -EINVAL; 
+#endif
+
 	ret = param_set_int(val, kp);
     if (!TEMP_SAFETY)
 	{
