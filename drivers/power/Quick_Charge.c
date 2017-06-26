@@ -34,20 +34,20 @@ int Charge_Status;
 void batt_level (int Battery_Status)
 {
 	// Mechanism of Driver to Allocate Current (mA).
-	if (Battery_Status >= 0 && Battery_Status <= 60)
+	if (Battery_Status >= 0 && Battery_Status <= 75)
 	{
 	   Dynamic_Current = 1500;
 	   Mirror_Current = 1500;
 	}
-	else if (Battery_Status >= 61 && Battery_Status <= 90)
+	else if (Battery_Status >= 76 && Battery_Status <= 93)
 	{
-		Dynamic_Current = 1250;
-		Mirror_Current = 1250;
+		Dynamic_Current = 1380;
+		Mirror_Current = 1380;
 	}
-	else if (Battery_Status >= 91 && Battery_Status <= 100)
+	else if (Battery_Status >= 94 && Battery_Status <= 100)
 	{
-  	        Dynamic_Current = 1000;
-		Mirror_Current = 1000;
+  	        Dynamic_Current = 1250;
+		Mirror_Current = 1250;
 	}
 }
 
