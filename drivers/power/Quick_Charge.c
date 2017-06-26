@@ -20,6 +20,7 @@
 #define ENABLED             1
 #define QUICK_CHARGE        "Quick_Charge"
 #define CURRENT     	    1250
+#define USBCURRENT          1000
 
 // Enable/Disable Toggle.
 int QC_Toggle = ENABLED;
@@ -29,6 +30,9 @@ int Dynamic_Current = CURRENT;
 
 // Variable to Store a Copy of Dynamic Current (mA).
 int Mirror_Current;
+
+// Variable to Store Value of USB Current (mA).
+int USB_Current = USBCURRENT;
 
 // Variable to Know the Status of Charging (i.e., Charger Connected or Dis-Connected).
 int Charge_Status;
@@ -120,6 +124,22 @@ static ssize_t custom_current_store(struct kobject *kobj, struct kobj_attribute 
 	return count;
 }
 
+static ssize_t usb_current_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d", USB_Current);
+}
+
+static ssize_t usb_current_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int userusbcurrent;
+	sscanf(buf, "%d", &userusbcurrent);
+	if(QC_Toggle == 1 && userusbcurrent <= 1000 && userusbcurrent  >= 500)
+		USB_Current = userusbcurrent;
+	else
+		pr_info("%s: disabled or limit reached, ignoring\n", QUICK_CHARGE);
+	return count;
+}
+
 static struct kobj_attribute qc_toggle_attribute =
 	__ATTR(QC_Toggle,
 		0666,
@@ -138,11 +158,18 @@ static struct kobj_attribute custom_current_attribute =
 		custom_current_show,
 		custom_current_store);
 
+static struct kobj_attribute usb_current_attribute =
+	__ATTR(USB_Current,
+		0666,
+		usb_current_show,
+		usb_current_store);
+
 static struct attribute *charger_control_attrs[] =
 	{
 		&qc_toggle_attribute.attr,
 		&dynamic_current_attribute.attr,
 		&custom_current_attribute.attr,
+		&usb_current_attribute,
 		NULL,
 	};
 	
