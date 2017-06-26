@@ -13,6 +13,7 @@
 
 extern int QC_Toggle;
 extern int Dynamic_Current;
+extern int USB_Current;
 extern void batt_level (int);
 extern void charging (int);
 		  

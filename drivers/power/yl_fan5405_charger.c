@@ -1395,7 +1395,30 @@ static void fan5405_external_power_changed(struct power_supply *psy)
 		dev_err(chip->dev,
 			"could not read USB current_max property, rc=%d\n", rc);
 	else
-           chip->set_ivbus_max = prop.intval / 1000;
+	  {
+#ifdef CONFIG_QUICK_CHARGE
+        if(!((prop.intval / 1000) == 0))
+        {
+            if(QC_Toggle==1) {
+                if((prop.intval / 1000) == 1000) {
+                    pr_info("Using custom USB current %d", USB_Current);
+                    chip->set_ivbus_max = USB_Current;
+                }
+                else {
+                    pr_info("Using custom AC current %d", Dynamic_Current);
+                    chip->set_ivbus_max = Dynamic_Current;
+                }
+            }
+            else {
+                chip->set_ivbus_max = prop.intval / 1000;
+            }
+        }
+        else
+            chip->set_ivbus_max = 0;
+#else
+        chip->set_ivbus_max = prop.intval / 1000;
+#endif
+    }
 
 
 	rc = fan5405_set_ivbus_max(chip, chip->set_ivbus_max); //VBUS CURRENT
