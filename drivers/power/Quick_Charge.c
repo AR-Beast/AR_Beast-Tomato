@@ -6,7 +6,7 @@
  *
  * Copyright (c) 2017, Shoaib Anwar <Shoaib0595@gmail.com>.
  * 
- * Copyright (c) 2017, Ayush Rathore <ayushrathore12501@gmail.com>.
+ * Copyright (c
  *
  * Based on ThunderCharge Current Control, by Varun Chitre <varun.chitre15@gmail.com>.
  *
