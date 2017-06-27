@@ -23,6 +23,7 @@
 
 #define AIO_HOTPLUG			"AiO_HotPlug"
 #define AIO_TOGGLE			0
+#define SUSPENDED_CORE	    1
 
 #if (NR_CPUS == 4)
     #define DEFAULT_CORES		4
@@ -37,6 +38,7 @@
 
 static struct AiO_HotPlug {
        unsigned int toggle;
+       unsigned int suspended;
        #if (NR_CPUS == 4)
        unsigned int cores;
        #elif (NR_CPUS == 6 || NR_CPUS == 8)
@@ -45,6 +47,7 @@ static struct AiO_HotPlug {
        #endif
 } AiO = {
 	.toggle 	 = AIO_TOGGLE,
+	.suspended   = SUSPENDED_CORE,
 	#if (NR_CPUS == 4)
 	.cores		 = DEFAULT_CORES,
 	#elif (NR_CPUS == 6 || NR_CPUS == 8)
@@ -78,7 +81,7 @@ static void AiO_HotPlug_work(struct work_struct *work)
 {
          // Operations for a Traditional Quad-Core SoC.
 #if (NR_CPUS == 4)
-if (state_suspended) 
+if (state_suspended && AiO.suspended == 1) 
 	     {   cpu_offline_wrapper(3);
 	         cpu_offline_wrapper(2);
              cpu_offline_wrapper(1);
@@ -110,7 +113,7 @@ else if (!state_suspended)
 	  // Operations for a big.LITTLE SoC.
 #elif (NR_CPUS == 6 || NR_CPUS == 8)
 	    // Operations for big Cluster.
-if (state_suspended) 
+if (state_suspended && AiO.suspended == 1) 
 	     {   cpu_offline_wrapper(3);
 	         cpu_offline_wrapper(2);
              cpu_offline_wrapper(1);
@@ -261,6 +264,31 @@ static ssize_t store_toggle(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t show_suspended(struct kobject *kobj,
+			    struct kobj_attribute *attr, 
+			    char *buf)
+{
+	return sprintf(buf, "%u\n", AiO.suspended);
+}
+
+static ssize_t store_suspended(struct kobject *kobj,
+			     struct kobj_attribute *attr,
+			     const char *buf, size_t count)
+{
+	int ret;
+	unsigned int val;
+
+	ret = sscanf(buf, "%u", &val);
+	if (ret != 1 || val < 0 || val > 1)
+	   return -EINVAL;
+	
+	if (val == AiO.suspended)
+	   return count;
+
+	AiO.suspended = val;
+	return count;
+}
+
 #if (NR_CPUS == 4)
 static ssize_t show_cores(struct kobject *kobj,
 			  struct kobj_attribute *attr, 
@@ -357,6 +385,7 @@ static struct kobj_attribute _name##_attr = 		\
        __ATTR(_name, 0444, show_##_name, NULL)
 
 KERNEL_ATTR_RW(toggle);
+KERNEL_ATTR_RW(suspended);
 #if (NR_CPUS == 4)
     KERNEL_ATTR_RW(cores);
 #elif (NR_CPUS == 6 || NR_CPUS == 8)
@@ -366,6 +395,7 @@ KERNEL_ATTR_RW(toggle);
 
 static struct attribute *AiO_HotPlug_attrs[] = {
 	&toggle_attr.attr,
+	&suspended_attr.attr,
 	#if (NR_CPUS == 4)
 	    &cores_attr.attr,
 	#elif (NR_CPUS == 6 || NR_CPUS == 8)
