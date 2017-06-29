@@ -262,16 +262,7 @@ static int set_freq_limit(const char *val, const struct kernel_param *kp)
 		if (cnt > 0)
 			if (tbl[cnt].frequency == i)
 				valid = 1;
-	}
-			
-	if (strcmp( kp->name, "msm_thermal.freq_warm") == 0 && i <= FREQ_HOT) 
-		return -EINVAL;
-	if ( strcmp( kp->name, "msm_thermal.freq_hot") == 0 &&  ( i >= FREQ_WARM || i <= FREQ_VERY_HOT ))
-		return -EINVAL;	
-	if ( strcmp( kp->name, "msm_thermal.freq_very_hot") == 0 && ( i >= FREQ_HOT || i <= FREQ_HELL ))
-		return -EINVAL;		
-	if ( strcmp( kp->name, "msm_thermal.freq_hell") == 0 && i >= FREQ_VERY_HOT ) 
-		return -EINVAL;		
+	}	
 
 	if (!valid)
 		return -EINVAL;
