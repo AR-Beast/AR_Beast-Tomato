@@ -914,11 +914,9 @@ again:			remove_next = 1 + (end > next->vm_end);
 			goto again;
 		} else if (next) {
 			vma_gap_update(next);
-			else
+			}else{
 			WARN_ON(mm->highest_vm_end != vm_end_gap(vma));
-		} else {
-			mm->highest_vm_end = end;
-		}
+		} 
 	} else {
 		if (next && !insert)
 			uksm_vma_add_new(next);
