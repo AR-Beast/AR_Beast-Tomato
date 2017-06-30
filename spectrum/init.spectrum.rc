@@ -35,6 +35,8 @@ chmod 644 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 chmod 644 /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor 
 write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "interactive"
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "interactive"
+chmod 444 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 
+chmod 444 /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor 
 write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time 30000
 write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time 40000
 write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate 40000
@@ -61,7 +63,6 @@ write /sys/devices/system/cpu/cpu0/cpufreq/interactive/powersave_bias 1
 write /sys/devices/system/cpu/cpu4/cpufreq/interactive/powersave_bias 1
 write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fastlane 0
 write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fastlane 0
-write /sys/module/msm_thermal/parameters/temp_safety 1
 write /sys/module/wakeup/parameters/enable_smb135x_wake_ws N
 write /sys/module/wakeup/parameters/enable_si_ws N
 write /sys/module/wakeup/parameters/enable_msm_hsic_ws N
@@ -75,7 +76,7 @@ write /sys/block/mmcblk1/queue/scheduler bfq
 write /sys/block/mmcblk1/queue/read_ahead_kb 1024
 write /sys/block/mmcblk0/queue/scheduler bfq
 write /sys/block/mmcblk0/queue/read_ahead_kb 1024
-write /sys/module/msm_thermal/parameters/temp_threshold 49
+write /sys/module/msm_thermal/parameters/temp_threshold 46
 write /sys/module/msm_thermal/parameters/temp_step 3
 write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 465000000
 write /sys/module/adreno_idler/parameters/adreno_idler_active 1
@@ -96,14 +97,17 @@ chmod 644 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 chmod 644 /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
 write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "performance"
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "performance"
+chmod 444 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 
+chmod 444 /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor 
 write /sys/module/msm_thermal/parameters/temp_threshold 90
 write /sys/module/msm_thermal/parameters/temp_step 5
 write /sys/block/mmcblk1/queue/scheduler fiops
 write /sys/block/mmcblk1/queue/read_ahead_kb 2048
 write /sys/block/mmcblk0/queue/scheduler fiops
 write /sys/block/mmcblk0/queue/read_ahead_kb 2048
-write /sys/module/msm_thermal/parameters/temp_safety 0
+chmod 644 /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor
 write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor performance
+chmod 444 /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor
 write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 550000000
 write /sys/module/adreno_idler/parameters/adreno_idler_active 0
 
@@ -113,14 +117,17 @@ chmod /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 644
 chmod /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor 644
 write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "darkness"
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "darkness"
+chmod 444 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 
+chmod 444 /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor 
 write /sys/module/msm_thermal/parameters/temp_threshold 40
 write /sys/module/msm_thermal/parameters/temp_step 3
 write /sys/block/mmcblk1/queue/scheduler noop
 write /sys/block/mmcblk1/queue/read_ahead_kb 1024
 write /sys/block/mmcblk0/queue/scheduler noop
 write /sys/block/mmcblk0/queue/read_ahead_kb 1024
-write /sys/module/msm_thermal/parameters/temp_safety 1
+chmod 644 /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor
 write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor simple_ondemand
+chmod 444 /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor
 write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 400000000
 write /sys/module/adreno_idler/parameters/adreno_idler_active 0
 
@@ -138,13 +145,16 @@ chmod 644 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 chmod 644 /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
 write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "elementalx"
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "elementalx"
+chmod 444 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 
+chmod 444 /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor 
 write /sys/module/msm_thermal/parameters/temp_threshold 70
 write /sys/module/msm_thermal/parameters/temp_step 4
 write /sys/block/mmcblk1/queue/scheduler zen
 write /sys/block/mmcblk1/queue/read_ahead_kb 1536
 write /sys/block/mmcblk0/queue/scheduler zen
 write /sys/block/mmcblk0/queue/read_ahead_kb 1536
-write /sys/module/msm_thermal/parameters/temp_safety 0
+chmod 644 /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor
 write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor msm-adreno-tz
+chmod 444 /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor
 write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 550000000
 write /sys/module/adreno_idler/parameters/adreno_idler_active 0
