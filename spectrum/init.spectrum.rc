@@ -31,38 +31,12 @@ write /sys/devices/system/cpu/cpu4/online 1
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 200000
 chmod 444 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 
 chmod 444 /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 
-chmod 644 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 
-chmod 644 /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor 
-write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "interactive"
-write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "interactive"
+chmod /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 644
+chmod /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor 644
+write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "darkness"
+write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "darkness"
 chmod 444 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 
 chmod 444 /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor 
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time 30000
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time 40000
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate 40000
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate 40000
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack 60000
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack 60000
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down  1
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down  1
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "20000 200000:45000 400000:55000 800000:75000 960000:110000 1113300:175000 1344000:200000"
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "25000 200000:45000 345000:55000 533330:75000 800000:110000 998000:175000 1113000:200000" 
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 200000
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 200000
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 99
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 99
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "10 200000:50 200000:35 345000:45 400000:52 533330:59 800000:75 960000:90 1113300:95 1344000:99"
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "10 200000:50 249600:35 499200:45 499200:52 499200:59 800000:75 998000:90 1113000:95 1113000:99"
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy 0
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy 0
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down 1
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down 1
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration 0
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration 0
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/powersave_bias 1
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/powersave_bias 1
-write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fastlane 0
-write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fastlane 0
 write /sys/module/wakeup/parameters/enable_smb135x_wake_ws N
 write /sys/module/wakeup/parameters/enable_si_ws N
 write /sys/module/wakeup/parameters/enable_msm_hsic_ws N
@@ -78,6 +52,9 @@ write /sys/block/mmcblk0/queue/scheduler bfq
 write /sys/block/mmcblk0/queue/read_ahead_kb 1024
 write /sys/module/msm_thermal/parameters/temp_threshold 46
 write /sys/module/msm_thermal/parameters/temp_step 3
+chmod 644 /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor
+write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor msm-adreno-tz
+chmod 444 /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor
 write /sys/devices/soc.0/1c00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 465000000
 write /sys/module/adreno_idler/parameters/adreno_idler_active 1
 write /sys/kernel/sched/arch_power 1
@@ -113,12 +90,46 @@ write /sys/module/adreno_idler/parameters/adreno_idler_active 0
 
 # Battery
 on property:persist.spectrum.profile=2
-chmod /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 644
-chmod /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor 644
-write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "darkness"
-write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "darkness"
+chmod 644 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 
+chmod 644 /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 
+write /sys/devices/system/cpu/cpu0/online 1
+write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 200000 
+write /sys/devices/system/cpu/cpu4/online 1
+write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 200000
+chmod 444 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 
+chmod 444 /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 
+chmod 644 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 
+chmod 644 /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor 
+write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "interactive"
+write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "interactive"
 chmod 444 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 
 chmod 444 /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor 
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time 30000
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time 40000
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate 40000
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate 40000
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack 60000
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack 60000
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down  1
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down  1
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "20000 200000:45000 400000:55000 800000:75000 1036800:110000"
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "25000 200000:45000 345000:55000 533330:75000 800000:110000 998000:175000" 
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 200000
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 200000
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 99
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 99
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "10 200000:50 200000:35 345000:45 400000:52 533330:59 800000:75 1036800:99"
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "10 200000:50 249600:35 499200:45 499200:52 499200:59 800000:75 998000:99"
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy 0
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy 0
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down 1
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down 1
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration 0
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration 0
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/powersave_bias 1
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/powersave_bias 1
+write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fastlane 0
+write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fastlane 0
 write /sys/module/msm_thermal/parameters/temp_threshold 40
 write /sys/module/msm_thermal/parameters/temp_step 3
 write /sys/block/mmcblk1/queue/scheduler noop
