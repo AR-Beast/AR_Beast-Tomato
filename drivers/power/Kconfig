@@ -404,6 +404,15 @@ config SMB1360_CHARGER_FG
 	  The driver reports the status via the power supply framework.
 	  A status change triggers an IRQ via the device STAT pin.
 
+config QUICK_CHARGE
+       bool "Enable Quick Charge+ Current-Booster Driver, developed by Shoaib0597."
+       depends on SMB1360_CHARGER_FG
+       default y
+       help
+	   Quick Charge+ is a Current (mA) Booster Driver for Qualcomm's
+           Quick Charge Technology. By Modifying the Pre-Set Current (mA)
+           Levels, this Driver Boosts the Charging Speed further.
+
 config SMB358_CHARGER
 	tristate "SMB358 Battery Charger"
 	depends on I2C
