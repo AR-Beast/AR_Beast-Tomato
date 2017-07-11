@@ -22,14 +22,19 @@
 
 // Enable/Disable Toggle.
 int QC_Toggle = ENABLED;
+
 // Variable to Store Different Values of Current (mA).
 int Dynamic_Current = 1000;
+
 // Variable to Know the Status of Charging (i.e., Charger Connected or Dis-Connected).
 int Charge_Status;
+
 // Variable to Store Actual Current (mA) Drawn from AC or USB Charger.
 unsigned int Actual_Current;
+
 // Variable to Store Selection of Charging-Profiles.
-int Charging_Profile = 0;
+int Charging_Profile = 2;
+
 // Variable to Store a Copy of Battery (%) Status.
 int Battery_Percent;
 
@@ -39,7 +44,7 @@ void batt_level (int Battery_Status)
 	Battery_Percent = Battery_Status;
 
 	// If "Safe" Profile is Selected, use Lower Current (mA) Values.
-	if (Charging_Profile == 0)
+if (Charging_Profile == 0)
 	{
 	   // Mechanism of Driver to Allocate Current (mA).
  	   if (Battery_Percent >= 0 && Battery_Percent <= 60)
@@ -49,7 +54,8 @@ void batt_level (int Battery_Status)
 	   else if (Battery_Percent >= 91 && Battery_Percent <= 100)
   	           Dynamic_Current = 1000;
 	}
-	else
+	
+if (Charging_Profile == 1)
 	{
 	    // Mechanism of Driver to Allocate Current (mA).
 	    if (Battery_Percent >= 0 && Battery_Percent <= 60)
@@ -59,7 +65,24 @@ void batt_level (int Battery_Status)
 	    else if (Battery_Percent >= 91 && Battery_Percent <= 100)
   	            Dynamic_Current = 1000;
 	}
+
+if (Charging_Profile == 2)
+	{
+	if (Battery_Status >= 0 && Battery_Status <= 75)
+	     Dynamic_Current = 1500;   
+	else if (Battery_Status >= 76 && Battery_Status <= 93)
+		 Dynamic_Current = 1380;
+	else if (Battery_Status >= 94 && Battery_Status <= 100)
+  	     Dynamic_Current = 1250;
+	}
+
+if (Charging_Profile == 3)
+	{
+	    // Mechanism of Driver to Allocate Current (mA).
+	       Dynamic_Current = 1500;
+	}
 }
+
 
 // Function to Read the Status (Charger Connected or Dis-Connected) of Charging.
 void charging (int flag)
