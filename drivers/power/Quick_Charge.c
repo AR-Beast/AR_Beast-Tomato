@@ -158,7 +158,7 @@ static ssize_t charging_profile_store(struct kobject *kobj, struct kobj_attribut
 	
 	sscanf (buf, "%d", &val);
 	
-	if (val < 0 || val > 1)
+	if (val < 0 || val > 3)
 	   return EINVAL;
 
 	Charging_Profile = val;
