@@ -17,15 +17,15 @@
  */
 
 /*
-     Date            Author         	 Why
+     Date            Author		 Why
    2014-07-29      aidongdong          add 1008 yusun product
    2014-08-11      zengguang          add pinctrl
    2014-08-18      chenchen           add module name for yusun
    2014-10-16      pangle             add hall mod send cfg function
 
 
-    Date    		Author   		Module   	 	Sensor_id    Old_ver    New_ver
-  2014.08.11	zengguang	huaxingda		1 				  0x41
+    Date		Author			Module			Sensor_id    Old_ver    New_ver
+  2014.08.11	zengguang	huaxingda		1				  0x41
   2014.08.18   chenchen   huaxingda         1         0x41        0x42
   2014.09.15   chenchen   huaxingda         1         0x42        0x43
   2014.10.09   chenchen   huaxingda         1         0x43        0x44
@@ -33,10 +33,10 @@
   2014.10.21   pangle     huaxingda hall cfg         1         0x44        0x45
   2014.10.22   pangle     huaxingda hall cfg         1         0x45        0x46
   2014.10.31   pangle     huaxingda hall cfg         1         0x46        0x47
-  2014.11.03   pangle     huaxingda        					 1         0x43        0x48
+  2014.11.03   pangle     huaxingda						 1         0x43        0x48
   2014.11.03   pangle     huaxingda hall cfg         1         0x47        0x48
-  2014.11.27   zengguang     BYD 		          1         NULL        0x41
-  2014.12.03   zengguang     BYD 		          1         0x41        0x43
+  2014.11.27   zengguang     BYD		          1         NULL        0x41
+  2014.12.03   zengguang     BYD		          1         0x41        0x43
   2014.12.03   zengguang     BYD hall		          1         NULL        0x43
 */
 

@@ -12,7 +12,7 @@ unsigned int gsl_model_extern[] =
 	0xf0ff707a,0xcfdf6268,0xadbe525a,0x8d9e434a,0x6d7d353c,0x4c5c262e,0x2c3c151e,0x0c3c000b,
 	0x10,0x49,
 	0x775df6f9,0xab91e6ef,0xdac3cedb,0xf9eda2b9,0xfdff6d88,0xf1f93a53,0xcce21424,0x9ab50209,
-	0x65800101,0x354d1409,0x0f1f3a25,0x01056e53,0x0100a288,0x1407d3bc,0x4128f1e4,0x765bfffb,	
+	0x65800101,0x354d1409,0x0f1f3a25,0x01056e53,0x0100a288,0x1407d3bc,0x4128f1e4,0x765bfffb,
 };
 
 
@@ -27,7 +27,7 @@ unsigned int gsl_config_versions[]=
 	0,0,0,0,//平台8-11
 	0,0,0,0,//TP厂12-15
 	0,//TP尺寸16
-	
+
 	0,0,0,0,//版本，姓名1，姓名2，日期17-20
 	0,0,0,0,
 	0,0,0,0,
@@ -44,7 +44,7 @@ unsigned int gsl_config_versions[]=
 
 static int gsl_config_data_id[] =
 {
-	0x7d5354,  
+	0x7d5354,
 	0x200,
 	0,0,
 	0,

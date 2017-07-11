@@ -42,6 +42,8 @@
  * aco: Automatic Contrast Optimization. Must be configured in
  *      the panel devicetree. Boolean.
  *
+ * hbm: High Brightness Mode. Common for OLED panels. Boolean.
+ *
  * preset: Arbitrary DSI commands, up to 10 may be configured.
  *      Useful for gamma calibration.
  *
@@ -50,9 +52,11 @@
  */
 
 extern void mdss_dsi_panel_cmds_send(struct mdss_dsi_ctrl_pdata *ctrl,
-		struct dsi_panel_cmds *pcmds);
+				     struct dsi_panel_cmds *pcmds);
 
-static int parse_dsi_cmds(struct dsi_panel_cmds *pcmds, const uint8_t *cmd, int blen)
+static int parse_dsi_cmds(struct mdss_livedisplay_ctx *mlc,
+			  struct dsi_panel_cmds *pcmds, const uint8_t * cmd,
+			  int blen)
 {
 	int len;
 	char *buf, *bp;
@@ -74,7 +78,7 @@ static int parse_dsi_cmds(struct dsi_panel_cmds *pcmds, const uint8_t *cmd, int 
 		dchdr->dlen = ntohs(dchdr->dlen);
 		if (dchdr->dlen > len) {
 			pr_err("%s: dtsi cmd=%x error, len=%d\n",
-				__func__, dchdr->dtype, dchdr->dlen);
+			       __func__, dchdr->dtype, dchdr->dlen);
 			goto exit_free;
 		}
 		bp += sizeof(*dchdr);
@@ -86,12 +90,11 @@ static int parse_dsi_cmds(struct dsi_panel_cmds *pcmds, const uint8_t *cmd, int 
 
 	if (len != 0) {
 		pr_err("%s: dcs_cmd=%x len=%d error!\n",
-				__func__, buf[0], blen);
+		       __func__, buf[0], blen);
 		goto exit_free;
 	}
 
-	pcmds->cmds = kzalloc(cnt * sizeof(struct dsi_cmd_desc),
-			GFP_KERNEL);
+	pcmds->cmds = kzalloc(cnt * sizeof(struct dsi_cmd_desc), GFP_KERNEL);
 	if (!pcmds->cmds)
 		goto exit_free;
 
@@ -111,11 +114,10 @@ static int parse_dsi_cmds(struct dsi_panel_cmds *pcmds, const uint8_t *cmd, int 
 		len -= dchdr->dlen;
 	}
 
-	/*Set default link state to HS Mode*/
-	pcmds->link_state = DSI_HS_MODE;
+	pcmds->link_state = mlc->link_state;
 
 	pr_debug("%s: dcs_cmd=%x len=%d, cmd_cnt=%d link_state=%d\n", __func__,
-		pcmds->buf[0], pcmds->blen, pcmds->cmd_cnt, pcmds->link_state);
+		 pcmds->buf[0], pcmds->blen, pcmds->cmd_cnt, pcmds->link_state);
 
 	return 0;
 
@@ -179,6 +181,9 @@ static void mdss_livedisplay_worker(struct work_struct *work)
 	if (mlc == NULL)
 		return;
 
+	if (mlc->mfd == NULL)
+		return;
+
 	ctrl_pdata = get_ctrl(mlc->mfd);
 	if (ctrl_pdata == NULL)
 		return;
@@ -187,7 +192,8 @@ static void mdss_livedisplay_worker(struct work_struct *work)
 	if (pinfo == NULL)
 		return;
 
-	if (!mlc->caps || !mdss_panel_is_power_on_interactive(pinfo->panel_power_state))
+	if (!mlc->caps
+	    || !mdss_panel_is_power_on_interactive(pinfo->panel_power_state))
 		return;
 
 	mutex_lock(&mlc->lock);
@@ -196,14 +202,25 @@ static void mdss_livedisplay_worker(struct work_struct *work)
 	if ((mlc->caps & MODE_PRESET) && (mlc->updated & MODE_PRESET))
 		len += mlc->presets_len[mlc->preset];
 
-	if ((mlc->caps & MODE_COLOR_ENHANCE) && (mlc->updated & MODE_COLOR_ENHANCE))
-		len += mlc->ce_enabled ? mlc->ce_on_cmds_len : mlc->ce_off_cmds_len;
+	if ((mlc->caps & MODE_COLOR_ENHANCE) &&
+	    (mlc->updated & MODE_COLOR_ENHANCE))
+		len += mlc->ce_enabled ? mlc->ce_on_cmds_len :
+		    mlc->ce_off_cmds_len;
+
+	if ((mlc->caps & MODE_HIGH_BRIGHTNESS) &&
+	    (mlc->updated & MODE_HIGH_BRIGHTNESS))
+		len += mlc->hbm_enabled ? mlc->hbm_on_cmds_len :
+		    mlc->hbm_off_cmds_len;
+
+	if ((mlc->caps & MODE_SRGB) && (mlc->updated & MODE_SRGB))
+		len += mlc->srgb_enabled ? mlc->srgb_on_cmds_len :
+		    mlc->srgb_off_cmds_len;
 
 	if (is_cabc_cmd(mlc->updated) && is_cabc_cmd(mlc->caps)) {
-
-		// The CABC command on most modern panels is also responsible for
-		// other features such as SRE, ACO and CE.  The register fields are bits
-		// and are OR'd together and sent in a single DSI command.
+		// The CABC command on most modern panels is also responsible
+		// for other features such as SRE, ACO and CE. The register
+		// fields are bits and are OR'd together and sent in a single
+		// DSI command.
 		if (mlc->cabc_level == CABC_UI)
 			cabc_value |= mlc->cabc_ui_value;
 		else if (mlc->cabc_level == CABC_IMAGE)
@@ -227,8 +244,8 @@ static void mdss_livedisplay_worker(struct work_struct *work)
 		len += mlc->cabc_cmds_len;
 
 		pr_info("%s cabc=%d sre=%d aco=%d ce=%d cmd=%d\n", __func__,
-				mlc->cabc_level, mlc->sre_level, mlc->aco_enabled,
-				mlc->ce_enabled, cabc_value);
+			mlc->cabc_level, mlc->sre_level,
+			mlc->aco_enabled, mlc->ce_enabled, cabc_value);
 	}
 
 	len += mlc->post_cmds_len;
@@ -240,21 +257,48 @@ static void mdss_livedisplay_worker(struct work_struct *work)
 
 	// Build the command as a single chain, preset first
 	if ((mlc->caps & MODE_PRESET) && (mlc->updated & MODE_PRESET)) {
-		memcpy(mlc->cmd_buf, mlc->presets[mlc->preset], mlc->presets_len[mlc->preset]);
+		memcpy(mlc->cmd_buf, mlc->presets[mlc->preset],
+		       mlc->presets_len[mlc->preset]);
 		dlen += mlc->presets_len[mlc->preset];
 	}
-
 	// Color enhancement
-	if ((mlc->caps & MODE_COLOR_ENHANCE) && (mlc->updated & MODE_COLOR_ENHANCE)) {
+	if ((mlc->caps & MODE_COLOR_ENHANCE)
+	    && (mlc->updated & MODE_COLOR_ENHANCE)) {
 		if (mlc->ce_enabled) {
-			memcpy(mlc->cmd_buf + dlen, mlc->ce_on_cmds, mlc->ce_on_cmds_len);
+			memcpy(mlc->cmd_buf + dlen, mlc->ce_on_cmds,
+			       mlc->ce_on_cmds_len);
 			dlen += mlc->ce_on_cmds_len;
 		} else {
-			memcpy(mlc->cmd_buf + dlen, mlc->ce_off_cmds, mlc->ce_off_cmds_len);
+			memcpy(mlc->cmd_buf + dlen, mlc->ce_off_cmds,
+			       mlc->ce_off_cmds_len);
 			dlen += mlc->ce_off_cmds_len;
 		}
 	}
-
+	// High brightness mode
+	if ((mlc->caps & MODE_HIGH_BRIGHTNESS) &&
+	    (mlc->updated & MODE_HIGH_BRIGHTNESS)) {
+		if (mlc->hbm_enabled) {
+			memcpy(mlc->cmd_buf + dlen, mlc->hbm_on_cmds,
+			       mlc->hbm_on_cmds_len);
+			dlen += mlc->hbm_on_cmds_len;
+		} else {
+			memcpy(mlc->cmd_buf + dlen, mlc->hbm_off_cmds,
+			       mlc->hbm_off_cmds_len);
+			dlen += mlc->hbm_off_cmds_len;
+		}
+	}
+	// SRGB mode
+	if ((mlc->caps & MODE_SRGB) && (mlc->updated & MODE_SRGB)) {
+		if (mlc->srgb_enabled) {
+			memcpy(mlc->cmd_buf + dlen, mlc->srgb_on_cmds,
+			       mlc->srgb_on_cmds_len);
+			dlen += mlc->srgb_on_cmds_len;
+		} else {
+			memcpy(mlc->cmd_buf + dlen, mlc->srgb_off_cmds,
+			       mlc->srgb_off_cmds_len);
+			dlen += mlc->srgb_off_cmds_len;
+		}
+	}
 	// CABC/SRE/ACO/CABC_CE features
 	if (is_cabc_cmd(mlc->updated) && mlc->cabc_cmds_len) {
 		memcpy(mlc->cmd_buf + dlen, mlc->cabc_cmds, mlc->cabc_cmds_len);
@@ -262,15 +306,13 @@ static void mdss_livedisplay_worker(struct work_struct *work)
 		// The CABC command parameter is the last value in the sequence
 		mlc->cmd_buf[dlen - 1] = cabc_value;
 	}
-
 	// And the post_cmd, can be used to turn on the panel
 	if (mlc->post_cmds_len) {
 		memcpy(mlc->cmd_buf + dlen, mlc->post_cmds, mlc->post_cmds_len);
 		dlen += mlc->post_cmds_len;
 	}
-
 	// Parse the command and send it
-	ret = parse_dsi_cmds(&dsi_cmds, mlc->cmd_buf, len);
+	ret = parse_dsi_cmds(mlc, &dsi_cmds, mlc->cmd_buf, len);
 	if (ret == 0) {
 		mdss_dsi_panel_cmds_send(ctrl_pdata, &dsi_cmds);
 	} else {
@@ -296,7 +338,8 @@ void mdss_livedisplay_update(struct mdss_livedisplay_ctx *mlc, uint32_t updated)
 }
 
 static ssize_t mdss_livedisplay_get_cabc(struct device *dev,
-		struct device_attribute *attr, char *buf)
+					 struct device_attribute *attr,
+					 char *buf)
 {
 	struct fb_info *fbi = dev_get_drvdata(dev);
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
@@ -306,8 +349,8 @@ static ssize_t mdss_livedisplay_get_cabc(struct device *dev,
 }
 
 static ssize_t mdss_livedisplay_set_cabc(struct device *dev,
-							   struct device_attribute *attr,
-							   const char *buf, size_t count)
+					 struct device_attribute *attr,
+					 const char *buf, size_t count)
 {
 	int level = 0;
 	struct fb_info *fbi = dev_get_drvdata(dev);
@@ -315,8 +358,7 @@ static ssize_t mdss_livedisplay_set_cabc(struct device *dev,
 	struct mdss_livedisplay_ctx *mlc = get_ctx(mfd);
 
 	sscanf(buf, "%du", &level);
-	if (level >= CABC_OFF && level < CABC_MAX &&
-				level != mlc->cabc_level) {
+	if (level >= CABC_OFF && level < CABC_MAX && level != mlc->cabc_level) {
 		mutex_lock(&mlc->lock);
 		mlc->cabc_level = level;
 		mutex_unlock(&mlc->lock);
@@ -327,7 +369,8 @@ static ssize_t mdss_livedisplay_set_cabc(struct device *dev,
 }
 
 static ssize_t mdss_livedisplay_get_sre(struct device *dev,
-		struct device_attribute *attr, char *buf)
+					struct device_attribute *attr,
+					char *buf)
 {
 	struct fb_info *fbi = dev_get_drvdata(dev);
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
@@ -337,8 +380,8 @@ static ssize_t mdss_livedisplay_get_sre(struct device *dev,
 }
 
 static ssize_t mdss_livedisplay_set_sre(struct device *dev,
-							   struct device_attribute *attr,
-							   const char *buf, size_t count)
+					struct device_attribute *attr,
+					const char *buf, size_t count)
 {
 	int level = 0;
 	struct fb_info *fbi = dev_get_drvdata(dev);
@@ -346,8 +389,7 @@ static ssize_t mdss_livedisplay_set_sre(struct device *dev,
 	struct mdss_livedisplay_ctx *mlc = get_ctx(mfd);
 
 	sscanf(buf, "%du", &level);
-	if (level >= SRE_OFF && level < SRE_MAX &&
-				level != mlc->sre_level) {
+	if (level >= SRE_OFF && level < SRE_MAX && level != mlc->sre_level) {
 		mutex_lock(&mlc->lock);
 		mlc->sre_level = level;
 		mutex_unlock(&mlc->lock);
@@ -357,8 +399,71 @@ static ssize_t mdss_livedisplay_set_sre(struct device *dev,
 	return count;
 }
 
+static ssize_t mdss_livedisplay_get_hbm(struct device *dev,
+					struct device_attribute *attr,
+					char *buf)
+{
+	struct fb_info *fbi = dev_get_drvdata(dev);
+	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
+	struct mdss_livedisplay_ctx *mlc = get_ctx(mfd);
+
+	return sprintf(buf, "%d\n", mlc->hbm_enabled);
+}
+
+static ssize_t mdss_livedisplay_set_hbm(struct device *dev,
+					struct device_attribute *attr,
+					const char *buf, size_t count)
+{
+	int value = 0;
+	struct fb_info *fbi = dev_get_drvdata(dev);
+	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
+	struct mdss_livedisplay_ctx *mlc = get_ctx(mfd);
+
+	sscanf(buf, "%du", &value);
+	if ((value == 0 || value == 1) && value != mlc->hbm_enabled) {
+		mutex_lock(&mlc->lock);
+		mlc->hbm_enabled = value;
+		mutex_unlock(&mlc->lock);
+		mdss_livedisplay_update(mlc, MODE_HIGH_BRIGHTNESS);
+	}
+
+	return count;
+}
+
+static ssize_t mdss_livedisplay_get_srgb(struct device *dev,
+					 struct device_attribute *attr,
+					 char *buf)
+{
+	struct fb_info *fbi = dev_get_drvdata(dev);
+	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
+	struct mdss_livedisplay_ctx *mlc = get_ctx(mfd);
+
+	return sprintf(buf, "%d\n", mlc->srgb_enabled);
+}
+
+static ssize_t mdss_livedisplay_set_srgb(struct device *dev,
+					 struct device_attribute *attr,
+					 const char *buf, size_t count)
+{
+	int value = 0;
+	struct fb_info *fbi = dev_get_drvdata(dev);
+	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
+	struct mdss_livedisplay_ctx *mlc = get_ctx(mfd);
+
+	sscanf(buf, "%du", &value);
+	if ((value == 0 || value == 1) && value != mlc->srgb_enabled) {
+		mutex_lock(&mlc->lock);
+		mlc->srgb_enabled = value;
+		mutex_unlock(&mlc->lock);
+		mdss_livedisplay_update(mlc, MODE_SRGB);
+	}
+
+	return count;
+}
+
 static ssize_t mdss_livedisplay_get_color_enhance(struct device *dev,
-		struct device_attribute *attr, char *buf)
+						  struct device_attribute *attr,
+						  char *buf)
 {
 	struct fb_info *fbi = dev_get_drvdata(dev);
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
@@ -368,8 +473,8 @@ static ssize_t mdss_livedisplay_get_color_enhance(struct device *dev,
 }
 
 static ssize_t mdss_livedisplay_set_color_enhance(struct device *dev,
-							   struct device_attribute *attr,
-							   const char *buf, size_t count)
+						  struct device_attribute *attr,
+						  const char *buf, size_t count)
 {
 	int value = 0;
 	struct fb_info *fbi = dev_get_drvdata(dev);
@@ -377,20 +482,21 @@ static ssize_t mdss_livedisplay_set_color_enhance(struct device *dev,
 	struct mdss_livedisplay_ctx *mlc = get_ctx(mfd);
 
 	sscanf(buf, "%du", &value);
-	if ((value == 0 || value == 1)
-			&& value != mlc->ce_enabled) {
+	if ((value == 0 || value == 1) && value != mlc->ce_enabled) {
 		mutex_lock(&mlc->lock);
 		mlc->ce_enabled = value;
 		mutex_unlock(&mlc->lock);
 		mdss_livedisplay_update(mlc,
-				MODE_COLOR_ENHANCE | MODE_CABC_COLOR_ENHANCE);
+					MODE_COLOR_ENHANCE |
+					MODE_CABC_COLOR_ENHANCE);
 	}
 
 	return count;
 }
 
 static ssize_t mdss_livedisplay_get_aco(struct device *dev,
-		struct device_attribute *attr, char *buf)
+					struct device_attribute *attr,
+					char *buf)
 {
 	struct fb_info *fbi = dev_get_drvdata(dev);
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
@@ -400,8 +506,8 @@ static ssize_t mdss_livedisplay_get_aco(struct device *dev,
 }
 
 static ssize_t mdss_livedisplay_set_aco(struct device *dev,
-							   struct device_attribute *attr,
-							   const char *buf, size_t count)
+					struct device_attribute *attr,
+					const char *buf, size_t count)
 {
 	int value = 0;
 	struct fb_info *fbi = dev_get_drvdata(dev);
@@ -409,8 +515,7 @@ static ssize_t mdss_livedisplay_set_aco(struct device *dev,
 	struct mdss_livedisplay_ctx *mlc = get_ctx(mfd);
 
 	sscanf(buf, "%du", &value);
-	if ((value == 0 || value == 1)
-			&& value != mlc->aco_enabled) {
+	if ((value == 0 || value == 1) && value != mlc->aco_enabled) {
 		mutex_lock(&mlc->lock);
 		mlc->aco_enabled = value;
 		mutex_unlock(&mlc->lock);
@@ -421,7 +526,8 @@ static ssize_t mdss_livedisplay_set_aco(struct device *dev,
 }
 
 static ssize_t mdss_livedisplay_get_preset(struct device *dev,
-		struct device_attribute *attr, char *buf)
+					   struct device_attribute *attr,
+					   char *buf)
 {
 	struct fb_info *fbi = dev_get_drvdata(dev);
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
@@ -431,8 +537,8 @@ static ssize_t mdss_livedisplay_get_preset(struct device *dev,
 }
 
 static ssize_t mdss_livedisplay_set_preset(struct device *dev,
-							   struct device_attribute *attr,
-							   const char *buf, size_t count)
+					   struct device_attribute *attr,
+					   const char *buf, size_t count)
 {
 	int value = 0;
 	struct fb_info *fbi = dev_get_drvdata(dev);
@@ -453,7 +559,8 @@ static ssize_t mdss_livedisplay_set_preset(struct device *dev,
 }
 
 static ssize_t mdss_livedisplay_get_num_presets(struct device *dev,
-		struct device_attribute *attr, char *buf)
+						struct device_attribute *attr,
+						char *buf)
 {
 	struct fb_info *fbi = dev_get_drvdata(dev);
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
@@ -463,7 +570,8 @@ static ssize_t mdss_livedisplay_get_num_presets(struct device *dev,
 }
 
 static ssize_t mdss_livedisplay_get_rgb(struct device *dev,
-		struct device_attribute *attr, char *buf)
+					struct device_attribute *attr,
+					char *buf)
 {
 	struct fb_info *fbi = dev_get_drvdata(dev);
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
@@ -474,13 +582,12 @@ static ssize_t mdss_livedisplay_get_rgb(struct device *dev,
 
 	mlc = get_ctx(mfd);
 
-	return scnprintf(buf, PAGE_SIZE, "%d %d %d\n",
-			mlc->r, mlc->g, mlc->b);
+	return scnprintf(buf, PAGE_SIZE, "%d %d %d\n", mlc->r, mlc->g, mlc->b);
 }
 
 static ssize_t mdss_livedisplay_set_rgb(struct device *dev,
-							struct device_attribute *attr,
-							const char *buf, size_t count)
+					struct device_attribute *attr,
+					const char *buf, size_t count)
 {
 	uint32_t r = 0, g = 0, b = 0;
 	struct fb_info *fbi = dev_get_drvdata(dev);
@@ -519,19 +626,33 @@ static ssize_t mdss_livedisplay_set_rgb(struct device *dev,
 	return ret;
 }
 
-static DEVICE_ATTR(cabc, S_IRUGO | S_IWUSR | S_IWGRP, mdss_livedisplay_get_cabc, mdss_livedisplay_set_cabc);
-static DEVICE_ATTR(sre, S_IRUGO | S_IWUSR | S_IWGRP, mdss_livedisplay_get_sre, mdss_livedisplay_set_sre);
-static DEVICE_ATTR(color_enhance, S_IRUGO | S_IWUSR | S_IWGRP, mdss_livedisplay_get_color_enhance, mdss_livedisplay_set_color_enhance);
-static DEVICE_ATTR(aco, S_IRUGO | S_IWUSR | S_IWGRP, mdss_livedisplay_get_aco, mdss_livedisplay_set_aco);
-static DEVICE_ATTR(preset, S_IRUGO | S_IWUSR | S_IWGRP, mdss_livedisplay_get_preset, mdss_livedisplay_set_preset);
-static DEVICE_ATTR(num_presets, S_IRUGO, mdss_livedisplay_get_num_presets, NULL);
-static DEVICE_ATTR(rgb, S_IRUGO | S_IWUSR | S_IWGRP, mdss_livedisplay_get_rgb, mdss_livedisplay_set_rgb);
+static DEVICE_ATTR(cabc, S_IRUGO | S_IWUSR | S_IWGRP, mdss_livedisplay_get_cabc,
+		   mdss_livedisplay_set_cabc);
+static DEVICE_ATTR(sre, S_IRUGO | S_IWUSR | S_IWGRP, mdss_livedisplay_get_sre,
+		   mdss_livedisplay_set_sre);
+static DEVICE_ATTR(color_enhance, S_IRUGO | S_IWUSR | S_IWGRP,
+		   mdss_livedisplay_get_color_enhance,
+		   mdss_livedisplay_set_color_enhance);
+static DEVICE_ATTR(aco, S_IRUGO | S_IWUSR | S_IWGRP, mdss_livedisplay_get_aco,
+		   mdss_livedisplay_set_aco);
+static DEVICE_ATTR(preset, S_IRUGO | S_IWUSR | S_IWGRP,
+		   mdss_livedisplay_get_preset, mdss_livedisplay_set_preset);
+static DEVICE_ATTR(num_presets, S_IRUGO, mdss_livedisplay_get_num_presets,
+		   NULL);
+static DEVICE_ATTR(hbm, S_IRUGO | S_IWUSR | S_IWGRP, mdss_livedisplay_get_hbm,
+		   mdss_livedisplay_set_hbm);
+static DEVICE_ATTR(srgb, S_IRUGO | S_IWUSR | S_IWGRP, mdss_livedisplay_get_srgb,
+		   mdss_livedisplay_set_srgb);
+static DEVICE_ATTR(rgb, S_IRUGO | S_IWUSR | S_IWGRP, mdss_livedisplay_get_rgb,
+		   mdss_livedisplay_set_rgb);
 
-int mdss_livedisplay_parse_dt(struct device_node *np, struct mdss_panel_info *pinfo)
+int mdss_livedisplay_parse_dt(struct device_node *np,
+			      struct mdss_panel_info *pinfo)
 {
 	int rc = 0, i = 0;
 	struct mdss_livedisplay_ctx *mlc;
 	char preset_name[64];
+	const char *link_state;
 	uint32_t tmp = 0;
 
 	if (pinfo == NULL)
@@ -539,54 +660,105 @@ int mdss_livedisplay_parse_dt(struct device_node *np, struct mdss_panel_info *pi
 
 	mlc = kzalloc(sizeof(struct mdss_livedisplay_ctx), GFP_KERNEL);
 
+	link_state = of_get_property(np,
+			"cm,mdss-livedisplay-command-state",
+			NULL);
+	if (link_state && !strcmp(link_state, "dsi_lp_mode"))
+		mlc->link_state = DSI_LP_MODE;
+	else
+		mlc->link_state = DSI_HS_MODE;
+
 	mlc->cabc_cmds = of_get_property(np,
-			"cm,mdss-livedisplay-cabc-cmd", &mlc->cabc_cmds_len);
+			"cm,mdss-livedisplay-cabc-cmd",
+			&mlc->cabc_cmds_len);
 
 	if (mlc->cabc_cmds_len > 0) {
-		rc = of_property_read_u32(np, "cm,mdss-livedisplay-cabc-ui-value", &tmp);
+		rc = of_property_read_u32(np,
+				"cm,mdss-livedisplay-cabc-ui-value",
+				&tmp);
 		if (rc == 0) {
 			mlc->caps |= MODE_CABC;
-			mlc->cabc_ui_value = (uint8_t)(tmp & 0xFF);
-			of_property_read_u32(np, "cm,mdss-livedisplay-cabc-image-value", &tmp);
-			mlc->cabc_image_value = (uint8_t)(tmp & 0xFF);
-			of_property_read_u32(np, "cm,mdss-livedisplay-cabc-video-value", &tmp);
-			mlc->cabc_video_value = (uint8_t)(tmp & 0xFF);
+			mlc->cabc_ui_value = (uint8_t) (tmp & 0xFF);
+			of_property_read_u32(np,
+					"cm,mdss-livedisplay-cabc-image-value",
+					&tmp);
+			mlc->cabc_image_value = (uint8_t) (tmp & 0xFF);
+			of_property_read_u32(np,
+					"cm,mdss-livedisplay-cabc-video-value",
+					&tmp);
+			mlc->cabc_video_value = (uint8_t) (tmp & 0xFF);
 		}
-		rc = of_property_read_u32(np, "cm,mdss-livedisplay-sre-medium-value", &tmp);
+		rc = of_property_read_u32(np,
+				"cm,mdss-livedisplay-sre-medium-value",
+				&tmp);
 		if (rc == 0) {
 			mlc->caps |= MODE_SRE;
-			mlc->sre_medium_value = (uint8_t)(tmp & 0xFF);
-			of_property_read_u32(np, "cm,mdss-livedisplay-sre-weak-value", &tmp);
-			mlc->sre_weak_value = (uint8_t)(tmp & 0xFF);
-			of_property_read_u32(np, "cm,mdss-livedisplay-sre-strong-value", &tmp);
-			mlc->sre_strong_value = (uint8_t)(tmp & 0xFF);
+			mlc->sre_medium_value = (uint8_t) (tmp & 0xFF);
+			of_property_read_u32(np,
+					"cm,mdss-livedisplay-sre-weak-value",
+					&tmp);
+			mlc->sre_weak_value = (uint8_t) (tmp & 0xFF);
+			of_property_read_u32(np,
+					"cm,mdss-livedisplay-sre-strong-value",
+					&tmp);
+			mlc->sre_strong_value = (uint8_t) (tmp & 0xFF);
 		}
-		rc = of_property_read_u32(np, "cm,mdss-livedisplay-aco-value", &tmp);
+		rc = of_property_read_u32(np,
+				"cm,mdss-livedisplay-aco-value",
+				&tmp);
 		if (rc == 0) {
 			mlc->caps |= MODE_AUTO_CONTRAST;
-			mlc->aco_value = (uint8_t)(tmp & 0xFF);
+			mlc->aco_value = (uint8_t) (tmp & 0xFF);
 		}
-		rc = of_property_read_u32(np, "cm,mdss-livedisplay-cabc-ce-value", &tmp);
+		rc = of_property_read_u32(np,
+				"cm,mdss-livedisplay-cabc-ce-value",
+				&tmp);
 		if (rc == 0) {
 			mlc->caps |= MODE_CABC_COLOR_ENHANCE;
-			mlc->cabc_ce_value = (uint8_t)(tmp & 0xFF);
+			mlc->cabc_ce_value = (uint8_t) (tmp & 0xFF);
 		}
 	}
 
+	mlc->hbm_on_cmds = of_get_property(np,
+			"cm,mdss-livedisplay-hbm-on-cmd",
+			&mlc->hbm_on_cmds_len);
+	if (mlc->hbm_on_cmds_len) {
+		mlc->hbm_off_cmds = of_get_property(np,
+				"cm,mdss-livedisplay-hbm-off-cmd",
+				&mlc->hbm_off_cmds_len);
+		if (mlc->hbm_off_cmds_len)
+			mlc->caps |= MODE_HIGH_BRIGHTNESS;
+	}
+
+	mlc->srgb_on_cmds = of_get_property(np,
+			"cm,mdss-livedisplay-srgb-on-cmd",
+			&mlc->srgb_on_cmds_len);
+	if (mlc->srgb_on_cmds_len) {
+		mlc->srgb_off_cmds = of_get_property(np,
+				"cm,mdss-livedisplay-srgb-off-cmd",
+				&mlc->srgb_off_cmds_len);
+		if (mlc->srgb_off_cmds_len)
+			mlc->caps |= MODE_SRGB;
+	}
+
 	mlc->ce_on_cmds = of_get_property(np,
-			"cm,mdss-livedisplay-color-enhance-on", &mlc->ce_on_cmds_len);
+			"cm,mdss-livedisplay-color-enhance-on",
+			&mlc->ce_on_cmds_len);
 	if (mlc->ce_on_cmds_len) {
 		mlc->ce_off_cmds = of_get_property(np,
-				"cm,mdss-livedisplay-color-enhance-off", &mlc->ce_off_cmds_len);
+				"cm,mdss-livedisplay-color-enhance-off",
+				&mlc->ce_off_cmds_len);
 		if (mlc->ce_off_cmds_len)
 			mlc->caps |= MODE_COLOR_ENHANCE;
 	}
 
 	for (i = 0; i < MAX_PRESETS; i++) {
 		memset(preset_name, 0, sizeof(preset_name));
-		snprintf(preset_name, 64, "%s-%d", "cm,mdss-livedisplay-preset", i);
-		mlc->presets[mlc->num_presets] = of_get_property(np, preset_name,
-				&mlc->presets_len[mlc->num_presets]);
+		snprintf(preset_name, 64, "%s-%d", "cm,mdss-livedisplay-preset",
+			 i);
+		mlc->presets[mlc->num_presets] =
+		    of_get_property(np, preset_name,
+				    &mlc->presets_len[mlc->num_presets]);
 		if (mlc->presets_len[mlc->num_presets] > 0)
 			mlc->num_presets++;
 	}
@@ -595,7 +767,8 @@ int mdss_livedisplay_parse_dt(struct device_node *np, struct mdss_panel_info *pi
 		mlc->caps |= MODE_PRESET;
 
 	mlc->post_cmds = of_get_property(np,
-			"cm,mdss-livedisplay-post-cmd", &mlc->post_cmds_len);
+			"cm,mdss-livedisplay-post-cmd",
+			&mlc->post_cmds_len);
 
 	mlc->caps |= MODE_RGB;
 	mlc->r = mlc->g = mlc->b = 32768;
@@ -626,34 +799,54 @@ int mdss_livedisplay_create_sysfs(struct msm_fb_data_type *mfd)
 		goto sysfs_err;
 
 	if (mlc->caps & MODE_CABC) {
-		rc = sysfs_create_file(&mfd->fbi->dev->kobj, &dev_attr_cabc.attr);
+		rc = sysfs_create_file(&mfd->fbi->dev->kobj,
+				       &dev_attr_cabc.attr);
 		if (rc)
 			goto sysfs_err;
 	}
 
 	if (mlc->caps & MODE_SRE) {
-		rc = sysfs_create_file(&mfd->fbi->dev->kobj, &dev_attr_sre.attr);
+		rc = sysfs_create_file(&mfd->fbi->dev->kobj,
+				       &dev_attr_sre.attr);
 		if (rc)
 			goto sysfs_err;
 	}
 
 	if (mlc->caps & MODE_AUTO_CONTRAST) {
-		rc = sysfs_create_file(&mfd->fbi->dev->kobj, &dev_attr_aco.attr);
+		rc = sysfs_create_file(&mfd->fbi->dev->kobj,
+				       &dev_attr_aco.attr);
 		if (rc)
 			goto sysfs_err;
 	}
 
 	if (mlc->caps & (MODE_COLOR_ENHANCE | MODE_CABC_COLOR_ENHANCE)) {
-		rc = sysfs_create_file(&mfd->fbi->dev->kobj, &dev_attr_color_enhance.attr);
+		rc = sysfs_create_file(&mfd->fbi->dev->kobj,
+				       &dev_attr_color_enhance.attr);
+		if (rc)
+			goto sysfs_err;
+	}
+
+	if (mlc->caps & MODE_HIGH_BRIGHTNESS) {
+		rc = sysfs_create_file(&mfd->fbi->dev->kobj,
+				       &dev_attr_hbm.attr);
+		if (rc)
+			goto sysfs_err;
+	}
+
+	if (mlc->caps & MODE_SRGB) {
+		rc = sysfs_create_file(&mfd->fbi->dev->kobj,
+				       &dev_attr_srgb.attr);
 		if (rc)
 			goto sysfs_err;
 	}
 
 	if (mlc->caps & MODE_PRESET) {
-		rc = sysfs_create_file(&mfd->fbi->dev->kobj, &dev_attr_preset.attr);
+		rc = sysfs_create_file(&mfd->fbi->dev->kobj,
+				       &dev_attr_preset.attr);
 		if (rc)
 			goto sysfs_err;
-		rc = sysfs_create_file(&mfd->fbi->dev->kobj, &dev_attr_num_presets.attr);
+		rc = sysfs_create_file(&mfd->fbi->dev->kobj,
+				       &dev_attr_num_presets.attr);
 		if (rc)
 			goto sysfs_err;
 	}
@@ -666,4 +859,3 @@ sysfs_err:
 	pr_err("%s: sysfs creation failed, rc=%d", __func__, rc);
 	return rc;
 }
-

@@ -20,7 +20,7 @@
 
 #define LARGO_NUM_ISR 5
 
-static const struct reg_default largo_reva_patch[] = {
+static const struct reg_sequence largo_reva_patch[] = {
 	{ 0x80,  0x3 },
 	{ 0x27C, 0x0010 },
 	{ 0x221, 0x0070 },
@@ -164,14 +164,8 @@ static const struct regmap_irq largo_irqs[ARIZONA_NUM_IRQ] = {
 	[ARIZONA_IRQ_SPK1L_SHORT] = {
 		.reg_offset = 5, .mask = ARIZONA_SPK1L_SHORT_EINT1
 	},
-	[ARIZONA_IRQ_HP1R_SC_NEG] = {
-		.reg_offset = 5, .mask = ARIZONA_HP1R_SC_NEG_EINT1
-	},
 	[ARIZONA_IRQ_HP1R_SC_POS] = {
 		.reg_offset = 5, .mask = ARIZONA_HP1R_SC_POS_EINT1
-	},
-	[ARIZONA_IRQ_HP1L_SC_NEG] = {
-		.reg_offset = 5, .mask = ARIZONA_HP1L_SC_NEG_EINT1
 	},
 	[ARIZONA_IRQ_HP1L_SC_POS] = {
 		.reg_offset = 5, .mask = ARIZONA_HP1L_SC_POS_EINT1
@@ -234,8 +228,6 @@ static const struct reg_default largo_reg_default[] = {
 	{ 0x00000174, 0x007D },    /* R372   - FLL1 Control 4 */
 	{ 0x00000175, 0x0006 },    /* R373   - FLL1 Control 5 */
 	{ 0x00000176, 0x0000 },    /* R374   - FLL1 Control 6 */
-	{ 0x00000177, 0x0281 },    /* R375   - FLL1 Loop Filter Test 1 */
-	{ 0x00000178, 0x0000 },    /* R376   - FLL1 NCO Test 0 */
 	{ 0x00000179, 0x0000 },    /* R376   - FLL1 Control 7 */
 	{ 0x00000181, 0x0000 },    /* R385   - FLL1 Synchroniser 1 */
 	{ 0x00000182, 0x0000 },    /* R386   - FLL1 Synchroniser 2 */
@@ -252,8 +244,6 @@ static const struct reg_default largo_reg_default[] = {
 	{ 0x00000194, 0x007D },    /* R404   - FLL2 Control 4 */
 	{ 0x00000195, 0x000C },    /* R405   - FLL2 Control 5 */
 	{ 0x00000196, 0x0000 },    /* R406   - FLL2 Control 6 */
-	{ 0x00000197, 0x0000 },    /* R407   - FLL2 Loop Filter Test 1 */
-	{ 0x00000198, 0x0000 },    /* R408   - FLL2 NCO Test 0 */
 	{ 0x00000199, 0x0000 },    /* R408   - FLL2 Control 7 */
 	{ 0x000001A1, 0x0000 },    /* R417   - FLL2 Synchroniser 1 */
 	{ 0x000001A2, 0x0000 },    /* R418   - FLL2 Synchroniser 2 */
@@ -303,6 +293,7 @@ static const struct reg_default largo_reg_default[] = {
 	{ 0x00000502, 0x0000 },    /* R1282  - AIF1 Rx Pin Ctrl */
 	{ 0x00000503, 0x0000 },    /* R1283  - AIF1 Rate Ctrl */
 	{ 0x00000504, 0x0000 },    /* R1284  - AIF1 Format */
+	{ 0x00000505, 0x0040 },    /* R1285  - AIF1 Tx BCLK Rate */
 	{ 0x00000506, 0x0040 },    /* R1286  - AIF1 Rx BCLK Rate */
 	{ 0x00000507, 0x1818 },    /* R1287  - AIF1 Frame Ctrl 1 */
 	{ 0x00000508, 0x1818 },    /* R1288  - AIF1 Frame Ctrl 2 */
@@ -685,7 +676,7 @@ static const struct reg_default largo_reg_default[] = {
 	{ 0x00000C0F, 0x0400 },    /* R3087  - IRQ CTRL 1 */
 	{ 0x00000C10, 0x1000 },    /* R3088  - GPIO Debounce Config */
 	{ 0x00000C20, 0x0002 },    /* R3104  - Misc Pad Ctrl 1 */
-	{ 0x00000C21, 0x8001 },    /* R3105  - Misc Pad Ctrl 2 */
+	{ 0x00000C21, 0x0000 },    /* R3105  - Misc Pad Ctrl 2 */
 	{ 0x00000C22, 0x0000 },    /* R3106  - Misc Pad Ctrl 3 */
 	{ 0x00000C23, 0x0000 },    /* R3107  - Misc Pad Ctrl 4 */
 	{ 0x00000C24, 0x0000 },    /* R3108  - Misc Pad Ctrl 5 */
@@ -863,8 +854,6 @@ static bool largo_readable_register(struct device *dev, unsigned int reg)
 	case ARIZONA_FLL1_CONTROL_5:
 	case ARIZONA_FLL1_CONTROL_6:
 	case ARIZONA_FLL1_CONTROL_7:
-	case ARIZONA_FLL1_LOOP_FILTER_TEST_1:
-	case ARIZONA_FLL1_NCO_TEST_0:
 	case ARIZONA_FLL1_SYNCHRONISER_1:
 	case ARIZONA_FLL1_SYNCHRONISER_2:
 	case ARIZONA_FLL1_SYNCHRONISER_3:
@@ -881,8 +870,6 @@ static bool largo_readable_register(struct device *dev, unsigned int reg)
 	case ARIZONA_FLL2_CONTROL_5:
 	case ARIZONA_FLL2_CONTROL_6:
 	case ARIZONA_FLL2_CONTROL_7:
-	case ARIZONA_FLL2_LOOP_FILTER_TEST_1:
-	case ARIZONA_FLL2_NCO_TEST_0:
 	case ARIZONA_FLL2_SYNCHRONISER_1:
 	case ARIZONA_FLL2_SYNCHRONISER_2:
 	case ARIZONA_FLL2_SYNCHRONISER_3:
@@ -931,11 +918,13 @@ static bool largo_readable_register(struct device *dev, unsigned int reg)
 	case ARIZONA_DAC_AEC_CONTROL_1:
 	case ARIZONA_NOISE_GATE_CONTROL:
 	case ARIZONA_HP1_SHORT_CIRCUIT_CTRL:
+	case ARIZONA_SPK_CTRL_5:
 	case ARIZONA_AIF1_BCLK_CTRL:
 	case ARIZONA_AIF1_TX_PIN_CTRL:
 	case ARIZONA_AIF1_RX_PIN_CTRL:
 	case ARIZONA_AIF1_RATE_CTRL:
 	case ARIZONA_AIF1_FORMAT:
+	case ARIZONA_AIF1_TX_BCLK_RATE:
 	case ARIZONA_AIF1_RX_BCLK_RATE:
 	case ARIZONA_AIF1_FRAME_CTRL_1:
 	case ARIZONA_AIF1_FRAME_CTRL_2:

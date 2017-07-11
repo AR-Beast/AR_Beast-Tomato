@@ -26,7 +26,7 @@ static ssize_t msm_tp_module_id_show(struct device *dev,
         sprintf(tp_version, "[Vendor]%s,%s\n", (strlen(module_name) ? module_name : "Unknown"),
 				(strlen(tp_ver_show_str) ? tp_ver_show_str : "Unknown product"));
     }
-	
+
 	sprintf(buf, "%s\n", tp_version);
 	rc = strlen(buf) + 1;
 
@@ -71,7 +71,7 @@ static ssize_t tp_proc_tp_info_read(struct file *file, char __user *buf, size_t 
 
 	cnt = simple_read_from_buffer(buf, size, ppos, page, cnt);
 //	printk("%s, page=%s, cnt=%d\n", __func__, page, cnt);
-	
+
 	kfree(page);
     return cnt;
 }

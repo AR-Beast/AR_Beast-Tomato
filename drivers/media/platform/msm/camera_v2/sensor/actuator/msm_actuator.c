@@ -625,8 +625,8 @@ static int msm_actuator_software_pwdn(struct msm_actuator_ctrl_t *a_ctrl)
 {
 	int rc = 0;
 	struct msm_camera_i2c_reg_setting reg_setting;
-	struct msm_camera_i2c_reg_array *i2c_reg_tbl=NULL;
-	struct msm_camera_i2c_reg_array i2c_reg_tbll={0x80,0x00,10};
+	struct msm_camera_i2c_reg_array *i2c_reg_tbl = NULL;
+	struct msm_camera_i2c_reg_array i2c_reg_tbll = { 0x80, 0x00, 10 };
 
 	a_ctrl->i2c_tbl_index = 1;
 	i2c_reg_tbl = &i2c_reg_tbll;
@@ -636,7 +636,7 @@ static int msm_actuator_software_pwdn(struct msm_actuator_ctrl_t *a_ctrl)
 	reg_setting.addr_type = MSM_CAMERA_I2C_BYTE_ADDR;
 	reg_setting.delay = 10;
 	rc = a_ctrl->i2c_client.i2c_func_tbl->i2c_write_table_w_microdelay(
-		&a_ctrl->i2c_client, &reg_setting);
+			&a_ctrl->i2c_client, &reg_setting);
 	if (rc < 0)
 		pr_err("msm_actuator_software_pwdn failed\n");
 
@@ -1287,12 +1287,12 @@ static int32_t msm_actuator_i2c_probe(struct i2c_client *client,
 	act_ctrl_t->i2c_client.client = client;
 	act_ctrl_t->curr_step_pos = 0,
 	act_ctrl_t->curr_region_index = 0,
-	act_ctrl_t->actuator_state = ACTUATOR_POWER_DOWN;
 	/* Set device type as I2C */
 	act_ctrl_t->act_device_type = MSM_CAMERA_I2C_DEVICE;
 	act_ctrl_t->i2c_client.i2c_func_tbl = &msm_sensor_qup_func_tbl;
 	act_ctrl_t->act_v4l2_subdev_ops = &msm_actuator_subdev_ops;
 	act_ctrl_t->actuator_mutex = &msm_actuator_mutex;
+
 	act_ctrl_t->cam_name = act_ctrl_t->subdev_id;
 	CDBG("act_ctrl_t->cam_name: %d", act_ctrl_t->cam_name);
 	/* Assign name for sub device */

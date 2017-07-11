@@ -204,7 +204,6 @@ int fb_cmap_to_user(const struct fb_cmap *from, struct fb_cmap_user *to)
 		fromoff = to->start - from->start;
 	else
 		tooff = from->start - to->start;
-
 	if (fromoff >= from->len || tooff >= to->len)
 		return -EINVAL;
 

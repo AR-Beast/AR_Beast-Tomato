@@ -14,17 +14,17 @@
 struct i2c_client* client1 = NULL;
 
 static int tps65132_i2c_write(struct i2c_client* client, uint8_t reg, uint8_t data)
-{	
+{
 	unsigned char buffer[2];
 	buffer[0] = reg;
 	buffer[1] = data;
 	pr_debug("--tps--%s--reg=0x%x--data=0x%x--\n", __func__, reg, data);
 	if(2!= i2c_master_send(client, buffer, 2))
-	{	
+	{
 		printk("--tps--tps65132_i2c_write fail--!!!--\n");
 		return -1;
 	}
-	
+
 	return 0;
 }
 
@@ -56,7 +56,7 @@ static int tps_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
 
 	tps65132_config_init();
 
-	
+
 	return 0;
 }
 

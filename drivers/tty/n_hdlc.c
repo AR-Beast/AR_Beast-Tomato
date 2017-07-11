@@ -852,6 +852,7 @@ static struct n_hdlc *n_hdlc_alloc(void)
 	INIT_LIST_HEAD(&n_hdlc->tx_free_buf_list.list);
 	INIT_LIST_HEAD(&n_hdlc->rx_buf_list.list);
 	INIT_LIST_HEAD(&n_hdlc->tx_buf_list.list);
+
 	/* allocate free rx buffer list */
 	for(i=0;i<DEFAULT_RX_BUF_COUNT;i++) {
 		buf = kmalloc(N_HDLC_BUF_SIZE, GFP_KERNEL);

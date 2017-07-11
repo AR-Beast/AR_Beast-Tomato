@@ -1,18 +1,18 @@
 /* drivers/input/touchscreen/gslX68X.h
- * 
+ *
  * 2010 - 2013 SLIEAD Technology.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be a reference 
- * to you, when you are integrating the SLIEAD's CTP IC into your system, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+ *
+ * This program is distributed in the hope that it will be a reference
+ * to you, when you are integrating the SLIEAD's CTP IC into your system,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  */
 
 //#include <mach/ldo.h>
@@ -37,7 +37,7 @@
 #define GSL_GESTURE_WAKELOCK_DUR msecs_to_jiffies(200)
 
 /*define i2c addr and device name*/
-#define GSL_TS_ADDR 				0x40
+#define GSL_TS_ADDR				0x40
 #define GSL_TS_NAME				"GSL_TP"
 
 /*define irq and reset gpio num*/
@@ -53,7 +53,7 @@
 /*vdd power*/
 #define GSL_POWER_ON()	do{\
 			}while(0)
-#endif		
+#endif
 //#define GSL_TIMER_CHECK_CIRCLE		200
 #define GSL_PRESSURE				50
 
@@ -62,7 +62,7 @@
 
 /*define screen of resolution ratio*/
 #define GSL_MAX_X		720
-#define GSL_MAX_Y		1280 
+#define GSL_MAX_Y		1280
 
 /*i2c of adapter number*/
 
@@ -70,7 +70,7 @@
 //#define TOUCH_VIRTUAL_KEYS
 
 /*button of key*/
-#define GSL_HAVE_TOUCH_KEY 			1
+#define GSL_HAVE_TOUCH_KEY			1
 #if GSL_HAVE_TOUCH_KEY
 	struct key_data{
 		u16 key;
@@ -79,7 +79,7 @@
 		u32 y_min;
 		u32 y_max;
 	};
-	#define GSL_KEY_NUM	 3	 
+	#define GSL_KEY_NUM	 3
 	struct key_data gsl_key_data[GSL_KEY_NUM] = {
 		{KEY_MENU,100,140,880,920},
 		{KEY_HOMEPAGE,220,260,880,920},
@@ -97,7 +97,7 @@ struct gsl_touch_info{
 struct gsl_ts_platform_data {
 	int irq_gpio_number;
 	u32 irq_gpio_flags;
-	int reset_gpio_number;	
+	int reset_gpio_number;
 	u32 reset_gpio_flags;
 };
 
@@ -105,7 +105,7 @@ struct gsl_ts_data{
 	struct i2c_client		*client;
 	struct input_dev		*idev;
 #ifdef GSL_PROXIMITY_SENSOR
-	struct input_dev 		*input_dev_ps;
+	struct input_dev		*input_dev_ps;
 	struct sensors_classdev ps_cdev;
 #endif
 	#if defined(CONFIG_FB)
@@ -116,12 +116,12 @@ struct gsl_ts_data{
 	u32 gsl_halt_flag;			//0 normal;1 the machine is suspend;
 	u32 gsl_sw_flag;			//0 normal;1 download the firmware;
 	u32 gsl_up_flag;			//0 normal;1 have one up event;
-	u32 gsl_point_state;		//the point down and up of state	
+	u32 gsl_point_state;		//the point down and up of state
 #ifdef GSL_TIMER
 	struct delayed_work		timer_work;
 	struct workqueue_struct	*timer_wq;
 	volatile int gsl_timer_flag;	//0:first test	1:second test 2:doing gsl_load_fw
-	unsigned int gsl_timer_data;		
+	unsigned int gsl_timer_data;
 	u32 watchdog_counter;
 #endif
 #if GSL_HAVE_TOUCH_KEY

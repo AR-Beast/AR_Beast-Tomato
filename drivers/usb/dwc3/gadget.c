@@ -395,6 +395,8 @@ int dwc3_send_gadget_generic_command(struct dwc3 *dwc, int cmd, u32 param)
 			dev_vdbg(dwc->dev, "Command Complete --> %d\n",
 					DWC3_DGCMD_STATUS(reg));
 			ret = 0;
+			if (DWC3_DGCMD_STATUS(reg))
+				ret = -EINVAL;
 			break;
 		}
 
@@ -444,6 +446,8 @@ int dwc3_send_gadget_ep_cmd(struct dwc3 *dwc, unsigned ep,
 			 */
 			if (reg & 0x2000)
 				ret = -EAGAIN;
+			else if (DWC3_DEPCMD_STATUS(reg))
+				ret = -EINVAL;
 			else
 				ret = 0;
 			break;
@@ -1091,7 +1095,7 @@ static void dwc3_prepare_trbs(struct dwc3_ep *dep, bool starting)
 					bool mpkt = false;
 
 					chain = false;
-					if (last_req) {
+					if (list_empty(&dep->request_list)) {
 						last_one = true;
 						goto start_trb_queuing;
 					}
@@ -1142,6 +1146,7 @@ start_trb_queuing:
 					break;
 			}
 			dbg_queue(dep->number, &req->request, trbs_left);
+
 			if (last_one)
 				break;
 		} else {
@@ -1633,7 +1638,6 @@ static int dwc3_gadget_ep_set_halt(struct usb_ep *ep, int value)
 
 	dbg_event(dep->number, "HALT", value);
 	ret = __dwc3_gadget_ep_set_halt(dep, value, false);
-
 out:
 	spin_unlock_irqrestore(&dwc->lock, flags);
 
@@ -2532,6 +2536,18 @@ static int dwc3_cleanup_done_reqs(struct dwc3 *dwc, struct dwc3_ep *dep,
 				break;
 		}while (++i < req->request.num_mapped_sgs);
 
+		if (req->ztrb) {
+			trb = req->ztrb;
+			if ((event->status & DEPEVT_STATUS_LST) &&
+				(trb->ctrl & (DWC3_TRB_CTRL_LST |
+					DWC3_TRB_CTRL_HWO)))
+				ret = 1;
+
+			if ((event->status & DEPEVT_STATUS_IOC) &&
+					(trb->ctrl & DWC3_TRB_CTRL_IOC))
+				ret = 1;
+		}
+
 		/*
 		 * We assume here we will always receive the entire data block
 		 * which we should receive. Meaning, if we program RX to
@@ -2540,7 +2556,6 @@ static int dwc3_cleanup_done_reqs(struct dwc3 *dwc, struct dwc3_ep *dep,
 		 * gadget driver for further processing.
 		 */
 		req->request.actual += req->request.length - count;
-
 		dwc3_gadget_giveback(dep, req, status);
 
 		/* EP possibly disabled during giveback? */

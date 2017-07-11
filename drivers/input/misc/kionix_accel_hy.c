@@ -60,15 +60,15 @@
 /******************************************************************************
  * Accelerometer WHO_AM_I return value
  *****************************************************************************/
-#define KIONIX_ACCEL_WHO_AM_I_KXTE9 		0x00
-#define KIONIX_ACCEL_WHO_AM_I_KXTF9 		0x01
-#define KIONIX_ACCEL_WHO_AM_I_KXTI9_1001 	0x04
-#define KIONIX_ACCEL_WHO_AM_I_KXTIK_1004 	0x05
-#define KIONIX_ACCEL_WHO_AM_I_KXTJ9_1005 	0x07
-#define KIONIX_ACCEL_WHO_AM_I_KXTJ9_1007 	0x08
-#define KIONIX_ACCEL_WHO_AM_I_KXCJ9_1008 	0x0A
-#define KIONIX_ACCEL_WHO_AM_I_KXTJ2_1009 	0x09
-#define KIONIX_ACCEL_WHO_AM_I_KXCJK_1013 	0x11
+#define KIONIX_ACCEL_WHO_AM_I_KXTE9		0x00
+#define KIONIX_ACCEL_WHO_AM_I_KXTF9		0x01
+#define KIONIX_ACCEL_WHO_AM_I_KXTI9_1001	0x04
+#define KIONIX_ACCEL_WHO_AM_I_KXTIK_1004	0x05
+#define KIONIX_ACCEL_WHO_AM_I_KXTJ9_1005	0x07
+#define KIONIX_ACCEL_WHO_AM_I_KXTJ9_1007	0x08
+#define KIONIX_ACCEL_WHO_AM_I_KXCJ9_1008	0x0A
+#define KIONIX_ACCEL_WHO_AM_I_KXTJ2_1009	0x09
+#define KIONIX_ACCEL_WHO_AM_I_KXCJK_1013	0x11
 
 /******************************************************************************
  * Accelerometer Grouping
@@ -179,8 +179,8 @@
 #define ACCEL_FUZZ			3
 #define ACCEL_FLAT			3
 /* I2C Retry Constants */
-//#define KIONIX_I2C_RETRY_COUNT		10 	/* Number of times to retry i2c */
-#define KIONIX_I2C_RETRY_COUNT		3 	/* Number of times to retry i2c, hymost set 3 */
+//#define KIONIX_I2C_RETRY_COUNT		10	/* Number of times to retry i2c */
+#define KIONIX_I2C_RETRY_COUNT		3	/* Number of times to retry i2c, hymost set 3 */
 #define KIONIX_I2C_RETRY_TIMEOUT	1	/* Timeout between retry (miliseconds) */
 
 /* Earlysuspend Contants */

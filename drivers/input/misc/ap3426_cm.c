@@ -264,40 +264,40 @@ static atomic_t isr_threads_posted = ATOMIC_INIT(0);
 fixed for msm8916 kevindang20141010
 */
 static struct sensors_classdev sensors_light_cdev = {
-	.name = "light", 
-	.vendor = "DI", 
-	.version = 1, 
-	.handle = SENSORS_LIGHT_HANDLE, 
-	.type = SENSOR_TYPE_LIGHT, 
-	.max_range = "6500", 
-	.resolution = "0.0625", 
-	.sensor_power = "0.09", 
-	.min_delay = 0,	/* us */ 
-	.fifo_reserved_event_count = 0, 
-	.fifo_max_event_count = 0, 
-	.enabled = 0, 
-	.delay_msec = 200, 
-	.sensors_enable = NULL, 
-	.sensors_poll_delay = NULL, 
-}; 
+	.name = "light",
+	.vendor = "DI",
+	.version = 1,
+	.handle = SENSORS_LIGHT_HANDLE,
+	.type = SENSOR_TYPE_LIGHT,
+	.max_range = "6500",
+	.resolution = "0.0625",
+	.sensor_power = "0.09",
+	.min_delay = 0,	/* us */
+	.fifo_reserved_event_count = 0,
+	.fifo_max_event_count = 0,
+	.enabled = 0,
+	.delay_msec = 200,
+	.sensors_enable = NULL,
+	.sensors_poll_delay = NULL,
+};
 
 
-static struct sensors_classdev sensors_proximity_cdev = { 
-	.name = "proximity", 
-	.vendor = "DI", 
-	.version = 1, 
-	.handle = SENSORS_PROXIMITY_HANDLE, 
-	.type = SENSOR_TYPE_PROXIMITY, 
-	.max_range = "5.0", 
-	.resolution = "5.0", 
-	.sensor_power = "0.1", 
-	.min_delay = 0, 
-	.fifo_reserved_event_count = 0, 
-	.fifo_max_event_count = 0, 
-	.enabled = 0, 
-	.delay_msec = 200, 
-	.sensors_enable = NULL, 
-	.sensors_poll_delay = NULL, 
+static struct sensors_classdev sensors_proximity_cdev = {
+	.name = "proximity",
+	.vendor = "DI",
+	.version = 1,
+	.handle = SENSORS_PROXIMITY_HANDLE,
+	.type = SENSOR_TYPE_PROXIMITY,
+	.max_range = "5.0",
+	.resolution = "5.0",
+	.sensor_power = "0.1",
+	.min_delay = 0,
+	.fifo_reserved_event_count = 0,
+	.fifo_max_event_count = 0,
+	.enabled = 0,
+	.delay_msec = 200,
+	.sensors_enable = NULL,
+	.sensors_poll_delay = NULL,
 };
 
 
@@ -1382,9 +1382,9 @@ static int ap3426_als_enable_set(struct sensors_classdev *sensors_cdev,
  * when Adaptive Brigness is enabled with the setup GUI.
  *
  * TESTED:
- *	echo 30    > /sys/class/sensors/proximity/device/sensors/light/poll_delay 	FAILS
- *	echo 15000 > /sys/class/sensors/proximity/device/sensors/light/poll_delay 	FAILS
- *	echo 1500  > /sys/class/sensors/proximity/device/sensors/light/poll_delay 	WORKS
+ *	echo 30    > /sys/class/sensors/proximity/device/sensors/light/poll_delay	FAILS
+ *	echo 15000 > /sys/class/sensors/proximity/device/sensors/light/poll_delay	FAILS
+ *	echo 1500  > /sys/class/sensors/proximity/device/sensors/light/poll_delay	WORKS
  */
 static int ap3426_als_poll_delay_set(struct sensors_classdev *sensors_cdev, unsigned int delay_msec)
 {
@@ -1422,7 +1422,7 @@ static int ap3426_als_poll_delay_set(struct sensors_classdev *sensors_cdev, unsi
 		                 als_data->als_msec_poll_delay,      delay_msec);
 		} else {
 			printk(" %s: als_data->als_msec_poll_delay:%d = delay_msec:%d; [New Value]\n", __func__,
-		             	     als_data->als_msec_poll_delay,     delay_msec);
+				     als_data->als_msec_poll_delay,     delay_msec);
 
 			als_data->als_msec_poll_delay = delay_msec;
 
@@ -1986,7 +1986,7 @@ static ssize_t ap3426_show_althres(struct device *dev,
 
 /*
  * TESTED:
- * 	echo 65535 > /sys/class/sensors/proximity/device/sensors/proximity/device/althres
+ *	echo 65535 > /sys/class/sensors/proximity/device/sensors/proximity/device/althres
  */
 static ssize_t ap3426_store_althres(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
@@ -2313,7 +2313,7 @@ static DEVICE_ATTR(calibration, S_IWUSR | S_IRUGO,
  *
  * Prints Register Cache.
  *
- * 	cat /sys/class/sensors/proximity/device/sensors/light/device/em
+ *	cat /sys/class/sensors/proximity/device/sensors/light/device/em
  */
 static ssize_t ap3426_em_read(struct device *dev,
 	struct device_attribute *attr,
@@ -2617,8 +2617,8 @@ static irqreturn_t ap3426_threaded_isr(int irq, void *client_data)
 
 	int_stat = ap3426_get_intstat(data->client);
 
-	ps_value = ap3426_get_px_value(data->client);   	/* Clear PS  Interrupt */
-	als_value = ap3426_get_adc_value(data->client); 	/* Clear ALS Interrupt */
+	ps_value = ap3426_get_px_value(data->client);		/* Clear PS  Interrupt */
+	als_value = ap3426_get_adc_value(data->client);		/* Clear ALS Interrupt */
 
 	if (int_stat & AP3426_REG_SYS_INT_PMASK) {
 		/* We have a PS Interrupt */
@@ -2929,7 +2929,7 @@ static int ap3426_probe(struct i2c_client *client,
 	 *	/sys/class/sensors/proximity/device/sensors/proximity/
 	 *		enable
 	 * NOTE:
-	 *     	Since we are using interrupts the poll_delay isn't
+	 *	Since we are using interrupts the poll_delay isn't
 	 *	normally supported.
 	 */
 	data->ps_cdev = sensors_proximity_cdev;
@@ -3068,7 +3068,7 @@ static int ap3426_remove(struct i2c_client *client)
 	/*
 	 * data likely should be made free here.
 	 * data is likely detach by the
-	 * 	kfree(i2c_get_clientdata(client));
+	 *	kfree(i2c_get_clientdata(client));
 	 *
 	 * FIXME: Enable when testable.
 	 */

@@ -30,7 +30,6 @@ static const struct of_device_id sgm3780_trigger_dt_match[] = {
 	{.compatible = "rohm-flash,sgm3780", .data = &fctrl},
 	{}
 };
-
 MODULE_DEVICE_TABLE(of, sgm3780_trigger_dt_match);
 
 static int msm_flash_sgm3780_platform_probe(struct platform_device *pdev)
@@ -38,9 +37,7 @@ static int msm_flash_sgm3780_platform_probe(struct platform_device *pdev)
 	const struct of_device_id *match;
 	match = of_match_device(sgm3780_trigger_dt_match, &pdev->dev);
 	if (!match)
-	{
 		return -EFAULT;
-	}
 	return msm_flash_gpio_probe(pdev, match->data);
 }
 
@@ -80,12 +77,9 @@ static struct msm_flash_fn_t sgm3780_func_tbl = {
 };
 
 static struct msm_led_flash_ctrl_t fctrl = {
-	//.flash_i2c_client = &sgm3780_i2c_client,
-	//.reg_setting = &sgm3780_regs,
 	.func_tbl = &sgm3780_func_tbl,
 };
 
-/*subsys_initcall(msm_flash_i2c_add_driver);*/
 module_init(msm_flash_sgm3780_init_module);
 module_exit(msm_flash_sgm3780_exit_module);
 MODULE_DESCRIPTION("sgm3780 FLASH");

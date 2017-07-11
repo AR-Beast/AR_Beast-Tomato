@@ -94,7 +94,7 @@
 #define SENSITIVITY_GYR_250		(8750)	/** udps/LSB */
 #define SENSITIVITY_GYR_500		(17500)	/** udps/LSB */
 #define SENSITIVITY_GYR_2000		(70000)	/** udps/LSB */
-#define SENSITIVITY_TEMP		(16) 	/** LSB/C */
+#define SENSITIVITY_TEMP		(16)	/** LSB/C */
 #define OFFSET_TEMP			(25)	/** Offset temperature */
 
 #define ACC_G_MAX_POS			(1495040)/** max positive value acc [ug] */
@@ -544,21 +544,21 @@ static struct status_registers {
 	struct reg_rw int_gen_dur_g;
 } status_registers = {
 	.act_ths =
-		{.address = ACT_THS, 		.default_val = DEF_ZERO,},
+		{.address = ACT_THS,		.default_val = DEF_ZERO,},
 	.act_dur =
-		{.address = ACT_DUR, 		.default_val = DEF_ZERO,},
+		{.address = ACT_DUR,		.default_val = DEF_ZERO,},
 	.int_gen_cfg_xl =
-		{.address = INT_GEN_CFG_XL, 	.default_val = DEF_ZERO,},
+		{.address = INT_GEN_CFG_XL,	.default_val = DEF_ZERO,},
 	.int_gen_ths_x_xl =
-		{.address = INT_GEN_THS_X_XL, 	.default_val = DEF_ZERO,},
+		{.address = INT_GEN_THS_X_XL,	.default_val = DEF_ZERO,},
 	.int_gen_ths_y_xl =
-		{.address = INT_GEN_THS_Y_XL, 	.default_val = DEF_ZERO,},
+		{.address = INT_GEN_THS_Y_XL,	.default_val = DEF_ZERO,},
 	.int_gen_ths_z_xl =
-		{.address = INT_GEN_THS_Z_XL, 	.default_val = DEF_ZERO,},
+		{.address = INT_GEN_THS_Z_XL,	.default_val = DEF_ZERO,},
 	.int_gen_dur_xl =
-		{.address = INT_GEN_DUR_XL, 	.default_val = DEF_ZERO,},
+		{.address = INT_GEN_DUR_XL,	.default_val = DEF_ZERO,},
 	.reference_g =
-		{.address = REFERENCE_G, 	.default_val = DEF_ZERO,},
+		{.address = REFERENCE_G,	.default_val = DEF_ZERO,},
 	.int1_ctrl =
 		{.address = INT1_CTRL,		.default_val = DEF_ZERO,},
 	.int2_ctrl =
@@ -1050,8 +1050,8 @@ static int32_t lsm6dx0_acc_device_power_on(struct lsm6dx0_status *stat)
 	}
 
 	buf[0] = status_registers.ctrl_reg4.address;
- 	buf[1] = status_registers.ctrl_reg4.resume_val;
- 	buf[2] = status_registers.ctrl_reg5_xl.resume_val;
+	buf[1] = status_registers.ctrl_reg4.resume_val;
+	buf[2] = status_registers.ctrl_reg5_xl.resume_val;
 	buf[3] = status_registers.ctrl_reg6_xl.resume_val;
 	buf[4] = status_registers.ctrl_reg7_xl.resume_val;
 	buf[5] = status_registers.ctrl_reg8.resume_val;
@@ -1627,7 +1627,7 @@ static int lsm6d_gyr_cdev_calibrate(struct sensors_classdev *sensors_cdev,int ax
 	gyr_data[0] = sum_x/100;
 	gyr_data[1] = sum_y/100;
 	gyr_data[2] = sum_z/100;
-	
+
 	stat->gyr_cali[0] = -gyr_data[0];
 	stat->gyr_cali[1] = -gyr_data[1];
 	stat->gyr_cali[2] = -gyr_data[2];

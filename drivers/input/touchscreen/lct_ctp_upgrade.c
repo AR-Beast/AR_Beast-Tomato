@@ -42,7 +42,7 @@ static CTP_READ_VERSION PCtpreadverFunc = NULL;
 
  static int ctp_upgrade_from_engineermode(void)
  {
- 	if(PCtpupdateFunc == NULL)
+	if(PCtpupdateFunc == NULL)
 	{
 		strcpy(ft_ctp_upgrade_status,"Unsupport");
 	}
@@ -51,7 +51,7 @@ static CTP_READ_VERSION PCtpreadverFunc = NULL;
 		printk("ctp_upgrade_from_engineermode call pointer func to upgrade \n");
 		PCtpupdateFunc();
 	}
- 	return 0;
+	return 0;
  }
 
 static void ctp_upgrade_workqueue_func(struct work_struct *work)
@@ -92,7 +92,7 @@ static ssize_t ctp_upgrade_proc_read(struct file *file, char __user *buf, size_t
     char *page = NULL;
 
 	page = kzalloc(256, GFP_KERNEL);		// xuke @ 20140707	The same length as in Tpversion_upgrade.java
-	cnt = sprintf(page, "%s",ft_ctp_upgrade_status);   
+	cnt = sprintf(page, "%s",ft_ctp_upgrade_status);
 //	printk("ctp_upgrade_proc_read cnt = %d, size=%d\n",cnt, size);
 	cnt = simple_read_from_buffer(buf, size, ppos, page, cnt);
 //	printk("cnt=%d, page=%s\n", cnt, page);
@@ -116,7 +116,7 @@ static ssize_t ctp_proc_read(struct file *file, char __user *buf, size_t size, l
 		PCtpreadverFunc(version);
 		cnt = sprintf(page, "%s\n",version);
 	}
-	
+
 	cnt = simple_read_from_buffer(buf, size, ppos, page, cnt);
 //	printk("%s, cnt=%d, page=%s\n", __func__, cnt, page);
 	kfree(page);
@@ -150,7 +150,7 @@ static const struct file_operations ctp_proc_fops = {
 static int __init ctp_upgrade_init(void)
 {
 	printk( "%s\n", __func__);
-		
+
 	strcpy(ft_ctp_upgrade_status,"Unsupport");
 	ctp_upgrade_workqueue = create_singlethread_workqueue("ctp_upgrade");
 	INIT_WORK(&ctp_upgrade_work, ctp_upgrade_workqueue_func);
@@ -165,7 +165,7 @@ static int __init ctp_upgrade_init(void)
 	{
 		printk("[elan] create_proc_entry 222 success\n");
 	}
-	
+
 	g_ctp_proc = proc_create_data(CTP_PROC_FILE, 0444, NULL, &ctp_proc_fops, NULL);
 	if (IS_ERR_OR_NULL(g_ctp_proc))
 	{
@@ -191,7 +191,7 @@ static int __init ctp_upgrade_init(void)
 		printk("create_proc_entry failed\n");
 	} else {
 		g_ctp_proc->read_proc = ctp_proc_read;
-		g_ctp_proc->write_proc = NULL;	
+		g_ctp_proc->write_proc = NULL;
 		printk("create_proc_entry success\n");
 	}
 #endif
@@ -209,6 +209,3 @@ module_exit(ctp_upgrade_exit);
 
 MODULE_DESCRIPTION("CTP upgrade driver");
 MODULE_LICENSE("GPL");
-
-
-

@@ -1468,7 +1468,7 @@ static long pa12200001_ioctl(struct file *file, unsigned int cmd, unsigned long 
 
 
 
-#if 0  //chenyunzhe remove this codes below for no need to force PS report system  status becase of MISC_SCAN 
+#if 0  //chenyunzhe remove this codes below for no need to force PS report system  status becase of MISC_SCAN
             if(!ps_polling)//force trigger once
             {
                 intr_flag = 0;

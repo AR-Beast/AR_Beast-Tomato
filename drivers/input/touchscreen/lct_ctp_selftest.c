@@ -51,7 +51,7 @@ static ssize_t ctp_selftest_proc_write(struct file *file, const char __user *buf
         printk("copy_from_user() fail.\n");
         return -EFAULT;
     }
-	
+
 	if((strncmp(tmp_data,"ctp_selftest",strlen("ctp_selftest")) == 0) && (is_in_self_test == 0))
 	{
 		printk("ctp_selftest_proc_write start \n");
@@ -59,7 +59,7 @@ static ssize_t ctp_selftest_proc_write(struct file *file, const char __user *buf
 		is_in_self_test = 1;
 		retry_count = CTP_FELF_TEST_RETROY_COUNT;
 		queue_work(ctp_selftest_workqueue, &ctp_selftest_work);
-		
+
 	}
 	return size;
 }
@@ -68,9 +68,9 @@ static ssize_t ctp_selftest_proc_read(struct file *file, char __user *buf, size_
 {
 	int cnt= 0;
     char *page = NULL;
-	
+
 	page = kzalloc(128, GFP_KERNEL);
-	cnt = sprintf(page, "%s", ft_ctp_selftest_status);   
+	cnt = sprintf(page, "%s", ft_ctp_selftest_status);
 	//printk("ctp_selftest_proc_read cnt = %d\n",cnt);
 	cnt = simple_read_from_buffer(buf, size, ppos, page, cnt);
 	printk("%s, page=%s, cnt=%d\n", __func__, page, cnt);
@@ -79,7 +79,7 @@ static ssize_t ctp_selftest_proc_read(struct file *file, char __user *buf, size_
 }
 
 static int ctp_chip_self_test(void)
-{	
+{
 	if(PSelftest_func == NULL)
 	{
 		printk("ctp_chip_self_test this ctp is not support self test func \n");
@@ -117,9 +117,9 @@ static void ctp_selftest_workqueue_func(struct work_struct *work)
 			printk("ctp_selftest_workqueue_func self test failed\n");
 			is_in_self_test = 0;
 		}
-		
+
 	}
-	
+
 }
 
 int lct_get_ctp_selttest_status(void)
@@ -131,7 +131,7 @@ void lct_ctp_selftest_int(CTP_SELFTEST_FUNC PTestfunc)
 {
 	printk( "%s\n", __func__);
 	PSelftest_func = PTestfunc;
-	
+
 }
 
 static const struct file_operations ctp_selftest_proc_fops = {
@@ -161,7 +161,7 @@ static int  ctp_selftest_init(void)
 		printk("create_proc_entry g_ctp_selftest_proc failed\n");
 	} else {
 		g_ctp_selftest_proc->read_proc = ctp_selftest_proc_read;
-		g_ctp_selftest_proc->write_proc = ctp_selftest_proc_write; 
+		g_ctp_selftest_proc->write_proc = ctp_selftest_proc_write;
 		printk("create_proc_entry g_ctp_selftest_proc success\n");
 	}
 #endif
@@ -178,6 +178,3 @@ module_exit(ctp_selftest_exit);
 
 MODULE_DESCRIPTION("CTP selftest driver");
 MODULE_LICENSE("GPL");
-
-
-

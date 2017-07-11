@@ -27,4 +27,3 @@ int sensparams_read_from_flash(int type, unsigned char *out, int len);
 int sensparams_write_to_flash(int type, unsigned char *in, int len);
 
 #endif
-

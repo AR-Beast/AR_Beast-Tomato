@@ -128,7 +128,6 @@ int msm_flash_led_gpio_init(struct msm_led_flash_ctrl_t *fctrl)
 	}
 	msleep(20);
 
-	pr_err("before FL_RESET\n");
 	if (power_info->gpio_conf->gpio_num_info->
 			valid[SENSOR_GPIO_FL_RESET] == 1)
 		gpio_set_value_cansleep(
@@ -213,9 +212,9 @@ int msm_flash_led_gpio_off(struct msm_led_flash_ctrl_t *fctrl)
 		GPIO_OUT_LOW);
 
 	gpio_set_value_cansleep(
-                power_info->gpio_conf->gpio_num_info->
-                gpio_num[SENSOR_GPIO_FL_NOW],
-                GPIO_OUT_LOW);
+		power_info->gpio_conf->gpio_num_info->
+		gpio_num[SENSOR_GPIO_FL_NOW],
+		GPIO_OUT_LOW);
 	return rc;
 }
 
@@ -461,7 +460,6 @@ static int set_led_gpio_status(void *data, u64 val)
 DEFINE_SIMPLE_ATTRIBUTE(ledflashdbg_fops,
 	NULL, set_led_gpio_status, "%llu\n");
 #endif
-
 
 int msm_flash_gpio_probe(struct platform_device *pdev,
 	const void *data)

@@ -1438,7 +1438,7 @@ clock_set:
 		}
 		timeout--;
 		spin_unlock_irq(&host->lock);
-		usleep_range(900, 1100);
+		udelay(1);
 		spin_lock_irq(&host->lock);
 	}
 
@@ -1783,8 +1783,6 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
 					SDHCI_CARD_PRESENT;
 	}
 
-	present = mmc_gpio_get_cd(host->mmc);
-
 	spin_lock_irqsave(&host->lock, flags);
 
 	WARN_ON(host->mrq != NULL);
@@ -1806,22 +1804,6 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
 	}
 
 	host->mrq = mrq;
-
-	/*
-	 * Firstly check card presence from cd-gpio.  The return could
-	 * be one of the following possibilities:
-	 *     negative: cd-gpio is not available
-	 *     zero: cd-gpio is used, and card is removed
-	 *     one: cd-gpio is used, and card is present
-	 */
-	if (present < 0) {
-		/* If polling, assume that the card is always present. */
-		if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-			present = 1;
-		else
-			present = sdhci_readl(host, SDHCI_PRESENT_STATE) &
-					SDHCI_CARD_PRESENT;
-	}
 
 	if (!present || host->flags & SDHCI_DEVICE_DEAD) {
 		host->mrq->cmd->error = -ENOMEDIUM;
@@ -3692,10 +3674,7 @@ int sdhci_add_host(struct sdhci_host *host)
 			>> SDHCI_CLOCK_BASE_SHIFT;
 
 	host->max_clk *= 1000000;
-	if (mmc->caps2 & MMC_CAP2_CLK_SCALE)
-		sdhci_update_power_policy(host, SDHCI_PERFORMANCE_MODE_INIT);
-	else
-		sdhci_update_power_policy(host, SDHCI_PERFORMANCE_MODE);
+	sdhci_update_power_policy(host, SDHCI_PERFORMANCE_MODE_INIT);
 	if (host->max_clk == 0 || host->quirks &
 			SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN) {
 		if (!host->ops->get_max_clock) {

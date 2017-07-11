@@ -213,12 +213,12 @@ struct ap3426_data {
 	uint32_t		int_pin;
 	uint32_t		irq_flags;
 
-	struct sensors_classdev als_cdev; 	//for msm8916  kevindang20141010
+	struct sensors_classdev als_cdev;	//for msm8916  kevindang20141010
 	struct sensors_classdev ps_cdev;	//for msm8916
 
-	struct input_dev   	*psensor_input_dev;
-	struct input_dev   	*lsensor_input_dev;
-	struct input_dev   	*hsensor_input_dev;
+	struct input_dev	*psensor_input_dev;
+	struct input_dev	*lsensor_input_dev;
+	struct input_dev	*hsensor_input_dev;
 	struct workqueue_struct	*psensor_wq;
 	struct work_struct	psensor_work;
 	struct workqueue_struct	*lsensor_wq;
@@ -230,12 +230,12 @@ struct ap3426_data {
 	struct regulator	*vio;
 	bool			power_enabled;
 	bool			als_enabled;
-	bool 			als_re_enable;
+	bool			als_re_enable;
 	int			als_msec_poll_delay;
 	bool			als_polling_just_enabled;
 	bool			ps_enabled;
 	bool			ps_re_enable;
-	bool 			suspended;
+	bool			suspended;
 	struct wake_lock	ps_wakelock;
 	uint16_t		ps_thd_l;
 	uint16_t		ps_thd_h;

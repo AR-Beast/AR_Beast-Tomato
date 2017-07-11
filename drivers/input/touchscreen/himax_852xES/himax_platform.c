@@ -76,7 +76,7 @@ int i2c_himax_write(struct i2c_client *client, uint8_t command, uint8_t *data, u
 
 	buf[0] = command;
 	memcpy(buf+1, data, length);
-	
+
 	for (retry = 0; retry < toRetry; retry++) {
 		if (i2c_transfer(client->adapter, msg, 1) == 1)
 			break;
@@ -137,7 +137,7 @@ int i2c_himax_master_write(struct i2c_client *client, uint8_t *data, uint8_t len
 	};
 
 	memcpy(buf, data, length);
-	
+
 	for (retry = 0; retry < toRetry; retry++) {
 		if (i2c_transfer(client->adapter, msg, 1) == 1)
 			break;
@@ -361,7 +361,7 @@ hw_shutdown:
 int himax_gpio_power_config(struct i2c_client *client,struct himax_i2c_platform_data *pdata)
 {
 	int error;
-	
+
 	error = himax_regulator_configure(client, pdata, true);
 	if (error) {
 		E("Failed to intialize hardware\n");
@@ -382,7 +382,7 @@ int himax_gpio_power_config(struct i2c_client *client,struct himax_i2c_platform_
 			E("unable to set direction for gpio [%d]\n",
 				pdata->gpio_reset);
 			goto err_gpio_reset_req;
-		}		
+		}
 	}
 
 	error = himax_power_on(pdata, true);
@@ -421,7 +421,7 @@ int himax_gpio_power_config(struct i2c_client *client,struct himax_i2c_platform_
 		}
 	}
 	return 0;
-	
+
 err_gpio_irq_req:
 	if (gpio_is_valid(pdata->gpio_irq))
 		gpio_free(pdata->gpio_irq);
@@ -441,7 +441,7 @@ return error;
 int himax_gpio_power_config(struct i2c_client *client,struct himax_i2c_platform_data *pdata)
 {
 	int error=0;
-	
+
 	if (pdata->gpio_3v3_en >= 0) {
 		error = gpio_request(pdata->gpio_3v3_en, "himax-3v3_en");
 		if (error < 0)
@@ -494,7 +494,7 @@ int himax_gpio_power_config(struct i2c_client *client,struct himax_i2c_platform_
 		gpio_set_value_cansleep(pdata->gpio_reset, 0);
 		msleep(20);
 		gpio_set_value_cansleep(pdata->gpio_reset, 1);
-		
+
 	}
 	msleep(20);
 //	pr_info("error = %d\n", error);
@@ -515,5 +515,3 @@ return error;
 #endif
 
 #endif
-
-

@@ -48,7 +48,7 @@ static CTP_READ_VERSION PIFCtpreadOldverFunc = NULL;
 
  static int ctp_if_upgrade_start(void)
  {
- 	if(PIFCtpupdateFunc == NULL)
+	if(PIFCtpupdateFunc == NULL)
 	{
 		strcpy(ctp_if_upgrade_status,"Unsupport");
 	}
@@ -57,7 +57,7 @@ static CTP_READ_VERSION PIFCtpreadOldverFunc = NULL;
 		printk("ctp_upgrade_from_engineermode call pointer func to upgrade \n");
 		PIFCtpupdateFunc();
 	}
- 	return 0;
+	return 0;
  }
 
 static void ctp_if_upgrade_workqueue_func(struct work_struct *work)
@@ -88,7 +88,7 @@ static ssize_t ctp_if_upgrade_proc_write(struct file *file, const char __user *b
 			strcpy(ctp_if_upgrade_status,"upgrading");
 			queue_work(ctp_if_upgrade_workqueue, &ctp_if_upgrade_work);
 		}
-		
+
 	}
 	return size;
 }
@@ -97,9 +97,9 @@ static ssize_t ctp_if_upgrade_proc_read(struct file *file, char __user *buf, siz
 {
 	int cnt= 0;
     char *page = NULL;
-	
+
 	page = kzalloc(64, GFP_KERNEL);		// xuke @ 20140707	The same length as in TpUpgradeOpen.java
-	cnt = sprintf(page, "%s",ctp_if_upgrade_status);   
+	cnt = sprintf(page, "%s",ctp_if_upgrade_status);
 	printk("ctp_if_upgrade_proc_read cnt = %d\n",cnt);
 	cnt = simple_read_from_buffer(buf, size, ppos, page, cnt);
 	kfree(page);
@@ -111,7 +111,7 @@ static ssize_t ctp_if_upgrade_version_proc_read(struct file *file, char __user *
 	int cnt= 0;
 	char version[100] = {0};
     char *page = NULL;
-	
+
 	page = kzalloc(128, GFP_KERNEL);
 
 	if(PIFCtpreadverFunc == NULL)
@@ -134,7 +134,7 @@ static ssize_t ctp_if_upgrade_old_version_proc_read(struct file *file, char __us
 	int cnt= 0;
 	char version[100] = {0};
     char *page = NULL;
-	
+
 	page = kzalloc(128, GFP_KERNEL);
 
 	if(PIFCtpreadOldverFunc == NULL)
@@ -146,7 +146,7 @@ static ssize_t ctp_if_upgrade_old_version_proc_read(struct file *file, char __us
 		PIFCtpreadOldverFunc(version);
 		cnt = sprintf(page, "%s\n",version);
 	}
-	
+
 	cnt = simple_read_from_buffer(buf, size, ppos, page, cnt);
 	kfree(page);
 	return cnt;
@@ -184,11 +184,11 @@ static const struct file_operations g_ctp_if_upgrade_old_version_proc_fops = {
 static int __init ctp_if_upgrade_init(void)
 {
 	printk( "%s\n", __func__);
-		
+
 	strcpy(ctp_if_upgrade_status,"Unsupport");
 	ctp_if_upgrade_workqueue = create_singlethread_workqueue("ctp_if_upgrade");
 	INIT_WORK(&ctp_if_upgrade_work, ctp_if_upgrade_workqueue_func);
-	
+
 #if 1
 	g_ctp_if_upgrade_proc = proc_create_data(CTP_IF_UPGRADE_PROC_FILE, 0660, NULL, &g_ctp_if_upgrade_proc_fops, NULL);
 	if (IS_ERR_OR_NULL(g_ctp_if_upgrade_proc))
@@ -199,7 +199,7 @@ static int __init ctp_if_upgrade_init(void)
 	{
 		printk("ctp_if_upgrade_init create_proc_entry 222 success\n");
 	}
-	
+
 	g_ctp_if_upgrade_version_proc = proc_create_data(CTP_IF_UPGRADE_VERSION_PROC_FILE, 0660, NULL, &g_ctp_if_upgrade_version_proc_fops, NULL);
 	if (IS_ERR_OR_NULL(g_ctp_if_upgrade_version_proc))
 	{
@@ -209,7 +209,7 @@ static int __init ctp_if_upgrade_init(void)
 	{
 		printk("create_proc_entry success\n");
 	}
-	
+
 	g_ctp_if_upgrade_old_version_proc = proc_create_data(CTP_IF_UPGRADE_OLD_VERSION_PROC_FILE, 0444, NULL, &g_ctp_if_upgrade_old_version_proc_fops, NULL);
 	if (IS_ERR_OR_NULL(g_ctp_if_upgrade_old_version_proc))
 	{
@@ -236,7 +236,7 @@ static int __init ctp_if_upgrade_init(void)
 		printk("create_proc_entry failed\n");
 	} else {
 		g_ctp_if_upgrade_version_proc->read_proc = ctp_if_upgrade_version_proc_read;
-		g_ctp_if_upgrade_version_proc->write_proc = NULL;	
+		g_ctp_if_upgrade_version_proc->write_proc = NULL;
 		printk("create_proc_entry success\n");
 	}
 
@@ -246,7 +246,7 @@ static int __init ctp_if_upgrade_init(void)
 		printk("create_proc_entry failed\n");
 	} else {
 		g_ctp_if_upgrade_old_version_proc->read_proc = ctp_if_upgrade_old_version_proc_read;
-		g_ctp_if_upgrade_old_version_proc->write_proc = NULL;	
+		g_ctp_if_upgrade_old_version_proc->write_proc = NULL;
 		printk("create_proc_entry success\n");
 	}
 #endif
@@ -263,6 +263,3 @@ module_exit(ctp_if_upgrade_exit);
 
 MODULE_DESCRIPTION("CTP if upgrade driver");
 MODULE_LICENSE("GPL");
-
-
-
