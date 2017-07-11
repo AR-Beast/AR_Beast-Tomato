@@ -24,7 +24,7 @@
 int QC_Toggle = ENABLED;
 
 // Variable to Store Different Values of Current (mA).
-int Dynamic_Current = 1000;
+int Dynamic_Current = 1250;
 
 // Variable to Know the Status of Charging (i.e., Charger Connected or Dis-Connected).
 int Charge_Status;
@@ -34,6 +34,9 @@ unsigned int Actual_Current;
 
 // Variable to Store Selection of Charging-Profiles.
 int Charging_Profile = 2;
+
+// Variable to store max charge current.
+int custom_current = 1500;
 
 // Variable to Store a Copy of Battery (%) Status.
 int Battery_Percent;
@@ -59,27 +62,27 @@ if (Charging_Profile == 1)
 	{
 	    // Mechanism of Driver to Allocate Current (mA).
 	    if (Battery_Percent >= 0 && Battery_Percent <= 60)
-	       Dynamic_Current = 1500;
+	       Dynamic_Current = custom_current;
 	    else if (Battery_Percent >= 61 && Battery_Percent <= 90)
-		    Dynamic_Current = 1250;
+		    Dynamic_Current = (custom_current - 250);
 	    else if (Battery_Percent >= 91 && Battery_Percent <= 100)
-  	            Dynamic_Current = 1000;
+  	            Dynamic_Current = (custom_current - 500);
 	}
 
 if (Charging_Profile == 2)
 	{
 	if (Battery_Status >= 0 && Battery_Status <= 75)
-	     Dynamic_Current = 1500;   
+	     Dynamic_Current = custom_current;   
 	else if (Battery_Status >= 76 && Battery_Status <= 93)
-		 Dynamic_Current = 1380;
+		 Dynamic_Current = (custom_current - 120);
 	else if (Battery_Status >= 94 && Battery_Status <= 100)
-  	     Dynamic_Current = 1250;
+  	     Dynamic_Current = (custom_current - 250);
 	}
 
 if (Charging_Profile == 3)
 	{
 	    // Mechanism of Driver to Allocate Current (mA).
-	       Dynamic_Current = 1500;
+	       Dynamic_Current = custom_current;
 	}
 }
 
@@ -123,6 +126,22 @@ static ssize_t qc_toggle_store(struct kobject *kobj, struct kobj_attribute *attr
 return count;
 }
 
+static ssize_t custom_current_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d", custom_current);
+}
+
+static ssize_t custom_current_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int usercurrent;
+	sscanf(buf, "%d", &usercurrent);
+	if(QC_Toggle == 1 && usercurrent <= 1500 && usercurrent  >= 1000)
+		custom_current = usercurrent;
+	else
+		pr_info("%s: disabled or limit reached, ignoring\n", QUICK_CHARGE);
+	return count;
+}
+
 static ssize_t actual_current_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf, "%u", Actual_Current);
@@ -155,6 +174,12 @@ static struct kobj_attribute qc_toggle_attribute =
 		0666,
 		qc_toggle_show,
 		qc_toggle_store);
+		
+static struct kobj_attribute custom_current_attribute =
+	__ATTR(custom_current,
+		0666,
+		custom_current_show,
+		custom_current_store);
 
 static struct kobj_attribute actual_current_attribute =
 	__ATTR(Actual_Current,
@@ -172,6 +197,7 @@ static struct attribute *charger_control_attrs[] =
 	{
 		&qc_toggle_attribute.attr,
 		&actual_current_attribute.attr,
+		&custom_current_attribute.attr,
 		&charging_profile_attribute.attr,
 		NULL,
 	};
