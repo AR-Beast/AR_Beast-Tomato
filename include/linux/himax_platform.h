@@ -18,20 +18,20 @@
 #define HX_VTG_MIN_UV			2700000
 #define HX_VTG_MAX_UV			3300000
 #define HX_ACTIVE_LOAD_UA		15000
-#define HX_LPM_LOAD_UA 			10
+#define HX_LPM_LOAD_UA			10
 /* Digital voltage @1.8 V */
 #define HX_VTG_DIG_MIN_UV		1800000
 #define HX_VTG_DIG_MAX_UV		1800000
 #define HX_ACTIVE_LOAD_DIG_UA	10000
-#define HX_LPM_LOAD_DIG_UA 		10
+#define HX_LPM_LOAD_DIG_UA		10
 
 #define HX_I2C_VTG_MIN_UV		1800000
 #define HX_I2C_VTG_MAX_UV		1800000
-#define HX_I2C_LOAD_UA 			10000
-#define HX_I2C_LPM_LOAD_UA 		10
+#define HX_I2C_LOAD_UA			10000
+#define HX_I2C_LPM_LOAD_UA		10
 #endif
 
-struct himax_i2c_platform_data {	
+struct himax_i2c_platform_data {
 	int abs_x_min;
 	int abs_x_max;
 	int abs_x_fuzz;
@@ -73,7 +73,7 @@ struct himax_i2c_platform_data {
 	struct regulator *vcc_ana; //For Dragon Board
 	struct regulator *vcc_dig; //For Dragon Board
 	struct regulator *vcc_i2c; //For Dragon Board
-#endif	
+#endif
 };
 
 

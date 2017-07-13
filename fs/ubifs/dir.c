@@ -474,7 +474,8 @@ out:
 	file->private_data = NULL;
 
 	if (err != -ENOENT)
-		ubifs_err("cannot find next direntry, error %d", err);
+		ubifs_err("cannot find next direntry, error %d", c->vi.ubi_num,
+				err);
 	else
 		/*
 		 * -ENOENT is a non-fatal error in this context, the TNC uses
@@ -1221,4 +1222,4 @@ const struct file_operations ubifs_dir_operations = {
 #ifdef CONFIG_COMPAT
 	.compat_ioctl   = ubifs_compat_ioctl,
 #endif
-};<<<<<<
+};

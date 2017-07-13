@@ -2573,7 +2573,7 @@ static int __get_nat_bitmaps(struct f2fs_sb_info *sbi)
 	return 0;
 }
 
-static inline void load_free_nid_bitmap(struct f2fs_sb_info *sbi)
+inline void load_free_nid_bitmap(struct f2fs_sb_info *sbi)
 {
 	struct f2fs_nm_info *nm_i = NM_I(sbi);
 	unsigned int i = 0;

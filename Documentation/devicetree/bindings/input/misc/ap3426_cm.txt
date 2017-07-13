@@ -48,4 +48,3 @@ Example:
 		ap3426,ps-integrated-time = <0x0>;
 	};
 };
-

@@ -1,6 +1,7 @@
 config EXFAT_FS
 	tristate "exFAT fs support"
 	select NLS
+	default y
 	help
 	  This adds support for the exFAT file system.
 
@@ -12,7 +13,7 @@ config EXFAT_DISCARD
 config EXFAT_DELAYED_SYNC
 	bool "enable delayed sync"
 	depends on EXFAT_FS
-	default n
+	default y
 
 config EXFAT_KERNEL_DEBUG
 	bool "enable kernel debug features via ioctl"

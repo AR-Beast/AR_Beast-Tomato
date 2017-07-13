@@ -48,7 +48,7 @@ static void read_cache_pages_invalidate_page(struct address_space *mapping,
 		if (!trylock_page(page))
 			BUG();
 		page->mapping = mapping;
-		do_invalidatepage(page, 0, PAGE_CACHE_SIZE);
+		do_invalidatepage(page, 0);
 		page->mapping = NULL;
 		unlock_page(page);
 	}
@@ -223,7 +223,7 @@ int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
 	while (nr_to_read) {
 		int err;
 
-		unsigned long this_chunk = (2097152) >> PAGE_CACHE_SHIFT;
+		unsigned long this_chunk = (2 * 1024 * 1024) / PAGE_CACHE_SIZE;
 
 		if (this_chunk > nr_to_read)
 			this_chunk = nr_to_read;
@@ -247,7 +247,7 @@ int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
 unsigned long max_sane_readahead(unsigned long nr)
 {
 	return min(nr, (node_page_state(numa_node_id(), NR_INACTIVE_FILE)
-		+ node_page_state(numa_node_id(), NR_FREE_PAGES)) >> 1);
+		+ node_page_state(numa_node_id(), NR_FREE_PAGES)) / 2);
 }
 
 /*
@@ -276,10 +276,10 @@ static unsigned long get_init_ra_size(unsigned long size, unsigned long max)
 {
 	unsigned long newsize = roundup_pow_of_two(size);
 
-	if (newsize <= (max >> 5))
-		newsize = newsize << 2;
-	else if (newsize <= (max >> 2))
-		newsize = newsize << 1;
+	if (newsize <= 1)
+		newsize = newsize * 4;
+	else if (newsize <= max / 4)
+		newsize = newsize * 2;
 	else
 		newsize = max;
 
@@ -296,10 +296,10 @@ static unsigned long get_next_ra_size(struct file_ra_state *ra,
 	unsigned long cur = ra->size;
 	unsigned long newsize;
 
-	if (cur < (max >> 4))
-		newsize = cur << 2;
+	if (cur < max / 16)
+		newsize = 4 * cur;
 	else
-		newsize = cur << 1;
+		newsize = 2 * cur;
 
 	return min(newsize, max);
 }
@@ -376,10 +376,10 @@ static int try_context_readahead(struct address_space *mapping,
 	size = count_history_pages(mapping, ra, offset, max);
 
 	/*
-	 * not enough history pages:
+	 * no history pages:
 	 * it could be a random read
 	 */
-	if (size <= req_size)
+	if (!size)
 		return 0;
 
 	/*
@@ -387,11 +387,11 @@ static int try_context_readahead(struct address_space *mapping,
 	 * it is a strong indication of long-run stream (or whole-file-read)
 	 */
 	if (size >= offset)
-		size <<= 1;
+		size *= 2;
 
 	ra->start = offset;
-	ra->size = min(size + req_size, max);
-	ra->async_size = 1;
+	ra->size = get_init_ra_size(size + req_size, max);
+	ra->async_size = ra->size;
 
 	return 1;
 }
@@ -406,7 +406,6 @@ ondemand_readahead(struct address_space *mapping,
 		   unsigned long req_size)
 {
 	unsigned long max = max_sane_readahead(ra->ra_pages);
-	pgoff_t prev_offset;
 
 	/*
 	 * start of file
@@ -458,11 +457,8 @@ ondemand_readahead(struct address_space *mapping,
 
 	/*
 	 * sequential cache miss
-	 * trivial case: (offset - prev_offset) == 1
-	 * unaligned reads: (offset - prev_offset) == 0
 	 */
-	prev_offset = (unsigned long long)ra->prev_pos >> PAGE_CACHE_SHIFT;
-	if (offset - prev_offset <= 1UL)
+	if (offset - (ra->prev_pos >> PAGE_CACHE_SHIFT) <= 1UL)
 		goto initial_readahead;
 
 	/*

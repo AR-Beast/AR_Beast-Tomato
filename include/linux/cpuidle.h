@@ -145,6 +145,8 @@ extern int cpuidle_play_dead(void);
 extern void cpuidle_use_deepest_state(bool enable);
 
 extern struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev);
+extern int cpuidle_register_cpu_driver(struct cpuidle_driver *drv, int cpu);		
+extern void cpuidle_unregister_cpu_driver(struct cpuidle_driver *drv, int cpu);
 #else
 static inline void disable_cpuidle(void) { }
 static inline int cpuidle_enabled(struct cpuidle_driver *drv,
@@ -213,9 +215,11 @@ struct cpuidle_governor {
 
 #ifdef CONFIG_CPU_IDLE
 extern int cpuidle_register_governor(struct cpuidle_governor *gov);
+extern void cpuidle_unregister_governor(struct cpuidle_governor *gov);		
 #else
 static inline int cpuidle_register_governor(struct cpuidle_governor *gov)
 {return 0;}
+static inline void cpuidle_unregister_governor(struct cpuidle_governor *gov) { }
 #endif
 
 #ifdef CONFIG_ARCH_HAS_CPU_RELAX
