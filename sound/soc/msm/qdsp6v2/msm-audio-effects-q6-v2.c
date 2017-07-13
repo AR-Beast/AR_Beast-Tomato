@@ -54,6 +54,7 @@ bool msm_audio_effects_is_effmodule_supp_in_top(int effect_module,
 	}
 }
 
+
 int msm_audio_effects_virtualizer_handler(struct audio_client *ac,
 				struct virtualizer_params *virtualizer,
 				long *values)

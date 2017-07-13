@@ -19,6 +19,7 @@
 #include "mdss_debug.h"
 #include "mdss_mdp_debug.h"
 
+
 static void __dump_pipe(struct seq_file *s, struct mdss_mdp_pipe *pipe)
 {
 	struct mdss_mdp_img_data *buf;
