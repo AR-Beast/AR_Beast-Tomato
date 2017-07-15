@@ -857,7 +857,6 @@ static int __init alucard_hotplug_init(void)
 	int ret;
 	unsigned int cpu;
 	unsigned int hotplug_freq[NR_CPUS][2] = {
-#ifdef CONFIG_MACH_LGE
 		{0, 1612800},
 		{800000, 1113600},
 		{800000, 1113600},
