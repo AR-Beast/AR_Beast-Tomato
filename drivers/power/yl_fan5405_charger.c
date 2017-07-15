@@ -1194,7 +1194,11 @@ static bool batt_full_flag = false;
 //add end
 
 static int fan5405_get_prop_batt_capa(struct fan5405_chip *chip)
-{
+{	
+	#ifdef CONFIG_QUICK_CHARGE
+	int rc;
+	#endif
+
 	union power_supply_propval ret = {0,};
 
         if (chip->battery_psy != NULL) {
@@ -1251,7 +1255,47 @@ static int fan5405_get_prop_batt_capa(struct fan5405_chip *chip)
 	#ifdef CONFIG_QUICK_CHARGE
 	// Report the Battery-Level to the Quick Charge Driver (only if it is Enabled).
 	if (QC_Toggle == 1)
+	{
 	   batt_level (chip->batt_capa);
+
+	   if (chip->set_ivbus_max == 500 || chip->set_ivbus_max == 1500)
+	   {
+	      if (chip->set_ivbus_max == 500)
+	      { 
+	         chip->set_ivbus_max = 1000;
+		 chip->chg_curr_max = chip->set_ivbus_max;
+	         chip->chg_curr_now = chip->chg_curr_max;
+
+		 // Update vBUS Current-Limit (mA).
+		 rc = fan5405_set_ivbus_max(chip, chip->set_ivbus_max);
+	      }
+	      else
+	      {
+	          chip->chg_curr_max = Dynamic_Current;
+	          chip->chg_curr_now = chip->chg_curr_max;
+	      }
+	   }
+	}
+	else
+	{
+	    if (chip->set_ivbus_max == 1000 || chip->set_ivbus_max == 1500)
+	    {
+	       if (chip->set_ivbus_max == 1000)
+	       { 
+	          chip->set_ivbus_max = 500;
+	          chip->chg_curr_max = chip->set_ivbus_max;
+	          chip->chg_curr_now = chip->chg_curr_max;
+
+		  // Update vBUS Current-Limit (mA).
+	          rc = fan5405_set_ivbus_max(chip, chip->set_ivbus_max);
+	       }
+	       else
+	       {
+	          chip->chg_curr_max = FAN_DTB_Max_Current;
+	          chip->chg_curr_now = chip->chg_curr_max;
+	       }
+	    }
+	}
 	#endif
 
         return chip->batt_capa;
