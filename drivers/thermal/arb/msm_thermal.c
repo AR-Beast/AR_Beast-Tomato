@@ -25,7 +25,7 @@
 #include <linux/msm_thermal.h>
 #include <linux/platform_device.h>
 #include <linux/of.h>
-#define _temp_threshold		50
+#define _temp_threshold		60
 #define _temp_step	3
 
 static struct thermal_info {
@@ -49,9 +49,9 @@ int LEVEL_VERY_HOT = _temp_threshold + _temp_step;
 int LEVEL_HOT = _temp_threshold + (_temp_step * 2);
 int LEVEL_HELL = _temp_threshold + (_temp_step * 3);
 int FREQ_HELL = 800000;
-int FREQ_VERY_HOT = 1113600;
-int FREQ_HOT = 1344000;
-int FREQ_WARM = 1459200;
+int FREQ_VERY_HOT = 998400;
+int FREQ_HOT = 1094400;
+int FREQ_WARM = 1209600;
 #ifdef CONFIG_AiO_HotPlug
 extern int AiO_HotPlug;
 #endif
