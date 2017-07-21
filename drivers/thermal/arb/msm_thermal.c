@@ -149,37 +149,15 @@ static void __ref check_temp(struct work_struct *work)
  		cpu_offline_wrapper(1);
  		cpu_offline_wrapper(2);
  		cpu_offline_wrapper(3);
- 		cpu_offline_wrapper(4);
- 		cpu_offline_wrapper(5);
- 	    cpu_offline_wrapper(6);
- 		cpu_offline_wrapper(7);
 	}
- 	else if (temp >= 69){
-		cpu_offline_wrapper(1);
- 		cpu_offline_wrapper(2);
- 		cpu_offline_wrapper(3);
- 		cpu_online_wrapper(4);
- 		cpu_online_wrapper(5);
- 	    cpu_offline_wrapper(6);
- 		cpu_offline_wrapper(7);
- 	}
- 	else if (temp >= 63){
+ 	else if (temp >= 60){
  	    cpu_offline_wrapper(1);
- 		cpu_offline_wrapper(2);
  		cpu_offline_wrapper(3);
- 		cpu_online_wrapper(4);
- 		cpu_online_wrapper(5);
-		cpu_online_wrapper(6);
- 		cpu_online_wrapper(7);
  	}
- 	else if (temp < 63){
+ 	else if (temp < 60){
         cpu_online_wrapper(1);
  		cpu_online_wrapper(2);
  		cpu_online_wrapper(3);
- 		cpu_online_wrapper(4);
- 		cpu_online_wrapper(5);
-		cpu_online_wrapper(6);
- 		cpu_online_wrapper(7);
 	}
  }
  
