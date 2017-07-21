@@ -2709,7 +2709,7 @@ qpnp_batt_temp_work(struct qpnp_lbc_chip *chip)
 
 }
 
-#define CONSECUTIVE_COUNT 3
+#define CONSECUTIVE_COUNT 10
 #define CV_TIME_COUNT  0
 	static void
 qpnp_lbc_charging_work(struct work_struct *work)

@@ -38,6 +38,16 @@ struct mdss_livedisplay_ctx {
 	unsigned int ce_off_cmds_len;
 	unsigned int ce_on_cmds_len;
 
+	const uint8_t *hbm_off_cmds;
+	const uint8_t *hbm_on_cmds;
+	unsigned int hbm_off_cmds_len;
+	unsigned int hbm_on_cmds_len;
+
+	const uint8_t *srgb_off_cmds;
+	const uint8_t *srgb_on_cmds;
+	unsigned int srgb_off_cmds_len;
+	unsigned int srgb_on_cmds_len;
+
 	const uint8_t *presets[MAX_PRESETS];
 	unsigned int presets_len[MAX_PRESETS];
 
@@ -52,6 +62,10 @@ struct mdss_livedisplay_ctx {
 	unsigned int sre_level;
 	bool aco_enabled;
 	bool ce_enabled;
+	bool hbm_enabled;
+	bool srgb_enabled;
+
+	unsigned int link_state;
 
 	unsigned int num_presets;
 	unsigned int caps;
@@ -85,18 +99,22 @@ enum {
 };
 
 enum {
-	MODE_CABC		= 0x01,
-	MODE_SRE		= 0x02,
-	MODE_AUTO_CONTRAST	= 0x04,
-	MODE_COLOR_ENHANCE	= 0x08,
-	MODE_PRESET		= 0x10,
-	MODE_RGB		= 0x20,
-	MODE_CABC_COLOR_ENHANCE	= 0x40,
-	MODE_UPDATE_ALL		= 0xFF,
+	MODE_CABC		= 0x001,
+	MODE_SRE		= 0x002,
+	MODE_AUTO_CONTRAST	= 0x004,
+	MODE_COLOR_ENHANCE	= 0x008,
+	MODE_PRESET		= 0x010,
+	MODE_RGB		= 0x020,
+	MODE_CABC_COLOR_ENHANCE	= 0x040,
+	MODE_HIGH_BRIGHTNESS	= 0x080,
+	MODE_SRGB		= 0x100,
+	MODE_UPDATE_ALL		= 0xFFF,
 };
 
-void mdss_livedisplay_update(struct mdss_livedisplay_ctx *mlc, uint32_t updated);
-int mdss_livedisplay_parse_dt(struct device_node *np, struct mdss_panel_info *pinfo);
+void mdss_livedisplay_update(struct mdss_livedisplay_ctx *mlc,
+			     uint32_t updated);
+int mdss_livedisplay_parse_dt(struct device_node *np,
+			      struct mdss_panel_info *pinfo);
 int mdss_livedisplay_create_sysfs(struct msm_fb_data_type *mfd);
 
 static inline bool is_cabc_cmd(uint32_t value)
@@ -107,15 +125,15 @@ static inline bool is_cabc_cmd(uint32_t value)
 			(value & MODE_CABC_COLOR_ENHANCE);
 }
 
-static inline struct mdss_livedisplay_ctx* get_ctx(struct msm_fb_data_type *mfd)
+static inline struct mdss_livedisplay_ctx *get_ctx(struct msm_fb_data_type *mfd)
 {
-    return mfd->panel_info->livedisplay;
+	return mfd->panel_info->livedisplay;
 }
 
-static inline struct mdss_dsi_ctrl_pdata* get_ctrl(struct msm_fb_data_type *mfd)
+static inline struct mdss_dsi_ctrl_pdata *get_ctrl(struct msm_fb_data_type *mfd)
 {
-    struct mdss_panel_data *pdata = dev_get_platdata(&mfd->pdev->dev);
-    return container_of(pdata, struct mdss_dsi_ctrl_pdata, panel_data);
+	struct mdss_panel_data *pdata = dev_get_platdata(&mfd->pdev->dev);
+	return container_of(pdata, struct mdss_dsi_ctrl_pdata, panel_data);
 }
 
 #endif

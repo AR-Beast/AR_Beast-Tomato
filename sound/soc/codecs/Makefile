@@ -100,6 +100,8 @@ snd-soc-wm5102-objs := wm5102.o
 snd-soc-florida-objs := florida.o
 snd-soc-clearwater-objs := clearwater.o
 snd-soc-marley-objs := marley.o
+snd-soc-moon-objs := moon.o
+snd-soc-cs47l15-objs := cs47l15.o
 snd-soc-wm8350-objs := wm8350.o
 snd-soc-wm8400-objs := wm8400.o
 snd-soc-wm8510-objs := wm8510.o
@@ -245,6 +247,8 @@ obj-$(CONFIG_SND_SOC_WM5102)	+= snd-soc-wm5102.o
 obj-$(CONFIG_SND_SOC_FLORIDA)	+= snd-soc-florida.o
 obj-$(CONFIG_SND_SOC_CLEARWATER)	+= snd-soc-clearwater.o
 obj-$(CONFIG_SND_SOC_MARLEY)	+= snd-soc-marley.o
+obj-$(CONFIG_SND_SOC_MOON)	+= snd-soc-moon.o
+obj-$(CONFIG_SND_SOC_CS47L15)	+= snd-soc-cs47l15.o
 obj-$(CONFIG_SND_SOC_WM8350)	+= snd-soc-wm8350.o
 obj-$(CONFIG_SND_SOC_WM8400)	+= snd-soc-wm8400.o
 obj-$(CONFIG_SND_SOC_WM8510)	+= snd-soc-wm8510.o
@@ -297,5 +301,4 @@ obj-$(CONFIG_SND_SOC_MSM_STUB)  += snd-soc-msm-stub.o
 obj-$(CONFIG_SND_SOC_MAX9877)	+= snd-soc-max9877.o
 obj-$(CONFIG_SND_SOC_TPA6130A2)	+= snd-soc-tpa6130a2.o
 
-# FauxSound Control3
-obj-$(CONFIG_SOUND_CONTROL_HAX_3_GPL) += sound_control_3_gpl.o
+obj-$(CONFIG_SOUND_CONTROL_HAX_3_GPL) += sound_control_3_gpl.o snd-soc-wcd9320.o

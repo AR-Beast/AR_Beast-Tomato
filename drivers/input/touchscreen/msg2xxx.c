@@ -156,7 +156,7 @@ static struct msg2xxx_data *this_data;
 static u8 g_ic_type = 0;
 static int int_flag=0;
 
-static 	struct input_dev *input=NULL;
+static	struct input_dev *input=NULL;
 struct i2c_client *tpd_i2c_client = NULL;
 static struct work_struct msg_wq;
 //static struct early_suspend early_suspend;
@@ -188,7 +188,7 @@ static void ps_poll_work_func(struct work_struct *work)
 
 static ssize_t tp_ps_enable_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-    	int32_t enable;
+	int32_t enable;
 	struct msg2xxx_data *ps_data =  dev_get_drvdata(dev);
 
 	enable = (ps_data->ps_enabled)?1:0;
@@ -210,10 +210,10 @@ static ssize_t tp_ps_enable_store(struct device *dev, struct device_attribute *a
 		return -EINVAL;
 	}
 	dev_dbg(dev, "%s: Enable PS : %d\n", __func__, en);
-	
+
        tsps_msg2xxx_enable(ps_data, en);
-	   
-  	return size;
+
+	return size;
 }
 
 static ssize_t tp_ps_distance_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -242,7 +242,7 @@ static ssize_t tp_ps_distance_store(struct device *dev, struct device_attribute 
 			__func__, ret);
 		return ret;
 	}
-    
+
 	input_report_abs(ps_data->ps_input_dev, ABS_DISTANCE, value);
 	input_sync(ps_data->ps_input_dev);
 
@@ -306,7 +306,7 @@ static struct mutex tpp_lock;
 static void tp_print_create_entry(void);
 #endif
 
-//#define TP_DEBUG_ON	
+//#define TP_DEBUG_ON
 #ifdef TP_DEBUG_ON
 #include <linux/proc_fs.h>
 #define DEBUG_AUTHORITY 0777
@@ -740,7 +740,7 @@ static S32 _msg_ParseInfo_26xx(touchInfo_t *info)
 #ifdef TP_DEBUG_ON
 	 if(tp_debug_on)
 	 {
-	 	printk(KERN_ERR "check sum: [%x] == [%x]? \n", data[REPORT_PACKET_LENGTH-1], checksum);
+		printk(KERN_ERR "check sum: [%x] == [%x]? \n", data[REPORT_PACKET_LENGTH-1], checksum);
 	 }
 #endif
 
@@ -875,9 +875,9 @@ static void tpd_down(int x, int y, int p, int id)
 
 	/*Modified by zhanghaibin for reporting 2 points,20140812*/
 	if (g_ic_type == 3)
-      { 
-    		input_report_abs(input, ABS_MT_PRESSURE, p);    
-    		input_report_abs(input, ABS_MT_TRACKING_ID, id); 
+      {
+		input_report_abs(input, ABS_MT_PRESSURE, p);
+		input_report_abs(input, ABS_MT_TRACKING_ID, id);
       }
 
 	input_mt_sync(input);
@@ -898,15 +898,15 @@ static void tpd_up(void)
 static irqreturn_t msg_interrupt(int irq, void *dev_id)
 {
 	/*Modified by zhanghaibin for TP can't work somtimes,becaue of nest,20140708*/
-  	mutex_lock(&this_data->int_lock);
+	mutex_lock(&this_data->int_lock);
 	if (int_flag == 0)
 	{
 		int_flag = 1;
-	    	 _msg_disable_irq();
+		 _msg_disable_irq();
 		schedule_work(&msg_wq);
 	}
 	mutex_unlock(&this_data->int_lock);
-	
+
     return IRQ_HANDLED;
 }
 
@@ -917,9 +917,9 @@ static void msg_do_work(struct work_struct *work)
     int i = 0;
     static int have_vk = 0;
     static int pre_vk = 0;
-	
+
     memset(&info, 0x0, sizeof(info));
-	
+
     if (g_ic_type == 2)
     {
         ret = _msg_ParseInfo_21xx(&info);
@@ -933,16 +933,16 @@ static void msg_do_work(struct work_struct *work)
     {
         if (info.bKey)
         {
-        	TPD_DEBUG("msg_do_work  info.keycode =%x\n",info.keycode);
+		TPD_DEBUG("msg_do_work  info.keycode =%x\n",info.keycode);
 		#ifdef TP_DEBUG_ON
 		 if(tp_debug_on)
 		 {
-		 	printk(KERN_ERR "msg_do_work  info.keycode =%x, tpd_key_array[info.keycode]=%d\n",info.keycode, tpd_key_array[info.keycode]);
+			printk(KERN_ERR "msg_do_work  info.keycode =%x, tpd_key_array[info.keycode]=%d\n",info.keycode, tpd_key_array[info.keycode]);
 		 }
 		#endif
 		 input_report_key(input, BTN_TOUCH, 1);
               input_report_key(input, tpd_key_array[info.keycode], 1);
- 	      	 have_vk=1;
+		 have_vk=1;
 	        pre_vk = info.keycode;
 
         }
@@ -957,17 +957,17 @@ static void msg_do_work(struct work_struct *work)
         else if(info.bUp)
         {
              if(1==have_vk)
-            	{
-            		#ifdef TP_DEBUG_ON
-            		 if(tp_debug_on)
+		{
+			#ifdef TP_DEBUG_ON
+			 if(tp_debug_on)
 			 {
-			 	printk(KERN_ERR "msg_do_work  pre_vk =%x, tpd_key_array[pre_vk]=%d\n",pre_vk,tpd_key_array[pre_vk]);
+				printk(KERN_ERR "msg_do_work  pre_vk =%x, tpd_key_array[pre_vk]=%d\n",pre_vk,tpd_key_array[pre_vk]);
 			 }
 			 #endif
-            		input_report_key(input, BTN_TOUCH, 0);
+			input_report_key(input, BTN_TOUCH, 0);
                     input_report_key(input,  tpd_key_array[pre_vk], 0);
-            		have_vk = 0;
-            	}
+			have_vk = 0;
+		}
 		else
 		{
 			tpd_up();
@@ -975,9 +975,9 @@ static void msg_do_work(struct work_struct *work)
         }
 
         input_sync(input);
-    }	
+    }
 	_msg_enable_irq();
-	
+
 	mutex_lock(&this_data->int_lock);
 	int_flag=0;
 	mutex_unlock(&this_data->int_lock);
@@ -1039,11 +1039,11 @@ static void _msg_resetHW(void)
 
 static void _msg_disable_irq(void)//modify: 中断disable函数, 根据项目修改
 {
-   	disable_irq_nosync(tpd_i2c_client->irq);
+	disable_irq_nosync(tpd_i2c_client->irq);
 }
 static void _msg_enable_irq(void)//modify: 中断enable函数, 根据项目修改
 {
-    	enable_irq(tpd_i2c_client->irq);
+	enable_irq(tpd_i2c_client->irq);
 }
 
 static void tpd_resume( struct device *dev)
@@ -1060,7 +1060,7 @@ static void tpd_resume( struct device *dev)
 	 #if defined(CONFIG_TOUCHSCREEN_PROXIMITY_SENSOR)
 	 if (late_enable_proximity)
 	 {
-	  	//enable proximity
+		//enable proximity
 		_msg_enable_proximity();
 		queue_delayed_work(this_data->wq, &this_data->poll_work, msecs_to_jiffies(this_data->delay));
 		late_enable_proximity=0;
@@ -1109,7 +1109,7 @@ static void tpd_suspend( struct device *dev )
 		TPD_DEBUG("TPD already in sleep\n");
 		return;
 	}
-    	_msg_disable_irq();
+	_msg_disable_irq();
 	  /* Added by zhanghabin for touch ending,20140307*/
 	for (i = 0; i < MAX_TOUCH_NUM; i++) {
 		input_mt_slot(input, i);
@@ -1400,12 +1400,12 @@ static ssize_t msg2xxx_ic_show(struct device *dev,
                                      struct device_attribute *attr, char *buf)
 {
     if (g_ic_type == 2)
-    	return sprintf(buf, "%s\n","Mstar.msg21xxA");
+	return sprintf(buf, "%s\n","Mstar.msg21xxA");
     else if (g_ic_type == 3)
-    	return sprintf(buf, "%s\n","Mstar.msg263xM");
+	return sprintf(buf, "%s\n","Mstar.msg263xM");
     else
     {
-    	printk("error IC type=%d\n",g_ic_type);
+	printk("error IC type=%d\n",g_ic_type);
 	return sprintf(buf, "%s\n","Mstar.msg263xM");
     }
 }
@@ -1539,7 +1539,7 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	tpd_i2c_client = client;
 
 	mutex_init(&data->int_lock);
-	
+
 	if(0==_msg_GetIcType())
 	{
 	    printk("The currnet ic is not MSG\n");
@@ -1548,7 +1548,7 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 
 	//read fw-version,zhanghaibin,20140923
 	_msg_GetVersion();
-	
+
 	_msg_init_input();
 
 #ifdef CONFIG_TOUCHSCREEN_PROXIMITY_SENSOR
@@ -1561,9 +1561,9 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	}
 	data->ps_input_dev->name = "proximity";
 	set_bit(EV_ABS, data->ps_input_dev->evbit);
-	
+
 	input_set_abs_params(data->ps_input_dev, ABS_DISTANCE, 0,1, 0, 0);
-	
+
 	err = input_register_device(data->ps_input_dev);
 	if (err<0)
 	{
@@ -1571,13 +1571,13 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 		goto err_ps_input_register;
 	}
 
-	
+
 	err = sysfs_create_group(&data->ps_input_dev->dev.kobj, &tp_ps_attribute_group);
 	if (err < 0)
 	{
 		printk(KERN_ERR "%s:could not create sysfs group for ps\n", __func__);
 	}
-	
+
 	input_set_drvdata(data->ps_input_dev, data);
 #endif
 	INIT_WORK(&msg_wq, msg_do_work);
@@ -1645,7 +1645,7 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	wake_lock_init(&data->ps_wakelock,WAKE_LOCK_SUSPEND, "ps_wakelock");
 	INIT_DELAYED_WORK(&data->poll_work, ps_poll_work_func);
 	data->delay = 150;
-	
+
 	data->ps_cdev = sensors_proximity_cdev;
 	data->ps_cdev.sensors_enable = tsps_msg2xxx_enable_set;
 	err = sensors_classdev_register(&client->dev, &data->ps_cdev);
@@ -1665,8 +1665,8 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 #endif
 
     TPD_DEBUG("TPD probe done\n");
-    
-    return TPD_OK;   
+
+    return TPD_OK;
 
 #ifdef CONFIG_TOUCHSCREEN_PROXIMITY_SENSOR
 err_class_sysfs:
@@ -1707,7 +1707,7 @@ pwr_deinit:
 
 static int __exit tpd_remove(struct i2c_client *client)
 {
-    	struct msg2xxx_data *data = i2c_get_clientdata(client);
+	struct msg2xxx_data *data = i2c_get_clientdata(client);
 
 	TPD_DEBUG("TPD removed\n");
 #if defined(CONFIG_FB)
@@ -2504,14 +2504,14 @@ static ssize_t proc_version_read(struct file *file, char __user * buffer, size_t
     int cnt= 0;
 
     firmware_version_show(NULL,NULL, buffer);
-	
+
     return cnt;
 }
 
 static ssize_t proc_version_write(struct file *file,
 	const char __user *user_buf,
 	size_t count, loff_t *ppos)
-{    
+{
     firmware_version_store(NULL, NULL, NULL, 0);
     return count;
 }
@@ -2528,7 +2528,7 @@ static ssize_t proc_data_read(struct file *file, char __user * buffer, size_t co
 		       loff_t * ppos)
 {
     int cnt= 0;
-    
+
     firmware_data_show(NULL, NULL, buffer);
 
     return cnt;
@@ -2541,7 +2541,7 @@ static ssize_t proc_data_write(struct file *file,
     firmware_data_store(NULL, NULL, user_buf, 0);
     return count;
 }
-#define CTP_AUTHORITY_PROC 0777 
+#define CTP_AUTHORITY_PROC 0777
 static const struct file_operations fw_version_proc_fops = {
 	.owner		= THIS_MODULE,
 	.read		= proc_version_read,
@@ -2560,52 +2560,52 @@ static const struct file_operations fw_update_proc_fops = {
 	//.release	= single_release,
 };
 static int _msg_create_file_for_fwUpdate_proc(void)
-{  
+{
     struct proc_dir_entry *msg_class_proc = NULL;
     struct proc_dir_entry *msg_msg20xx_proc = NULL;
     struct proc_dir_entry *msg_device_proc = NULL;
     struct proc_dir_entry *msg_version_proc = NULL;
     struct proc_dir_entry *msg_update_proc = NULL;
     struct proc_dir_entry *msg_data_proc = NULL;
-    
+
     msg_class_proc = proc_mkdir("class", NULL);
     if (!msg_class_proc)
 		return -ENOMEM;
-	
+
     msg_msg20xx_proc = proc_mkdir("ms-touchscreen-msg20xx",msg_class_proc);
     if (!msg_msg20xx_proc)
 		return -ENOMEM;
-	
+
     msg_device_proc = proc_mkdir("device",msg_msg20xx_proc);
     if (!msg_device_proc)
 		return -ENOMEM;
-    
+
     msg_version_proc = proc_create("version", CTP_AUTHORITY_PROC, msg_device_proc,&fw_version_proc_fops);
-    if (msg_version_proc == NULL) 
+    if (msg_version_proc == NULL)
     {
         TPD_DEBUG_UPDATE("create_proc_entry msg_version_proc failed\n");
 	  goto fail1;
-    } 
-    
+    }
+
     msg_data_proc = proc_create("data", CTP_AUTHORITY_PROC,msg_device_proc,&fw_data_proc_fops);
-    if (msg_data_proc == NULL) 
+    if (msg_data_proc == NULL)
     {
         TPD_DEBUG_UPDATE("create_proc_entry msg_data_proc failed\n");
           goto fail2;
-    } 
-    
+    }
+
     msg_update_proc = proc_create("update", CTP_AUTHORITY_PROC, msg_device_proc,&fw_update_proc_fops);
-    if (msg_update_proc == NULL) 
+    if (msg_update_proc == NULL)
     {
         TPD_DEBUG_UPDATE("create_proc_entry msg_update_proc failed\n");
 	  goto fail3;
-    } 
+    }
      return 0;
-	 
+
  fail3: remove_proc_entry("data", msg_device_proc);
  fail2: remove_proc_entry("version", msg_device_proc);
- fail1: 
- 	remove_proc_entry("device", msg_msg20xx_proc);
+ fail1:
+	remove_proc_entry("device", msg_msg20xx_proc);
 	remove_proc_entry("ms-touchscreen-msg20xx", msg_class_proc);
 	remove_proc_entry("class", NULL);
     return -ENOMEM;
@@ -2613,7 +2613,7 @@ static int _msg_create_file_for_fwUpdate_proc(void)
 #endif
 #endif
 #ifdef CONFIG_TOUCHSCREEN_PROXIMITY_SENSOR
- 
+
 static void _msg_enable_proximity(void)
 {
     U8 tx_data[4] = {0};
@@ -2627,11 +2627,11 @@ static void _msg_enable_proximity(void)
         tx_data[0] = 0x52;
         tx_data[1] = 0x00;
 	 if (g_ic_type == 2)
-       	tx_data[2] = 0x4a;
+	tx_data[2] = 0x4a;
 	 else  if (g_ic_type == 3)
 		tx_data[2] = 0x47;
 	 else
-	 	printk("IC type error!\n");
+		printk("IC type error!\n");
         tx_data[3] = 0xa0;
         _msg_WriteI2CSeq(FW_ADDR_MSG_TP, &tx_data[0], 4);
         mdelay(100);
@@ -2640,9 +2640,9 @@ static void _msg_enable_proximity(void)
 	 if (g_ic_type == 2)
 		tx_data[2] = 0x4a;
 	 else if (g_ic_type == 3)
-	 	tx_data[2] = 0x47;
+		tx_data[2] = 0x47;
 	 else
-	 	printk("IC type error!\n");
+		printk("IC type error!\n");
         _msg_WriteI2CSeq(FW_ADDR_MSG_TP, &tx_data[0], 3);
         mdelay(50);
         _msg_ReadI2CSeq(FW_ADDR_MSG_TP, &rx_data[0], 2);
@@ -2682,22 +2682,22 @@ static void _msg_disable_proximity(void)
         tx_data[0] = 0x52;
         tx_data[1] = 0x00;
 	  if (g_ic_type == 2)
-       	tx_data[2] = 0x4a;
+	tx_data[2] = 0x4a;
 	 else  if (g_ic_type == 3)
 		tx_data[2] = 0x47;
 	 else
-	 	printk("IC type error!\n");
+		printk("IC type error!\n");
         tx_data[3] = 0xa1;
         _msg_WriteI2CSeq(FW_ADDR_MSG_TP, &tx_data[0], 4);
         mdelay(100);
         tx_data[0] = 0x53;
         tx_data[1] = 0x00;
 	  if (g_ic_type == 2)
-       	tx_data[2] = 0x4a;
+	tx_data[2] = 0x4a;
 	  else  if (g_ic_type == 3)
 		tx_data[2] = 0x47;
 	  else
-	 	printk("IC type error!\n");
+		printk("IC type error!\n");
         _msg_WriteI2CSeq(FW_ADDR_MSG_TP, &tx_data[0], 3);
         mdelay(50);
         _msg_ReadI2CSeq(FW_ADDR_MSG_TP, &rx_data[0], 2);
@@ -2760,10 +2760,10 @@ int tsps_msg2xxx_enable_set(struct sensors_classdev *sensors_cdev,
 {
 	struct msg2xxx_data *ps_data = container_of(sensors_cdev,
 						struct msg2xxx_data, ps_cdev);
-	
+
 	printk(KERN_ERR "%s enabled=%d\n",__func__,enabled);
 	tsps_msg2xxx_enable(ps_data,enabled);
-	
+
 	return 0;
 }
 int tsps_msg2xxx_data(void)
@@ -2827,23 +2827,23 @@ static const struct file_operations ps_proc_fops = {
 	//.release	= single_release,
 };
 static int _msg_create_file_for_proximity_proc(void)
-{  
+{
     struct proc_dir_entry *msg_tp_ps = NULL;
     struct proc_dir_entry *msg_ps_proc = NULL;
 
     msg_tp_ps = proc_mkdir("tp_ps", NULL);
     if (!msg_tp_ps)
-    	return -ENOMEM;
-	
+	return -ENOMEM;
+
     msg_ps_proc = proc_create("ps", 0777, msg_tp_ps,&ps_proc_fops);
-    if (msg_ps_proc == NULL) 
+    if (msg_ps_proc == NULL)
     {
         TPD_DEBUG("create_proc_entry tp_ps failed\n");
 	  goto fail;
-    } 
+    }
     return 0;
-    fail: 
- 	 remove_proc_entry("tp_ps", NULL);
+    fail:
+	 remove_proc_entry("tp_ps", NULL);
         return -ENOMEM;
 }
 #endif
@@ -2903,13 +2903,13 @@ u8 *MAP41_4 = NULL;
 #define SSBIT15 (1<<15)
 
 //adair
-#define TP_OF_RN       (1) 
+#define TP_OF_RN       (1)
 #define TP_OF_YUDA	 (2)
-#define TP_OF_HLT     (3) 
+#define TP_OF_HLT     (3)
 
 static int ito_test_i2c_read(u8 addr, u8* read_data, u16 size)//adair
 {
-   	int rc;
+	int rc;
 
 	struct i2c_msg msgs[] =
     {
@@ -2931,7 +2931,7 @@ static int ito_test_i2c_read(u8 addr, u8* read_data, u16 size)//adair
 
 static int ito_test_i2c_write(u8 addr, u8* data, u16 size)//adair:
 {
-   	int rc;
+	int rc;
 	struct i2c_msg msgs[] =
     {
 		{
@@ -3109,7 +3109,7 @@ static void ito_test_EnterSerialDebugMode(void)
 static uint16_t ito_test_get_num( void )
 {
     uint16_t    num_of_sensor,i;
-    uint16_t 	RegValue1,RegValue2;
+    uint16_t	RegValue1,RegValue2;
 
     num_of_sensor = 0;
 
@@ -3117,13 +3117,13 @@ static uint16_t ito_test_get_num( void )
     ITO_TEST_DEBUG("ito_test_get_num,RegValue1=%d\n",RegValue1);
     if ( ( RegValue1 & SSBIT1) == SSBIT1 )
     {
-    	RegValue1 = ito_test_ReadReg( 0x12, 0x0A);
-    	RegValue1 = RegValue1 & 0x0F;
+	RegValue1 = ito_test_ReadReg( 0x12, 0x0A);
+	RegValue1 = RegValue1 & 0x0F;
 
-    	RegValue2 = ito_test_ReadReg( 0x12, 0x16);
-    	RegValue2 = (( RegValue2 >> 1 ) & 0x0F) + 1;
+	RegValue2 = ito_test_ReadReg( 0x12, 0x16);
+	RegValue2 = (( RegValue2 >> 1 ) & 0x0F) + 1;
 
-    	num_of_sensor = RegValue1 * RegValue2;
+	num_of_sensor = RegValue1 * RegValue2;
     }
 	else
 	{
@@ -3209,8 +3209,8 @@ static uint16_t ito_test_get_data_out( int16_t* s16_raw_data )
 static void ito_test_send_data_in( uint8_t step )
 {
     uint16_t	i;
-    uint8_t 	dbbus_tx_data[512];
-    uint16_t 	*Type1=NULL;
+    uint8_t	dbbus_tx_data[512];
+    uint16_t	*Type1=NULL;
 
     ITO_TEST_DEBUG("ito_test_send_data_in step=%d\n",step);
 	if( step == 4 )
@@ -3280,22 +3280,22 @@ static void ito_test_send_data_in( uint8_t step )
     dbbus_tx_data[2] = 0x12 * 2;
     dbbus_tx_data[3] = 0X30;
     dbbus_tx_data[4] = 0X30;
-    ito_test_i2c_write(ITO_TEST_ADDR_REG, dbbus_tx_data, 5);        
+    ito_test_i2c_write(ITO_TEST_ADDR_REG, dbbus_tx_data, 5);
 
-    
+
     dbbus_tx_data[2] = 0x14 * 2;
     dbbus_tx_data[3] = 0X30;
     dbbus_tx_data[4] = 0X30;
-    ito_test_i2c_write(ITO_TEST_ADDR_REG, dbbus_tx_data, 5);     
+    ito_test_i2c_write(ITO_TEST_ADDR_REG, dbbus_tx_data, 5);
 
-    
+
     dbbus_tx_data[1] = 0x12;
     for (i = 0x0D; i <= 0x10;i++ )//for AC noise(++)
     {
         dbbus_tx_data[2] = i * 2;
         dbbus_tx_data[3] = Type1[128+i] & 0xFF;
         dbbus_tx_data[4] = ( Type1[128+i] >> 8 ) & 0xFF;
-        ito_test_i2c_write( ITO_TEST_ADDR_REG,  dbbus_tx_data,5 );  
+        ito_test_i2c_write( ITO_TEST_ADDR_REG,  dbbus_tx_data,5 );
     }
 
     for (i = 0x16; i <= 0x18; i++)//for AC noise
@@ -3303,7 +3303,7 @@ static void ito_test_send_data_in( uint8_t step )
         dbbus_tx_data[2] = i * 2;
         dbbus_tx_data[3] = Type1[128+i] & 0xFF;
         dbbus_tx_data[4] = ( Type1[128+i] >> 8 ) & 0xFF;
-        ito_test_i2c_write( ITO_TEST_ADDR_REG, dbbus_tx_data,5 );  
+        ito_test_i2c_write( ITO_TEST_ADDR_REG, dbbus_tx_data,5 );
     }
 #endif
 }
@@ -3317,15 +3317,15 @@ static void ito_test_set_v( uint8_t Enable, uint8_t Prs)
     u16RegValue = u16RegValue & 0xF1;
     if ( Prs == 0 )
     {
-    	ito_test_WriteReg( 0x12, 0x08, u16RegValue| 0x0C);
+	ito_test_WriteReg( 0x12, 0x08, u16RegValue| 0x0C);
     }
     else if ( Prs == 1 )
     {
-    	ito_test_WriteReg( 0x12, 0x08, u16RegValue| 0x0E);
+	ito_test_WriteReg( 0x12, 0x08, u16RegValue| 0x0E);
     }
     else
     {
-    	ito_test_WriteReg( 0x12, 0x08, u16RegValue| 0x02);
+	ito_test_WriteReg( 0x12, 0x08, u16RegValue| 0x02);
     }
 
     if ( Enable )
@@ -3394,7 +3394,7 @@ static void ito_test_first( uint8_t item_id , int16_t* s16_raw_data)
     int16_t     s16_raw_data_tmp[48]={0};
 	uint8_t     num_of_sensor, num_of_sensor2,total_sensor=0;
 	uint16_t	u16RegValue;
-    uint8_t 	*pMapping=NULL;
+    uint8_t	*pMapping=NULL;
 
 
 	num_of_sensor = 0;
@@ -3459,9 +3459,9 @@ static void ito_test_first( uint8_t item_id , int16_t* s16_raw_data)
 		ito_test_WriteReg( 0x11, 0x0E, u16RegValue | SSBIT11 );
 
 		if ( g_LTP == 1 )
-	    	ito_test_set_c( 32 );
+		ito_test_set_c( 32 );
 		else
-	    	ito_test_set_c( 0 );
+		ito_test_set_c( 0 );
 
 		ito_test_sw();
 
@@ -3634,7 +3634,7 @@ static ITO_TEST_RET ito_test_interface(void)
 {
     ITO_TEST_RET ret = ITO_TEST_OK;
     uint16_t i = 0;
- 
+
        //printk(KERN_ERR "ito_test_interface111111\n");
 	#if 0 //defined CONFIG_ARCH_MSM8610_W7_YULONG_CP7236
        qcom_i2c_clk_ctl_change(this_data->client->adapter, 50000);
@@ -3683,7 +3683,7 @@ static ITO_TEST_RET ito_test_interface(void)
 
     ito_test_first(42, s16_raw_data_3);
     ITO_TEST_DEBUG("42 get s16_raw_data_3\n");
-    
+
 
     ITO_TEST_END:
 	ito_test_reset();
@@ -3710,7 +3710,7 @@ static struct proc_dir_entry *set_iic_rate = NULL;
 ITO_TEST_RET g_ito_test_ret = ITO_TEST_OK;
 #define PROC_ITO_TEST      "ito_test"
 static int ito_test_proc_read(struct file *file, char __user * buffer, size_t count,
-		       loff_t * ppos) 
+		       loff_t * ppos)
 {
 	int ret;
 	int err;
@@ -3758,7 +3758,7 @@ static int ito_test_proc_write(struct file *file, const char *buffer, unsigned l
 #endif
 //static int ito_test_proc_read_debug(char *page, char **start, off_t off, int count, int *eof, void *data)
 static int ito_test_proc_read_debug(struct file *file, char __user * buffer, size_t count,
-		       loff_t * ppos) 
+		       loff_t * ppos)
 {
     int cnt= 0;
 
@@ -3803,7 +3803,7 @@ static int ito_test_proc_write_debug(struct file *file, const char __user *buf, 
     return count;
 }
 static int ito_test_proc_read_debug_on_off(struct file *file, char __user * buffer, size_t count,
-		       loff_t * ppos) 
+		       loff_t * ppos)
 {
     int cnt= 0;
 
@@ -3821,7 +3821,7 @@ static int ito_test_proc_write_debug_on_off(struct file *file, const char __user
 }
 
 static int ito_test_proc_read_set_iic_rate(struct file *file, char __user * buffer, size_t count,
-		       loff_t * ppos) 
+		       loff_t * ppos)
 {
     int cnt= 0;
 
@@ -3870,34 +3870,34 @@ static int ito_test_create_entry(void)
 
     if (!msg_ito_test)
 		return -ENOMEM;
-	
+
     if (NULL==debug)
     {
         ITO_TEST_DEBUG_MUST("create_proc_entry ITO TEST DEBUG failed\n");
 	  goto fail1;
     }
-    
+
     //Added by zhanghaibin
     if (NULL==ito_test)
     {
         ITO_TEST_DEBUG_MUST("create_proc_entry ITO TEST DEBUG failed\n");
 	 goto fail2;
     }
-    
+
     if (NULL==debug_on_off)
     {
         ITO_TEST_DEBUG_MUST("create_proc_entry ITO TEST ON OFF failed\n");
 	  goto fail3;
     }
     else
-    
+
     if (NULL==set_iic_rate)
     {
         ITO_TEST_DEBUG_MUST("create_proc_entry ITO TEST SET IIC RATE failed\n");
 	  goto fail4;
     }
     return 0;
-	
+
  fail4: remove_proc_entry(PROC_ITO_TEST_DEBUG_ON_OFF, msg_ito_test);
  fail3: remove_proc_entry(PROC_ITO_TEST, msg_ito_test);
  fail2: remove_proc_entry(PROC_ITO_TEST_DEBUG, msg_ito_test);
@@ -4234,8 +4234,8 @@ int ITOTest_m(void)
             printk("\nSen[%02d]\t", i);
             for (j = 0; j < t1; j++)
             {
-    		g_result[i * t1 + j] = (4464*g_mode[i * t1 + j]-deltaC[i * t1 + j]);
-    		printk("%d\t", g_result[i * t1 + j]);
+		g_result[i * t1 + j] = (4464*g_mode[i * t1 + j]-deltaC[i * t1 + j]);
+		printk("%d\t", g_result[i * t1 + j]);
             }
         }
         printk("\n\n\n");
@@ -4246,7 +4246,7 @@ int ITOTest_m(void)
                 if (g_result[i * t1 + j] < FIR_THRES)
                 {
                     ret = -1;
-                	  printk("\nsen%d,drv%d,MIN_Thres=%d\t", i,j,g_result[i * t1 + j]);
+			  printk("\nsen%d,drv%d,MIN_Thres=%d\t", i,j,g_result[i * t1 + j]);
                 }
 
                 if (i > 0)
@@ -4281,7 +4281,7 @@ ito_end:
 }
 
 #include <linux/proc_fs.h>
-#define ITO_TEST_M_AUTHORITY 0777 
+#define ITO_TEST_M_AUTHORITY 0777
 static struct proc_dir_entry *msg_ito_test_m = NULL;
 static struct proc_dir_entry *debug_m = NULL;
 static struct proc_dir_entry *ito_test_m = NULL;
@@ -4292,18 +4292,18 @@ static struct proc_dir_entry *ito_test_m = NULL;
 struct class *msg2xxx_ito_test_class;
 struct device *msg2xxx_ito_test_cmd_dev;
 static int ito_test_m_proc_read_debug(struct file *file, char __user * buffer, size_t count,
-		       loff_t * ppos) 
+		       loff_t * ppos)
 {
     int cnt= 0;
-    
+
     cnt=ITOTest_m();
     printk("ITOTest_m=%d\n",cnt);
-	
+
     return cnt;
 }
 static int ito_test_proc_read_m(struct file *file, char __user * buffer, size_t count,
 		       loff_t * ppos)
-{  
+{
 	int ret;
 	int err;
 
@@ -4337,18 +4337,18 @@ static int mito_test_create_entry(void)
     if (!msg_ito_test_m)
 		return -ENOMEM;
 
-    if (NULL==debug_m) 
+    if (NULL==debug_m)
     {
         printk("create_proc_entry ITO TEST DEBUG failed\n");
 	 goto fail1;
-    } 
+    }
 
     //Added by zhanghaibin
-    if (NULL==ito_test_m) 
+    if (NULL==ito_test_m)
     {
         printk("create_proc_entry ITO TEST failed\n");
 	 goto fail2;
-    } 
+    }
     return 0;
  fail2: remove_proc_entry(PROC_ITO_TEST_DEBUG, msg_ito_test_m);
  fail1: remove_proc_entry(PROC_MSG_ITO_TESE_M, NULL);
@@ -4359,7 +4359,7 @@ static int mito_test_create_entry(void)
 static ssize_t firmware_ito_test_show(struct device *dev,
                                      struct device_attribute *attr, char *buf)
 {
- 	int ret=-1;
+	int ret=-1;
 
 	if (g_ic_type == 2)
 	{
@@ -4373,9 +4373,9 @@ static ssize_t firmware_ito_test_show(struct device *dev,
 	{
 		printk("ic type error\n");
 	}
-	
+
 	printk("ITOTest result=%d\n",ret);
-	
+
 	return sprintf(buf, "%d\n", ret);
 }
 /*Added by zhanghaibin to avoid warning when probe,20141107*/
@@ -4389,7 +4389,7 @@ ssize_t firmware_ito_test_store(struct device *pDevice, struct device_attribute 
 static DEVICE_ATTR(ito_test, ITO_TEST_M_AUTHORITY, firmware_ito_test_show, firmware_ito_test_store);
 
 static void _msg_create_file_for_ito_test(void)
-{  
+{
     msg2xxx_ito_test_class = class_create(THIS_MODULE, "msg-ito-test-m");
     if (IS_ERR(msg2xxx_ito_test_class))
         pr_err("Failed to create class(ito_test)!\n");
@@ -4400,7 +4400,7 @@ static void _msg_create_file_for_ito_test(void)
     // ito-test
     if (device_create_file(msg2xxx_ito_test_cmd_dev, &dev_attr_ito_test) < 0)
         pr_err("Failed to create device file(%s)!\n", dev_attr_ito_test.attr.name);
-   
+
     dev_set_drvdata(msg2xxx_ito_test_cmd_dev, NULL);
 }
 

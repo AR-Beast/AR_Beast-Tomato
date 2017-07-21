@@ -51,10 +51,6 @@ static struct snd_soc_codec *wm8998;
 static int previous_bias_level = SND_SOC_BIAS_OFF;
 #endif
 
-#define SAMPLING_RATE_48KHZ 48000
-#define SAMPLING_RATE_96KHZ 96000
-#define SAMPLING_RATE_192KHZ 192000
-
 #define BTSCO_RATE_8KHZ 8000
 #define BTSCO_RATE_16KHZ 16000
 #define MAX_SND_CARDS 2
@@ -1252,18 +1248,18 @@ static struct snd_soc_codec *byt_get_codec(struct snd_soc_card *card)
 		pr_err("%s: cant find codec", __func__);
 		return NULL;
 	}
+
 	return codec;
 }
 
 static int msm8x16_enable_codec_ext_clk_wm8998(struct snd_soc_codec *codec,
-					int enable, bool dapm)
+					       int enable, bool dapm)
 {
-	/*Provide MCLK for wm8998*/
 	int rc = 0;
 	static struct clk *wm_clk = NULL;
-	if (enable) {
 
-		/*Provide MCLK for wm8998*/
+	if (enable) {
+		/* Provide MCLK for wm8998 */
 		if (codec->card->dev) {
 			wm_clk = clk_get(codec->card->dev, "wm_mclk");
 			if (IS_ERR(wm_clk)) {
@@ -1278,7 +1274,6 @@ static int msm8x16_enable_codec_ext_clk_wm8998(struct snd_soc_codec *codec,
 			}
 			pr_debug("enable wm_clk success");
 		}
-
 	} else {
 		if (wm_clk != NULL) {
 			clk_disable_unprepare(wm_clk);
@@ -2120,11 +2115,11 @@ static int wm8998_snd_startup_clk(void)
 		pr_err("failed to enable mclk\n");
 		return ret;
 	}
+
 	snd_soc_codec_set_pll(wm8998, VEGAS_FLL1_REFCLK,
-					 ARIZONA_FLL_SRC_NONE,
-					 0, 0);
+			ARIZONA_FLL_SRC_NONE, 0, 0);
 	snd_soc_codec_set_pll(wm8998, VEGAS_FLL1,
-				ARIZONA_FLL_SRC_NONE, 0, 0);
+			ARIZONA_FLL_SRC_NONE, 0, 0);
 
 	pr_debug("arizona  %s->%d\n", __FUNCTION__, __LINE__);
 	ret = snd_soc_codec_set_pll(wm8998, VEGAS_FLL1,
@@ -2132,19 +2127,17 @@ static int wm8998_snd_startup_clk(void)
 			19200000, MSM_VEGAS_FLL_CLK_FREQ);
 
 	pr_debug("arizona wm8998_snd_startup Start to set SYSCLK\n");
-	ret = snd_soc_codec_set_sysclk( wm8998, ARIZONA_CLK_SYSCLK,
-			ARIZONA_CLK_SRC_FLL1,
-			MSM_VEGAS_SYS_CLK_FREQ,
+	ret = snd_soc_codec_set_sysclk(wm8998, ARIZONA_CLK_SYSCLK,
+			ARIZONA_CLK_SRC_FLL1, MSM_VEGAS_SYS_CLK_FREQ,
 			SND_SOC_CLOCK_IN);
-
 	if (ret != 0) {
 		pr_err("arizona Failed to start SYSCLK: %d\n", ret);
 		return ret;
 	}
-	ret = snd_soc_codec_set_sysclk( wm8998, ARIZONA_CLK_OPCLK,
-					MSM_VEGAS_FLL_CLK_SOURCE,
-					MSM_VEGAS_SYS_CLK_FREQ,
-					SND_SOC_CLOCK_OUT);
+
+	ret = snd_soc_codec_set_sysclk(wm8998, ARIZONA_CLK_OPCLK,
+			MSM_VEGAS_FLL_CLK_SOURCE, MSM_VEGAS_SYS_CLK_FREQ,
+			SND_SOC_CLOCK_OUT);
 	if (ret != 0) {
 		pr_err("arizona Failed to start OPCLK  %d\n", ret);
 		return ret;
@@ -2158,10 +2151,10 @@ static int wm8998_snd_shutdown_clk(void)
 	int ret = 0;
 
 	snd_soc_codec_set_pll(wm8998, VEGAS_FLL1_REFCLK,
-		ARIZONA_FLL_SRC_NONE, 0, 0);
+			ARIZONA_FLL_SRC_NONE, 0, 0);
 
 	snd_soc_codec_set_pll(wm8998, VEGAS_FLL1,
-		ARIZONA_FLL_SRC_NONE, 0, 0);
+			ARIZONA_FLL_SRC_NONE, 0, 0);
 
 	ret = msm8x16_enable_codec_ext_clk_wm8998(wm8998, 0, true);
 	if (ret < 0) {
@@ -2171,11 +2164,11 @@ static int wm8998_snd_shutdown_clk(void)
 
 	return ret;
 }
-static int msm_wm8998_set_bias_level(struct snd_soc_card *card,
-				struct snd_soc_dapm_context *dapm,
-				enum snd_soc_bias_level level)
-{
 
+static int msm_wm8998_set_bias_level(struct snd_soc_card *card,
+				     struct snd_soc_dapm_context *dapm,
+				     enum snd_soc_bias_level level)
+{
 	int ret;
 
 	if (!wm8998)
@@ -2191,11 +2184,9 @@ static int msm_wm8998_set_bias_level(struct snd_soc_card *card,
 		if (previous_bias_level != SND_SOC_BIAS_STANDBY)
 			break;
 		ret= wm8998_snd_startup_clk();
-		if (ret < 0) {
+		if (ret < 0)
 			pr_err("failed to wm8998_snd_startup_clk\n");
-		}
 		break;
-
 	default:
 		break;
 	}
@@ -2204,8 +2195,8 @@ static int msm_wm8998_set_bias_level(struct snd_soc_card *card,
 }
 
 static int msm_wm8998_set_bias_level_post(struct snd_soc_card *card,
-				     struct snd_soc_dapm_context *dapm,
-				     enum snd_soc_bias_level level)
+					  struct snd_soc_dapm_context *dapm,
+					  enum snd_soc_bias_level level)
 {
 	int ret;
 
@@ -2223,14 +2214,14 @@ static int msm_wm8998_set_bias_level_post(struct snd_soc_card *card,
 		if(previous_bias_level < SND_SOC_BIAS_PREPARE)
 			break;
 		ret= wm8998_snd_shutdown_clk();
-		if (ret < 0) {
+		if (ret < 0)
 			pr_err("failed to wm8998_snd_shutdown_clk\n");
-		}
 		break;
 	default:
 		break;
 	}
 	previous_bias_level = level;
+
 	return 0;
 }
 
@@ -2245,8 +2236,8 @@ static int wm8998_init(struct snd_soc_pcm_runtime *rtd)
 	wm8998 = codec;
 
 	/* We will ensure the FLL is provided whenever the device is active */
-	snd_soc_codec_set_sysclk(codec, ARIZONA_CLK_SYSCLK, ARIZONA_CLK_SRC_FLL1,
-				 48000 * 1024, 0);
+	snd_soc_codec_set_sysclk(codec, ARIZONA_CLK_SYSCLK,
+			ARIZONA_CLK_SRC_FLL1, 48000 * 1024, 0);
 
 	/*
 	 * Just to force the clock reference to as specified, not 32kHz.
@@ -2254,8 +2245,7 @@ static int wm8998_init(struct snd_soc_pcm_runtime *rtd)
 	 * to the fll_sync setting and use it for fll_ref
 	 */
 	snd_soc_codec_set_pll(wm8998, VEGAS_FLL1_REFCLK,
-				ARIZONA_FLL_SRC_NONE,
-				0, 0);
+			ARIZONA_FLL_SRC_NONE, 0, 0);
 
 	snd_soc_dapm_ignore_suspend(dapm, "HPOUTL");
 	snd_soc_dapm_ignore_suspend(dapm, "HPOUTR");
@@ -2269,7 +2259,6 @@ static int wm8998_init(struct snd_soc_pcm_runtime *rtd)
 
 	return 0;
 }
-
 #endif
 
 static struct snd_soc_dai_link msm8x16_9326_dai[] = {

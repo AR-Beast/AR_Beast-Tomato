@@ -1065,27 +1065,21 @@ static int synaptics_rmi4_i2c_write(struct synaptics_rmi4_data *rmi4_data,
 {
 	int retval;
 	unsigned char retry;
-	unsigned char *buf;
-	struct i2c_msg msg[1];
-
-	buf = kzalloc(length + 1, GFP_KERNEL);
-	if (!buf) {
-		dev_err(&rmi4_data->i2c_client->dev,
-				"%s: Failed to alloc mem for buffer\n",
-				__func__);
-		return -ENOMEM;
-	}
+	unsigned char buf[length + 1];
+	struct i2c_msg msg[] = {
+		{
+			.addr = rmi4_data->i2c_client->addr,
+			.flags = 0,
+			.len = length + 1,
+			.buf = buf,
+		}
+	};
 
 	mutex_lock(&(rmi4_data->rmi4_io_ctrl_mutex));
 
 	retval = synaptics_rmi4_set_page(rmi4_data, addr);
 	if (retval != PAGE_SELECT_LEN)
 		goto exit;
-
-	msg[0].addr = rmi4_data->i2c_client->addr;
-	msg[0].flags = 0;
-	msg[0].len = length + 1;
-	msg[0].buf = buf;
 
 	buf[0] = addr & MASK_8BIT;
 	memcpy(&buf[1], &data[0], length);
@@ -1110,7 +1104,6 @@ static int synaptics_rmi4_i2c_write(struct synaptics_rmi4_data *rmi4_data,
 
 exit:
 	mutex_unlock(&(rmi4_data->rmi4_io_ctrl_mutex));
-	kfree(buf);
 
 	return retval;
 }
@@ -2862,7 +2855,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				//   id2=rmi->custom_specific[1];
 				//   id3=rmi->custom_specific[2];
 				//   id4=rmi->custom_specific[3];
-				printk("%s:%d custom_specific_id=0x%x,0x%x,0x%x,0x%x\n",__func__,__LINE__,rmi->custom_specific[0],rmi->custom_specific[1],rmi->custom_specific[2],rmi->custom_specific[3]); 
+				printk("%s:%d custom_specific_id=0x%x,0x%x,0x%x,0x%x\n",__func__,__LINE__,rmi->custom_specific[0],rmi->custom_specific[1],rmi->custom_specific[2],rmi->custom_specific[3]);
 				//baron end
 #endif
 			}

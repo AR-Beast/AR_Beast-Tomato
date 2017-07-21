@@ -3533,6 +3533,11 @@ int mdss_mdp_gamut_config(struct mdp_gamut_cfg_data *config,
 		*copyback = 1;
 		mdss_mdp_clk_ctrl(MDP_BLOCK_POWER_OFF);
 	} else {
+		if (pp_gm_has_invalid_lut_size(config)) {
+			pr_err("invalid lut size for gamut\n");
+			ret = -EINVAL;
+			goto gamut_config_exit;
+		}
 		local_cfg = *config;
 		tbl_off = mdss_pp_res->gamut_tbl[disp_num];
 		for (i = 0; i < MDP_GAMUT_TABLE_NUM; i++) {
@@ -4762,7 +4767,7 @@ int mdss_mdp_ad_input(struct msm_fb_data_type *mfd,
 	mutex_lock(&ad->lock);
 	if ((!PP_AD_STATE_IS_INITCFG(ad->state) &&
 			!PP_AD_STS_IS_DIRTY(ad->sts)) &&
-			((input->mode) == MDSS_AD_MODE_CALIB)) {
+			!(input->mode == MDSS_AD_MODE_CALIB)) {
 		pr_warn("AD not initialized or configured.\n");
 		ret = -EPERM;
 		goto error;

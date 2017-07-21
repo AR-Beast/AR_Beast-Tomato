@@ -691,7 +691,8 @@ int __lock_page_or_retry(struct page *page, struct mm_struct *mm,
  * Is there a pagecache struct page at the given (mapping, offset) tuple?
  * If yes, increment its refcount and return it; if no, return NULL.
  */
-struct page *find_get_page(struct address_space *mapping, pgoff_t offset)
+struct page *find_get_page_flags(struct address_space *mapping, pgoff_t offset,
+				 int fgp_flags)
 {
 	void **pagep;
 	struct page *page;
@@ -728,6 +729,8 @@ repeat:
 		}
 	}
 out:
+	if (page && (fgp_flags & FGP_ACCESSED))
+		mark_page_accessed(page);
 	rcu_read_unlock();
 
 	return page;
@@ -1123,6 +1126,11 @@ static void do_generic_file_read(struct file *filp, loff_t *ppos,
 
 		cond_resched();
 find_page:
+		if (fatal_signal_pending(current)) {
+			error = -EINTR;
+			goto out;
+		}
+
 		page = find_get_page(mapping, index);
 		if (!page) {
 			page_cache_sync_readahead(mapping,
@@ -1634,8 +1642,8 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 	} else if (!page) {
 		/* No page in the page cache at all */
 		do_sync_mmap_readahead(vma, ra, file, offset);
-		count_vm_event(PGMAJFAULT);
-		mem_cgroup_count_vm_event(vma->vm_mm, PGMAJFAULT);
+		count_vm_event(PGMAJFAULT_F);
+		mem_cgroup_count_vm_event(vma->vm_mm, PGMAJFAULT_F);
 		ret = VM_FAULT_MAJOR;
 retry_find:
 		page = find_get_page(mapping, offset);

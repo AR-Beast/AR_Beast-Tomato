@@ -118,7 +118,6 @@ static int ramoops_pstore_open(struct pstore_info *psi)
 	cxt->console_read_cnt = 0;
 	cxt->ftrace_read_cnt = 0;
 	cxt->pmsg_read_cnt = 0;
-
 	return 0;
 }
 
@@ -433,7 +432,8 @@ static void  ramoops_of_init(struct platform_device *pdev)
 	const struct device *dev = &pdev->dev;
 	struct ramoops_platform_data *pdata;
 	struct device_node *np = pdev->dev.of_node;
-	u32 start, size, console, record, dump_oops;
+	u32 start = 0, size = 0, console = 0, pmsg = 0;
+	u32 record = 0, oops = 0, ftrace = 0;
 	int ret;
 
 	pdata = dev_get_drvdata(dev);
@@ -456,19 +456,34 @@ static void  ramoops_of_init(struct platform_device *pdev)
 	if (ret)
 		return;
 
+	ret = of_property_read_u32(np, "android,ramoops-pmsg-size",
+				&pmsg);
+	if (ret)
+		pr_info("pmsg buffer not configured");
+
 	ret = of_property_read_u32(np, "android,ramoops-record-size",
 				&record);
 	if (ret)
-		return;
+		pr_info("record buffer not configured");
 
-	if (of_get_property(np, "dump-oops", NULL))
-		dump_oops = 1;
+	ret = of_property_read_u32(np, "android,ramoops-dump-oops",
+				&oops);
+	if (ret)
+		pr_info("oops not configured");
+
+	ret = of_property_read_u32(np, "android,ramoops-ftrace-size",
+				&ftrace);
+	if (ret)
+		pr_info("ftrace not configured");
+
 
 	pdata->mem_address = start;
 	pdata->mem_size = size;
 	pdata->console_size = console;
+	pdata->pmsg_size = pmsg;
 	pdata->record_size = record;
-	pdata->dump_oops = dump_oops;
+	pdata->ftrace_size = ftrace;
+	pdata->dump_oops = (int)oops;
 }
 #else
 static inline void ramoops_of_init(struct platform_device *pdev)
@@ -585,6 +600,9 @@ static int ramoops_probe(struct platform_device *pdev)
 	mem_address = pdata->mem_address;
 	record_size = pdata->record_size;
 	dump_oops = pdata->dump_oops;
+	ramoops_console_size = pdata->console_size;
+	ramoops_pmsg_size = pdata->pmsg_size;
+	ramoops_ftrace_size = pdata->ftrace_size;
 
 	pr_info("attached 0x%lx@0x%llx, ecc: %d/%d\n",
 		cxt->size, (unsigned long long)cxt->phys_addr,

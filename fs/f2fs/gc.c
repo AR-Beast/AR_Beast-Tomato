@@ -375,6 +375,7 @@ next:
 				sm->last_victim[p.gc_mode] = last_victim + 1;
 			else
 				sm->last_victim[p.gc_mode] = segno + 1;
+			sm->last_victim[p.gc_mode] %= MAIN_SEGS(sbi);
 			break;
 		}
 	}
@@ -564,8 +565,10 @@ static bool is_alive(struct f2fs_sb_info *sbi, struct f2fs_summary *sum,
 	get_node_info(sbi, nid, dni);
 
 	if (sum->version != dni->version) {
-		f2fs_put_page(node_page, 1);
-		return false;
+		f2fs_msg(sbi->sb, KERN_WARNING,
+				"%s: valid data with mismatched node version.",
+				__func__);
+		set_sbi_flag(sbi, SBI_NEED_FSCK);
 	}
 
 	*nofs = ofs_of_node(node_page);
@@ -710,9 +713,11 @@ static void move_data_page(struct inode *inode, block_t bidx, int gc_type,
 			.sbi = F2FS_I_SB(inode),
 			.type = DATA,
 			.op = REQ_OP_WRITE,
-			.op_flags = REQ_SYNC | REQ_NOIDLE,
+			.op_flags = REQ_SYNC,
+			.old_blkaddr = NULL_ADDR,
 			.page = page,
 			.encrypted_page = NULL,
+			.need_lock = true,
 		};
 		bool is_dirty = PageDirty(page);
 		int err;
@@ -973,9 +978,11 @@ gc_more:
 		 * threshold, we can make them free by checkpoint. Then, we
 		 * secure free segments which doesn't need fggc any more.
 		 */
-		ret = write_checkpoint(sbi, &cpc);
-		if (ret)
-			goto stop;
+		if (prefree_segments(sbi)) {
+			ret = write_checkpoint(sbi, &cpc);
+			if (ret)
+				goto stop;
+		}
 		if (has_not_enough_free_secs(sbi, 0, 0))
 			gc_type = FG_GC;
 	}
@@ -1028,4 +1035,9 @@ void build_gc_manager(struct f2fs_sb_info *sbi)
 
 	sbi->fggc_threshold = div64_u64((main_count - ovp_count) *
 				BLKS_PER_SEC(sbi), (main_count - resv_count));
+
+	/* give warm/cold data area from slower device */
+	if (sbi->s_ndevs && sbi->segs_per_sec == 1)
+		SIT_I(sbi)->last_victim[ALLOC_NEXT] =
+				GET_SEGNO(sbi, FDEV(0).end_blk) + 1;
 }

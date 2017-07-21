@@ -3199,9 +3199,11 @@ static int queue_bulk_sg_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
 	struct xhci_td *td;
 	struct scatterlist *sg;
 	int num_sgs;
-	int trb_buff_len, this_sg_len, running_total;
+	int trb_buff_len, this_sg_len, running_total, ret;
 	unsigned int total_packet_count;
+	bool zero_length_needed;
 	bool first_trb;
+	int last_trb_num;
 	u64 addr;
 	bool more_trbs_coming;
 
@@ -3217,13 +3219,27 @@ static int queue_bulk_sg_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
 	total_packet_count = DIV_ROUND_UP(urb->transfer_buffer_length,
 			usb_endpoint_maxp(&urb->ep->desc));
 
-	trb_buff_len = prepare_transfer(xhci, xhci->devs[slot_id],
+	ret = prepare_transfer(xhci, xhci->devs[slot_id],
 			ep_index, urb->stream_id,
 			num_trbs, urb, 0, mem_flags);
-	if (trb_buff_len < 0)
-		return trb_buff_len;
+	if (ret < 0)
+		return ret;
 
 	urb_priv = urb->hcpriv;
+
+	/* Deal with URB_ZERO_PACKET - need one more td/trb */
+	zero_length_needed = urb->transfer_flags & URB_ZERO_PACKET &&
+		urb_priv->length == 2;
+	if (zero_length_needed) {
+		num_trbs++;
+		xhci_dbg(xhci, "Creating zero length td.\n");
+		ret = prepare_transfer(xhci, xhci->devs[slot_id],
+				ep_index, urb->stream_id,
+				1, urb, 1, mem_flags);
+		if (ret < 0)
+			return ret;
+	}
+
 	td = urb_priv->td[0];
 
 	/*
@@ -3253,6 +3269,7 @@ static int queue_bulk_sg_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
 		trb_buff_len = urb->transfer_buffer_length;
 
 	first_trb = true;
+	last_trb_num = zero_length_needed ? 2 : 1;
 	/* Queue the first TRB, even if it's zero-length */
 	do {
 		u32 field = 0;
@@ -3270,11 +3287,14 @@ static int queue_bulk_sg_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
 		/* Chain all the TRBs together; clear the chain bit in the last
 		 * TRB to indicate it's the last TRB in the chain.
 		 */
-		if (num_trbs > 1) {
+		if (num_trbs > last_trb_num) {
 			field |= TRB_CHAIN;
-		} else {
-			/* FIXME - add check for ZERO_PACKET flag before this */
+		} else if (num_trbs == last_trb_num) {
 			td->last_trb = ep_ring->enqueue;
+			field |= TRB_IOC;
+		} else if (zero_length_needed && num_trbs == 1) {
+			trb_buff_len = 0;
+			urb_priv->td[1]->last_trb = ep_ring->enqueue;
 			field |= TRB_IOC;
 		}
 
@@ -3337,7 +3357,7 @@ static int queue_bulk_sg_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
 		if (running_total + trb_buff_len > urb->transfer_buffer_length)
 			trb_buff_len =
 				urb->transfer_buffer_length - running_total;
-	} while (running_total < urb->transfer_buffer_length);
+	} while (num_trbs > 0);
 
 	check_trb_math(urb, num_trbs, running_total);
 	giveback_first_trb(xhci, slot_id, ep_index, urb->stream_id,
@@ -3355,12 +3375,11 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
 	int num_trbs;
 	struct xhci_generic_trb *start_trb;
 	bool first_trb;
+	int last_trb_num;
 	bool more_trbs_coming;
+	bool zero_length_needed;
 	int start_cycle;
 	u32 field, length_field;
-	int zlp_required = 0;
-	int max_packet = 0;
-	bool last = false;
 
 	int running_total, trb_buff_len, ret;
 	unsigned int total_packet_count;
@@ -3390,20 +3409,27 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
 		running_total += TRB_MAX_BUFF_SIZE;
 	}
 
-	max_packet = usb_endpoint_maxp(&urb->ep->desc);
-	if (!usb_urb_dir_in(urb) && urb->transfer_buffer_length &&
-		(urb->transfer_flags & URB_ZERO_PACKET) &&
-		!(urb->transfer_buffer_length % max_packet)) {
-		zlp_required = 1;
-	}
-
 	ret = prepare_transfer(xhci, xhci->devs[slot_id],
 			ep_index, urb->stream_id,
-			num_trbs + zlp_required, urb, 0, mem_flags);
+			num_trbs, urb, 0, mem_flags);
 	if (ret < 0)
 		return ret;
 
 	urb_priv = urb->hcpriv;
+
+	/* Deal with URB_ZERO_PACKET - need one more td/trb */
+	zero_length_needed = urb->transfer_flags & URB_ZERO_PACKET &&
+		urb_priv->length == 2;
+	if (zero_length_needed) {
+		num_trbs++;
+		xhci_dbg(xhci, "Creating zero length td.\n");
+		ret = prepare_transfer(xhci, xhci->devs[slot_id],
+				ep_index, urb->stream_id,
+				1, urb, 1, mem_flags);
+		if (ret < 0)
+			return ret;
+	}
+
 	td = urb_priv->td[0];
 
 	/*
@@ -3425,7 +3451,7 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
 		trb_buff_len = urb->transfer_buffer_length;
 
 	first_trb = true;
-
+	last_trb_num = zero_length_needed ? 2 : 1;
 	/* Queue the first TRB, even if it's zero-length */
 	do {
 		u32 remainder = 0;
@@ -3438,6 +3464,20 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
 				field |= 0x1;
 		} else
 			field |= ep_ring->cycle_state;
+
+		/* Chain all the TRBs together; clear the chain bit in the last
+		 * TRB to indicate it's the last TRB in the chain.
+		 */
+		if (num_trbs > last_trb_num) {
+			field |= TRB_CHAIN;
+		} else if (num_trbs == last_trb_num) {
+			td->last_trb = ep_ring->enqueue;
+			field |= TRB_IOC;
+		} else if (zero_length_needed && num_trbs == 1) {
+			trb_buff_len = 0;
+			urb_priv->td[1]->last_trb = ep_ring->enqueue;
+			field |= TRB_IOC;
+		}
 
 		/* Only set interrupt on short packet for IN endpoints */
 		if (usb_urb_dir_in(urb))
@@ -3457,36 +3497,15 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
 			remainder |
 			TRB_INTR_TARGET(0);
 
-		more_trbs_coming = true;
-		field |= TRB_CHAIN;
-		if (num_trbs <= 1) {
-			last = true;
-			if (!zlp_required) {
-				more_trbs_coming = false;
-				td->last_trb = ep_ring->enqueue;
-				field &= ~TRB_CHAIN;
-				field |= TRB_IOC;
-			}
-		}
-
+		if (num_trbs > 1)
+			more_trbs_coming = true;
+		else
+			more_trbs_coming = false;
 		queue_trb(xhci, ep_ring, more_trbs_coming,
 				lower_32_bits(addr),
 				upper_32_bits(addr),
 				length_field,
 				field | TRB_TYPE(TRB_NORMAL));
-
-		if (last && zlp_required) {
-			td->last_trb = ep_ring->enqueue;
-			field |= TRB_IOC;
-			field &= ~TRB_CHAIN;
-			field &= ~TRB_CYCLE;
-			field |= ep_ring->cycle_state;
-
-			queue_trb(xhci, ep_ring, false,
-				0, 0, TRB_INTR_TARGET(0),
-				field | TRB_TYPE(TRB_NORMAL));
-		}
-
 		--num_trbs;
 		running_total += trb_buff_len;
 
@@ -3495,7 +3514,7 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
 		trb_buff_len = urb->transfer_buffer_length - running_total;
 		if (trb_buff_len > TRB_MAX_BUFF_SIZE)
 			trb_buff_len = TRB_MAX_BUFF_SIZE;
-	} while (running_total < urb->transfer_buffer_length);
+	} while (num_trbs > 0);
 
 	check_trb_math(urb, num_trbs, running_total);
 	giveback_first_trb(xhci, slot_id, ep_index, urb->stream_id,

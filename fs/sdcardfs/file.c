@@ -192,6 +192,9 @@ static int sdcardfs_mmap(struct file *file, struct vm_area_struct *vma)
 	file->f_mapping->a_ops = &sdcardfs_aops; /* set our aops */
 	if (!SDCARDFS_F(file)->lower_vm_ops) /* save for our ->fault */
 		SDCARDFS_F(file)->lower_vm_ops = saved_vm_ops;
+	vma->vm_private_data = file;
+	get_file(lower_file);
+	vma->vm_file = lower_file;
 
 out:
 	return err;
@@ -312,11 +315,6 @@ static int sdcardfs_fasync(int fd, struct file *file, int flag)
 		err = lower_file->f_op->fasync(fd, lower_file, flag);
 
 	return err;
-}
-
-static struct file *sdcardfs_get_lower_file(struct file *f)
-{
-	return sdcardfs_lower_file(f);
 }
 
 /*

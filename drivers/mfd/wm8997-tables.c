@@ -17,7 +17,7 @@
 
 #include "arizona.h"
 
-static const struct reg_default wm8997_reva_patch[] = {
+static const struct reg_sequence wm8997_reva_patch[] = {
 	{ 0x80, 0x0003 },
 	{ 0x214, 0x0008 },
 	{ 0x458, 0x0000 },
@@ -666,6 +666,7 @@ static const struct reg_default wm8997_reg_default[] = {
 	{ 0x00000C23, 0x0000 },    /* R3107  - Misc Pad Ctrl 4 */
 	{ 0x00000C24, 0x0000 },    /* R3108  - Misc Pad Ctrl 5 */
 	{ 0x00000D08, 0xFFFF },    /* R3336  - Interrupt Status 1 Mask */
+	{ 0x00000D09, 0xFFFF },    /* R3337  - Interrupt Status 2 Mask */
 	{ 0x00000D0A, 0xFFFF },    /* R3338  - Interrupt Status 3 Mask */
 	{ 0x00000D0B, 0xFFFF },    /* R3339  - Interrupt Status 4 Mask */
 	{ 0x00000D0C, 0xFEFF },    /* R3340  - Interrupt Status 5 Mask */
@@ -879,6 +880,8 @@ static bool wm8997_readable_register(struct device *dev, unsigned int reg)
 	case ARIZONA_MIC_BIAS_CTRL_1:
 	case ARIZONA_MIC_BIAS_CTRL_2:
 	case ARIZONA_MIC_BIAS_CTRL_3:
+	case ARIZONA_HP_CTRL_1L:
+	case ARIZONA_HP_CTRL_1R:
 	case ARIZONA_ACCESSORY_DETECT_MODE_1:
 	case ARIZONA_HEADPHONE_DETECT_1:
 	case ARIZONA_HEADPHONE_DETECT_2:
@@ -936,6 +939,7 @@ static bool wm8997_readable_register(struct device *dev, unsigned int reg)
 	case ARIZONA_NOISE_GATE_CONTROL:
 	case ARIZONA_PDM_SPK1_CTRL_1:
 	case ARIZONA_PDM_SPK1_CTRL_2:
+	case ARIZONA_SPK_CTRL_5:
 	case ARIZONA_AIF1_BCLK_CTRL:
 	case ARIZONA_AIF1_TX_PIN_CTRL:
 	case ARIZONA_AIF1_RX_PIN_CTRL:
@@ -1321,6 +1325,7 @@ static bool wm8997_readable_register(struct device *dev, unsigned int reg)
 	case ARIZONA_INTERRUPT_STATUS_4:
 	case ARIZONA_INTERRUPT_STATUS_5:
 	case ARIZONA_INTERRUPT_STATUS_1_MASK:
+	case ARIZONA_INTERRUPT_STATUS_2_MASK:
 	case ARIZONA_INTERRUPT_STATUS_3_MASK:
 	case ARIZONA_INTERRUPT_STATUS_4_MASK:
 	case ARIZONA_INTERRUPT_STATUS_5_MASK:
@@ -1474,6 +1479,8 @@ static bool wm8997_volatile_register(struct device *dev, unsigned int reg)
 	case ARIZONA_ASYNC_SAMPLE_RATE_1_STATUS:
 	case ARIZONA_FLL1_NCO_TEST_0:
 	case ARIZONA_FLL2_NCO_TEST_0:
+	case ARIZONA_HP_CTRL_1L:
+	case ARIZONA_HP_CTRL_1R:
 	case ARIZONA_MIC_DETECT_3:
 	case ARIZONA_HEADPHONE_DETECT_2:
 	case ARIZONA_INPUT_ENABLES_STATUS:

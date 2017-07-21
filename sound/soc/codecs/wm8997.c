@@ -195,11 +195,13 @@ static int wm8997_sysclk_ev(struct snd_soc_dapm_widget *w,
 				regmap_write(regmap, patch[i].reg,
 					     patch[i].def);
 		break;
-	default:
+	case SND_SOC_DAPM_PRE_PMD:
 		break;
+	default:
+		return 0;
 	}
 
-	return 0;
+	return arizona_dvfs_sysclk_ev(w, kcontrol, event);
 }
 
 static const char * const wm8997_osr_text[] = {
@@ -330,7 +332,6 @@ ARIZONA_LHPF_CONTROL("LHPF4 Coefficients", ARIZONA_HPLPF4_2),
 
 SOC_VALUE_ENUM("ISRC1 FSL", arizona_isrc_fsl[0]),
 SOC_VALUE_ENUM("ISRC2 FSL", arizona_isrc_fsl[1]),
-SOC_VALUE_ENUM("ASRC RATE 1", arizona_asrc_rate1),
 
 ARIZONA_MIXER_CONTROLS("Mic", ARIZONA_MICMIX_INPUT_1_SOURCE),
 ARIZONA_MIXER_CONTROLS("Noise", ARIZONA_NOISEMIX_INPUT_1_SOURCE),
@@ -493,7 +494,8 @@ static const struct snd_kcontrol_new wm8997_aec_loopback_mux =
 
 static const struct snd_soc_dapm_widget wm8997_dapm_widgets[] = {
 SND_SOC_DAPM_SUPPLY("SYSCLK", ARIZONA_SYSTEM_CLOCK_1, ARIZONA_SYSCLK_ENA_SHIFT,
-		    0, wm8997_sysclk_ev, SND_SOC_DAPM_POST_PMU),
+		    0, wm8997_sysclk_ev,
+		    SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_PRE_PMD),
 SND_SOC_DAPM_SUPPLY("ASYNCCLK", ARIZONA_ASYNC_CLOCK_1,
 		    ARIZONA_ASYNC_CLK_ENA_SHIFT, 0, NULL, 0),
 SND_SOC_DAPM_SUPPLY("OPCLK", ARIZONA_OUTPUT_SYSTEM_CLOCK,
@@ -508,7 +510,7 @@ SND_SOC_DAPM_REGULATOR_SUPPLY("SPKVDD", 0, 0),
 
 SND_SOC_DAPM_SIGGEN("TONE"),
 SND_SOC_DAPM_SIGGEN("NOISE"),
-SND_SOC_DAPM_SIGGEN("HAPTICS"),
+SND_SOC_DAPM_MIC("HAPTICS", NULL),
 
 SND_SOC_DAPM_INPUT("IN1L"),
 SND_SOC_DAPM_INPUT("IN1R"),
@@ -1028,7 +1030,7 @@ static int wm8997_set_fll(struct snd_soc_codec *codec, int fll_id, int source,
 	}
 }
 
-#define WM8997_RATES SNDRV_PCM_RATE_8000_192000
+#define WM8997_RATES SNDRV_PCM_RATE_KNOT
 
 #define WM8997_FORMATS (SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S20_3LE |\
 			SNDRV_PCM_FMTBIT_S24_LE | SNDRV_PCM_FMTBIT_S32_LE)
@@ -1210,6 +1212,8 @@ static int wm8997_probe(struct platform_device *pdev)
 
 	wm8997->core.arizona = arizona;
 	wm8997->core.num_inputs = 4;
+
+	arizona_init_dvfs(&wm8997->core);
 
 	for (i = 0; i < ARRAY_SIZE(wm8997->fll); i++)
 		wm8997->fll[i].vco_mult = 1;

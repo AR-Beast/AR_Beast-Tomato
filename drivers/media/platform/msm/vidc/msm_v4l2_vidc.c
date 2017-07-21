@@ -280,9 +280,6 @@ static const struct v4l2_ioctl_ops msm_v4l2_ioctl_ops = {
 	.vidioc_enum_framesizes = msm_v4l2_enum_framesizes,
 };
 
-static const struct v4l2_ioctl_ops msm_v4l2_enc_ioctl_ops = {
-};
-
 static unsigned int msm_v4l2_poll(struct file *filp,
 	struct poll_table_struct *pt)
 {
@@ -750,7 +747,6 @@ static int __init msm_vidc_init(void)
 	if (rc) {
 		dprintk(VIDC_ERR,
 			"Failed to register platform driver\n");
-		msm_vidc_debugfs_deinit_drv();
 		debugfs_remove_recursive(vidc_driver->debugfs_root);
 		kfree(vidc_driver);
 		vidc_driver = NULL;
@@ -762,7 +758,6 @@ static int __init msm_vidc_init(void)
 static void __exit msm_vidc_exit(void)
 {
 	platform_driver_unregister(&msm_vidc_driver);
-	msm_vidc_debugfs_deinit_drv();
 	debugfs_remove_recursive(vidc_driver->debugfs_root);
 	kfree(vidc_driver);
 	vidc_driver = NULL;

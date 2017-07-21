@@ -18,12 +18,12 @@
 /*
  Date            Author          IC                Module        Why
 2015-04-24      xingbin      nt35521			  dijing      add dijing lcd for QL790
-2015-04-24       xingbin     nt35521           	  dijing	  add code version for QL790
-2015-05-18      xingbin     nt35521           	  dijing   	 modify proch for  TCLK-TRAIL
+2015-04-24       xingbin     nt35521		  dijing	  add code version for QL790
+2015-05-18      xingbin     nt35521		  dijing	 modify proch for  TCLK-TRAIL
 2015-06-01	   lihuiqin     nt35521h		      dijing	 update lcd parameter for vendor's require
 2015-06-16	   wangjiao     nt35521h		      dijing	 modify lcd parameter for QL790
-2015-07-03 	   wangjiao		nt35521h		      dijing     modify lcd Gamma parameter for QL790
-2015-07-20 	   wangjiao		nt35521h		      dijing     modify lcd VGL Voltage for band
+2015-07-03	   wangjiao		nt35521h		      dijing     modify lcd Gamma parameter for QL790
+2015-07-20	   wangjiao		nt35521h		      dijing     modify lcd VGL Voltage for band
  */
 &mdss_mdp {
 	nt35521_dijing_4p7inch_hd_vid: qcom,mdss_dijing_nt35521_4p7inch_video {
@@ -267,4 +267,3 @@
 		qcom,mdss-dsi-reset-sequence = <1 10>, <0 10>, <1 120>;
 	};
 };
-

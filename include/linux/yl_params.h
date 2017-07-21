@@ -237,7 +237,7 @@ struct ReturnZeroInfo {
 #define RETURNZERO_ALARM_ASSIGNED	20
 #define RETURNZERO_USB_CHARGER_TYPE	21
 #define RETURNZERO_BOOT_NO_VIB		22
-#define RETURNZERO_COMM_RUN_MODE	
+#define RETURNZERO_COMM_RUN_MODE
 
 ssize_t yl_params_kernel_write(const uint8_t *buf, ssize_t count);
 ssize_t yl_params_kernel_read(uint8_t *buf, ssize_t count);

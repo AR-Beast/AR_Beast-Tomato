@@ -17,8 +17,8 @@
  */
 /*qcom,dsi-pref-prim-pan is used as default panel if any panel is detected from lk*/
 
-/*  Date             Author         	 		Why
-    2015-04-14        litao          		   creat
+/*  Date             Author				Why
+    2015-04-14        litao			   creat
     2015-04-24       lihuiqin          add dijing lcd for QL790
 	2015-04-24       lihuiqin          modify vsp/vsn gpio for QL790
 */
@@ -47,4 +47,3 @@
 &nt35521_dijing_4p7inch_hd_vid{
 	qcom,cont-splash-enabled;
 };
-

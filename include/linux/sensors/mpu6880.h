@@ -95,4 +95,3 @@ struct gyro_offset {
 };
 
 #endif
-

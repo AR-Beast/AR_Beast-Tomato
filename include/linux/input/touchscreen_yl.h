@@ -22,8 +22,8 @@ typedef enum
 typedef enum
 {
 	OREITATION_INVALID	=0,
-	OREITATION_0       	=1,
-	OREITATION_90 		=2,
+	OREITATION_0		=1,
+	OREITATION_90		=2,
 	OREITATION_180		=3,
 	OREITATION_270		=4,
 }touch_oreitation_type;

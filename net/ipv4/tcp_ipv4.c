@@ -270,10 +270,13 @@ EXPORT_SYMBOL(tcp_v4_connect);
  */
 void tcp_v4_mtu_reduced(struct sock *sk)
 {
-	struct dst_entry *dst;
 	struct inet_sock *inet = inet_sk(sk);
-	u32 mtu = tcp_sk(sk)->mtu_info;
+	struct dst_entry *dst;
+	u32 mtu;
 
+	if ((1 << sk->sk_state) & (TCPF_LISTEN | TCPF_CLOSE))
+		return;
+	mtu = tcp_sk(sk)->mtu_info;
 	dst = inet_csk_update_pmtu(sk, mtu);
 	if (!dst)
 		return;
@@ -389,7 +392,8 @@ void tcp_v4_err(struct sk_buff *icmp_skb, u32 info)
 
 	switch (type) {
 	case ICMP_REDIRECT:
-		do_redirect(icmp_skb, sk);
+		if (!sock_owned_by_user(sk))
+			do_redirect(icmp_skb, sk);
 		goto out;
 	case ICMP_SOURCE_QUENCH:
 		/* Just silently ignore these. */
@@ -1422,6 +1426,7 @@ static int tcp_v4_conn_req_fastopen(struct sock *sk,
 	 * scaled. So correct it appropriately.
 	 */
 	tp->snd_wnd = ntohs(tcp_hdr(skb)->window);
+	tp->max_window = tp->snd_wnd;
 
 	/* Activate the retrans timer so that SYNACK can be retransmitted.
 	 * The request socket is not added to the SYN table of the parent
@@ -2689,6 +2694,7 @@ static void get_tcp4_sock(struct sock *sk, struct seq_file *f, int i)
 	__be32 src = inet->inet_rcv_saddr;
 	__u16 destp = ntohs(inet->inet_dport);
 	__u16 srcp = ntohs(inet->inet_sport);
+	__u8 state = sk->sk_state;
 	int rx_queue;
 
 	if (icsk->icsk_pending == ICSK_TIME_RETRANS ||
@@ -2707,6 +2713,9 @@ static void get_tcp4_sock(struct sock *sk, struct seq_file *f, int i)
 		timer_expires = jiffies;
 	}
 
+	if (inet->transparent)
+		state |= 0x80;
+
 	if (sk->sk_state == TCP_LISTEN)
 		rx_queue = sk->sk_ack_backlog;
 	else
@@ -2717,7 +2726,7 @@ static void get_tcp4_sock(struct sock *sk, struct seq_file *f, int i)
 
 	seq_printf(f, "%4d: %08X:%04X %08X:%04X %02X %08X:%08X %02X:%08lX "
 			"%08X %5d %8d %lu %d %pK %lu %lu %u %u %d",
-		i, src, srcp, dest, destp, sk->sk_state,
+		i, src, srcp, dest, destp, state,
 		tp->write_seq - tp->snd_una,
 		rx_queue,
 		timer_active,

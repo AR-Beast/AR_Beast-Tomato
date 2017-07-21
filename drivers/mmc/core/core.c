@@ -557,8 +557,8 @@ static void mmc_wait_data_done(struct mmc_request *mrq)
 	struct mmc_context_info *context_info = &mrq->host->context_info;
 
 	spin_lock_irqsave(&context_info->lock, flags);
-	mrq->host->context_info.is_done_rcv = true;
-	wake_up_interruptible(&mrq->host->context_info.wait);
+	context_info->is_done_rcv = true;
+	wake_up_interruptible(&context_info->wait);
 	spin_unlock_irqrestore(&context_info->lock, flags);
 }
 
@@ -3820,6 +3820,7 @@ int mmc_resume_host(struct mmc_host *host)
 		}
 	}
 	host->pm_flags &= ~MMC_PM_KEEP_POWER;
+	host->pm_flags &= ~MMC_PM_WAKE_SDIO_IRQ;
 	mmc_bus_put(host);
 
 	trace_mmc_resume_host(mmc_hostname(host), err,
@@ -3960,7 +3961,7 @@ void mmc_rpm_release(struct mmc_host *host, struct device *dev)
 	if (!mmc_use_core_runtime_pm(host))
 		return;
 
-	ret = pm_runtime_put_sync(dev);
+	ret = pm_runtime_put(dev);
 	if ((ret < 0) &&
 	    (dev->power.runtime_error || (dev->power.disable_depth > 0))) {
 		pr_err("%s: %s: %s: pm_runtime_put_sync: err: %d\n",

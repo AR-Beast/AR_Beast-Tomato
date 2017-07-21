@@ -321,9 +321,9 @@ void tw_hall_wakeup(int in_hall)
 		if(ts->gtp_is_suspend)
 	        {
 	        // report powerkey event for PowerManagerService to wakeup or sleep system
-		    input_report_key(ts->input_dev, KEY_POWER, 1);
+		    input_report_key(ts->input_dev, KEY_WAKEUP, 1);
 		    input_sync(ts->input_dev);
-		    input_report_key(ts->input_dev, KEY_POWER, 0);
+		    input_report_key(ts->input_dev, KEY_WAKEUP, 0);
 		    input_sync(ts->input_dev);
 		}
     }
@@ -331,9 +331,9 @@ void tw_hall_wakeup(int in_hall)
     {
 		if(0 ==ts->gtp_is_suspend)
 		{
-		    input_report_key(ts->input_dev, KEY_POWER, 1);
+		    input_report_key(ts->input_dev, KEY_WAKEUP, 1);
 		    input_sync(ts->input_dev);
-		    input_report_key(ts->input_dev, KEY_POWER, 0);
+		    input_report_key(ts->input_dev, KEY_WAKEUP, 0);
 		    input_sync(ts->input_dev);
 		}
     }
@@ -846,24 +846,24 @@ static void goodix_ts_work_func(struct work_struct *work)
 			cur_touch_status |= (0x01<<id);
 			if (pre_touch < touch_num) {
 				if (pre_touch_status ^ (0x01<<id)) {
-		    			GTP_INFO("Point[%d] Touch Down! x=%d, y=%d.", id, input_x, input_y);
+					GTP_INFO("Point[%d] Touch Down! x=%d, y=%d.", id, input_x, input_y);
 				}
 			}
 #endif
         }
 #ifdef YL_TW_DEBUG
-    	if(pre_touch > touch_num) {
-    		for (i = 0; i < GTP_MAX_TOUCH; i++) {
-    			if ((pre_touch_status^cur_touch_status)&(0x01<<i)) {
-		    		GTP_INFO("Point[%d] Touch Up!", i);
-		    	}
-    		}
-    	}
+	if(pre_touch > touch_num) {
+		for (i = 0; i < GTP_MAX_TOUCH; i++) {
+			if ((pre_touch_status^cur_touch_status)&(0x01<<i)) {
+				GTP_INFO("Point[%d] Touch Up!", i);
+			}
+		}
+	}
 #endif
     }
     else if (pre_touch)
     {
-    	#ifdef YL_TW_DEBUG
+	#ifdef YL_TW_DEBUG
         GTP_INFO("All Touch Release!");
 #else
         GTP_DEBUG("Touch Release!");
@@ -957,7 +957,7 @@ void gtp_reset_guitar(struct i2c_client *client, s32 ms)
 {
 	struct goodix_ts_data * ts = i2c_get_clientdata(client);
 
-    	GTP_DEBUG_FUNC();
+	GTP_DEBUG_FUNC();
 
 	if(ts->pdata->reset)
 		ts->pdata->reset(ms);
@@ -1182,7 +1182,7 @@ s32 gtp_init_panel(struct goodix_ts_data *ts)
 		if ( (opr_buf[0] < 90) && (opr_buf[0] != config[GTP_ADDR_LENGTH]) )   // change the condition by that not equal
         {
            cfg_version_bak = config[GTP_ADDR_LENGTH];
-           	config[GTP_ADDR_LENGTH] = 0x00;
+		config[GTP_ADDR_LENGTH] = 0x00;
         }
     }
 #endif
@@ -1237,7 +1237,7 @@ s32 gtp_init_panel(struct goodix_ts_data *ts)
 #if GTP_COB
 	if(cfg_version_bak)
 	{
-    	config[GTP_ADDR_LENGTH] = cfg_version_bak;
+	config[GTP_ADDR_LENGTH] = cfg_version_bak;
 		cfg_version_bak = 0;
 
 		//chechsum
@@ -1416,8 +1416,8 @@ s32 gtp_read_fw_cfg_version(void)
 	ret = gtp_read_version(i2c_connect_client, &gtp_fw_version);
   if (ret < 0)
    {
-        	GTP_ERROR("GTP read version failed");
-        	return ret;
+		GTP_ERROR("GTP read version failed");
+		return ret;
    }
   cfg[0] = GTP_REG_CONFIG_DATA >> 8;
 	cfg[1] = GTP_REG_CONFIG_DATA & 0xff;
@@ -1606,7 +1606,7 @@ static s8 gtp_request_input_dev(struct goodix_ts_data *ts)
     set_bit(KEY_GESTURE_SLIDE_E, ts->input_dev->keybit);
     set_bit(KEY_GESTURE_SLIDE_M, ts->input_dev->keybit);
     set_bit(KEY_GESTURE_SLIDE_W, ts->input_dev->keybit);
-#endif 
+#endif
 #if GTP_CHANGE_X2Y
     GTP_SWAP(ts->abs_x_max, ts->abs_y_max);
 #endif
@@ -1706,12 +1706,12 @@ int goodix_firmware_do_update(void)
       ts = i2c_get_clientdata(i2c_connect_client);
 
       if(0 == gup_init_update_proc(ts))
-	  	return -1;
+		return -1;
       else
 	{
 		gtp_read_fw_cfg_version();
 		return 0;
-      	}
+	}
    }
 
    return ret;
@@ -1745,9 +1745,9 @@ int goodix_get_firmware_version(char * version )
     gtp_read_fw_cfg_version();
 
     if(tp_supported)
- 	return sprintf(version, "%s:%s:0x%4X:0x%2X", yl_cfg[tp_index].tp_name, TW_IC_PREFIX_NAME, gtp_fw_version, gtp_cfg_version);
+	return sprintf(version, "%s:%s:0x%4X:0x%2X", yl_cfg[tp_index].tp_name, TW_IC_PREFIX_NAME, gtp_fw_version, gtp_cfg_version);
     else
- 	return sprintf(version, "%s:%s:0x%4X:0x%2X", "----", TW_IC_PREFIX_NAME, gtp_fw_version, gtp_cfg_version);
+	return sprintf(version, "%s:%s:0x%4X:0x%2X", "----", TW_IC_PREFIX_NAME, gtp_fw_version, gtp_cfg_version);
 }
 
 /*******************************************************
@@ -1791,7 +1791,7 @@ void yl_chg_status_changed(void)
 			}
             i2c_command_buf[2]=write_val;
 			if(i2c_connect_client != NULL)
-        		ret = gtp_i2c_write(i2c_connect_client, i2c_command_buf, 3);
+			ret = gtp_i2c_write(i2c_connect_client, i2c_command_buf, 3);
 			if (ret < 0)
 				{
 					printk("failed to set finger mode flag into 0x8046\n");
@@ -1804,7 +1804,7 @@ void yl_chg_status_changed(void)
 			{
 			i2c_control_buf[2] = write_val;
 			if(i2c_connect_client != NULL)
-        		ret = gtp_i2c_write(i2c_connect_client, i2c_control_buf, 3);
+			ret = gtp_i2c_write(i2c_connect_client, i2c_control_buf, 3);
 			if(ret > 0)
 			{
 				GTP_DEBUG("[GTS]:%s write 0x8040 register success ,value = %d.\n", __func__, write_val);
@@ -1876,8 +1876,8 @@ int goodix_set_mode(touch_mode_type glove)
 	ret = gtp_send_cfg(ts->client);
 	if (ret >= 0)
 	{
-	    	msleep(400);
- 		GTP_INFO("send config successed!");
+		msleep(400);
+		GTP_INFO("send config successed!");
 	}
 
 	if (glove_switch == MODE_GLOVE) {
@@ -2019,12 +2019,12 @@ int goodix_debug(int val)
 
 int goodix_vendor(char*  vendor)
 {
-    	return sprintf(vendor, "%s", "goodix");
+	return sprintf(vendor, "%s", "goodix");
 }
 #if GTP_SLIDE_WAKEUP
 int goodix_get_wakeup_gesture(char*  gesture)
 {
-    	return sprintf(gesture, "%s", (char *)wakeup_slide);
+	return sprintf(gesture, "%s", (char *)wakeup_slide);
 }
 
 int goodix_get_gesture_ctrl(char *gesture_ctrl)
@@ -2675,7 +2675,7 @@ static ssize_t glove_store(struct device *dev,struct device_attribute *attr,cons
 
 	u8 i2c_control_buf[3] = {(u8)(GTP_REG_SLEEP >> 8), (u8)GTP_REG_SLEEP, 0x0A};
 	//memset(ts, 0, sizeof(*ts));
-   	ts = i2c_get_clientdata(i2c_connect_client);
+	ts = i2c_get_clientdata(i2c_connect_client);
 	if(buf==NULL)
 	{
 		GTP_INFO("[FTS]: buf is NULL!\n");
@@ -2851,7 +2851,7 @@ static ssize_t gt968_send_cfg_ver_store(struct device *dev,struct device_attribu
     s32 i;
    struct goodix_ts_data *goodix_ts;
 
-   	goodix_ts = i2c_get_clientdata(i2c_connect_client);
+	goodix_ts = i2c_get_clientdata(i2c_connect_client);
 	if(buf == NULL) {
 		GTP_ERROR("buf is NULL!");
 		return -ENOMEM;
@@ -3062,7 +3062,7 @@ gt9xx_cover_window.win_y_max = 300;
 			dev_err(&client->dev, "Failed to parse dt\n");
 			devm_kfree(&client->dev, pdata);
 			return ret;
-		}  
+		}
 	}
 	else
 		pdata = client->dev.platform_data;
@@ -3101,8 +3101,8 @@ gt9xx_cover_window.win_y_max = 300;
 	 printk("[gt]:x=%d,y=%d.\n",ts->abs_x_max,ts->abs_y_max);
 	if(!ts->pdata->init || ts->pdata->init() < 0)
 	{
-        	GTP_ERROR("GTP request IO port failed.");
-        	goto exit_init_failed;
+		GTP_ERROR("GTP request IO port failed.");
+		goto exit_init_failed;
 	}
 
 	if(ts->pdata->power)
@@ -3110,8 +3110,8 @@ gt9xx_cover_window.win_y_max = 300;
 		ret = ts->pdata->power(1);
 		if(ret < 0)
 		{
-	    		GTP_ERROR("GTP power on failed.");
-	        	goto exit_power_failed;
+			GTP_ERROR("GTP power on failed.");
+			goto exit_power_failed;
 		}
 	}
 
@@ -3120,8 +3120,8 @@ gt9xx_cover_window.win_y_max = 300;
 		ret = ts->pdata->reset(20);
 		if(ret < 0)
 		{
-	    		GTP_ERROR("GTP reset failed.");
-	        	goto exit_reset_failed;
+			GTP_ERROR("GTP reset failed.");
+			goto exit_reset_failed;
 		}
 	}
 
@@ -3149,7 +3149,7 @@ gt9xx_cover_window.win_y_max = 300;
     if (ret < 0)
     {
         GTP_ERROR("I2C communication ERROR!");
-      	goto exit_i2c_test_failed;
+	goto exit_i2c_test_failed;
     }
 
 /* begin to transplant TW GTP_ESD_PROTECT code from 8675_C00, set clock click count for esd ckeck circle by liushilong@yulong.com on 2014-11-6 17:30*/
@@ -3174,7 +3174,7 @@ gt9xx_cover_window.win_y_max = 300;
     if (ret < 0)
     {
         GTP_ERROR("GTP request input dev failed");
-      	goto exit_init_panel_failed;
+	goto exit_init_panel_failed;
     }
 
 
@@ -3420,8 +3420,8 @@ static int goodix_ts_enable(struct input_dev *in_dev)
 
 #if  TW_GLOVE_SWITCH
     if (glove_switch == MODE_GLOVE) {
-    	yl_chg_status_changed();
-    	}
+	yl_chg_status_changed();
+	}
 #endif
 
     if (ts->use_irq)

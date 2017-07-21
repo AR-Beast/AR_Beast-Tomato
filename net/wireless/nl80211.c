@@ -55,7 +55,7 @@ __cfg80211_wdev_from_attrs(struct net *netns, struct nlattr **attrs)
 	struct wireless_dev *result = NULL;
 	bool have_ifidx = attrs[NL80211_ATTR_IFINDEX];
 	bool have_wdev_id = attrs[NL80211_ATTR_WDEV];
-	u64 wdev_id = 0;
+	u64 wdev_id;
 	int wiphy_idx = -1;
 	int ifidx = -1;
 
@@ -6853,6 +6853,9 @@ void __cfg80211_send_event_skb(struct sk_buff *skb, gfp_t gfp)
 	void *hdr = ((void **)skb->cb)[1];
 	struct nlattr *data = ((void **)skb->cb)[2];
 
+	/* clear CB data for netlink core to own from now on */
+	memset(skb->cb, 0, sizeof(skb->cb));
+
 	nla_nest_end(skb, data);
 	genlmsg_end(skb, hdr);
 
@@ -6864,7 +6867,6 @@ void __cfg80211_send_event_skb(struct sk_buff *skb, gfp_t gfp)
 			nl80211_testmode_mcgrp.id, gfp);
 }
 EXPORT_SYMBOL(__cfg80211_send_event_skb);
-
 
 static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
 {

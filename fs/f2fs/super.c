@@ -49,6 +49,7 @@ char *fault_name[FAULT_MAX] = {
 	[FAULT_BLOCK]		= "no more block",
 	[FAULT_DIR_DEPTH]	= "too big dir depth",
 	[FAULT_EVICT_INODE]	= "evict_inode fail",
+	[FAULT_TRUNCATE]	= "truncate fail",
 	[FAULT_IO]		= "IO error",
 	[FAULT_CHECKPOINT]	= "checkpoint error",
 };
@@ -290,6 +291,7 @@ F2FS_RW_ATTR(SM_INFO, f2fs_sm_info, batched_trim_sections, trim_sections);
 F2FS_RW_ATTR(SM_INFO, f2fs_sm_info, ipu_policy, ipu_policy);
 F2FS_RW_ATTR(SM_INFO, f2fs_sm_info, min_ipu_util, min_ipu_util);
 F2FS_RW_ATTR(SM_INFO, f2fs_sm_info, min_fsync_blocks, min_fsync_blocks);
+F2FS_RW_ATTR(SM_INFO, f2fs_sm_info, min_hot_blocks, min_hot_blocks);
 F2FS_RW_ATTR(NM_INFO, f2fs_nm_info, ram_thresh, ram_thresh);
 F2FS_RW_ATTR(NM_INFO, f2fs_nm_info, ra_nid_pages, ra_nid_pages);
 F2FS_RW_ATTR(NM_INFO, f2fs_nm_info, dirty_nats_ratio, dirty_nats_ratio);
@@ -315,6 +317,7 @@ static struct attribute *f2fs_attrs[] = {
 	ATTR_LIST(ipu_policy),
 	ATTR_LIST(min_ipu_util),
 	ATTR_LIST(min_fsync_blocks),
+	ATTR_LIST(min_hot_blocks),
 	ATTR_LIST(max_victim_search),
 	ATTR_LIST(dir_level),
 	ATTR_LIST(ram_thresh),
@@ -778,7 +781,14 @@ static void f2fs_put_super(struct super_block *sb)
 	}
 
 	/* be sure to wait for any on-going discard commands */
-	f2fs_wait_discard_bio(sbi, NULL_ADDR);
+	f2fs_wait_discard_bios(sbi);
+
+	if (!sbi->discard_blks) {
+		struct cp_control cpc = {
+			.reason = CP_UMOUNT | CP_TRIMMED,
+		};
+		write_checkpoint(sbi, &cpc);
+	}
 
 	/* write_checkpoint can update stat informaion */
 	f2fs_destroy_stats(sbi);
@@ -1156,6 +1166,7 @@ skip:
 	/* Update the POSIXACL Flag */
 	sb->s_flags = (sb->s_flags & ~MS_POSIXACL) |
 		(test_opt(sbi, POSIX_ACL) ? MS_POSIXACL : 0);
+
 
 	return 0;
 restore_gc:
@@ -1557,6 +1568,8 @@ static void init_sb_info(struct f2fs_sb_info *sbi)
 	for (i = 0; i < NR_COUNT_TYPE; i++)
 		atomic_set(&sbi->nr_pages[i], 0);
 
+	atomic_set(&sbi->wb_sync_req, 0);
+
 	INIT_LIST_HEAD(&sbi->s_list);
 	mutex_init(&sbi->umount_mutex);
 	mutex_init(&sbi->wio_mutex[NODE]);
@@ -1922,6 +1935,7 @@ try_onemore:
 	mutex_init(&sbi->gc_mutex);
 	mutex_init(&sbi->cp_mutex);
 	init_rwsem(&sbi->node_write);
+	init_rwsem(&sbi->node_change);
 
 	/* disallow all the data/node/meta page writes */
 	set_sbi_flag(sbi, SBI_POR_DOING);
@@ -2027,6 +2041,10 @@ try_onemore:
 
 	f2fs_join_shrinker(sbi);
 
+	err = f2fs_build_stats(sbi);
+	if (err)
+		goto free_nm;
+
 	/* if there are nt orphan nodes free them */
 	err = recover_orphan_inodes(sbi);
 	if (err)
@@ -2050,10 +2068,6 @@ try_onemore:
 		err = -ENOMEM;
 		goto free_root_inode;
 	}
-
-	err = f2fs_build_stats(sbi);
-	if (err)
-		goto free_root_inode;
 
 	if (f2fs_proc_root)
 		sbi->s_proc = proc_mkdir(sb->s_id, f2fs_proc_root);
@@ -2148,7 +2162,6 @@ free_proc:
 		remove_proc_entry("segment_bits", sbi->s_proc);
 		remove_proc_entry(sb->s_id, f2fs_proc_root);
 	}
-	f2fs_destroy_stats(sbi);
 free_root_inode:
 	dput(sb->s_root);
 	sb->s_root = NULL;
@@ -2166,6 +2179,7 @@ free_node_inode:
 	truncate_inode_pages(META_MAPPING(sbi), 0);
 	iput(sbi->node_inode);
 	mutex_unlock(&sbi->umount_mutex);
+	f2fs_destroy_stats(sbi);
 free_nm:
 	destroy_node_manager(sbi);
 free_sm:

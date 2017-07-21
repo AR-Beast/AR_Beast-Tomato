@@ -70,12 +70,12 @@ static void arizona_haptics_work(struct work_struct *work)
 		}
 
 		mutex_lock_nested(dapm_mutex, SND_SOC_DAPM_CLASS_RUNTIME);
-
 		ret = snd_soc_dapm_enable_pin(arizona->dapm, "HAPTICS");
+		mutex_unlock(dapm_mutex);
+
 		if (ret != 0) {
 			dev_err(arizona->dev, "Failed to start HAPTICS: %d\n",
 				ret);
-			mutex_unlock(dapm_mutex);
 			return;
 		}
 
@@ -90,12 +90,12 @@ static void arizona_haptics_work(struct work_struct *work)
 	} else {
 		/* This disable sequence will be a noop if already enabled */
 		mutex_lock_nested(dapm_mutex, SND_SOC_DAPM_CLASS_RUNTIME);
-
 		ret = snd_soc_dapm_disable_pin(arizona->dapm, "HAPTICS");
+		mutex_unlock(dapm_mutex);
+
 		if (ret != 0) {
 			dev_err(arizona->dev, "Failed to disable HAPTICS: %d\n",
 				ret);
-			mutex_unlock(dapm_mutex);
 			return;
 		}
 
@@ -110,8 +110,7 @@ static void arizona_haptics_work(struct work_struct *work)
 
 		ret = regmap_update_bits(arizona->regmap,
 					 ARIZONA_HAPTICS_CONTROL_1,
-					 ARIZONA_HAP_CTRL_MASK,
-					 1 << ARIZONA_HAP_CTRL_SHIFT);
+					 ARIZONA_HAP_CTRL_MASK, 0);
 		if (ret != 0) {
 			dev_err(arizona->dev, "Failed to stop haptics: %d\n",
 				ret);

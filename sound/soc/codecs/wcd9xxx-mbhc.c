@@ -389,6 +389,7 @@ static bool __wcd9xxx_switch_micbias(struct wcd9xxx_mbhc *mbhc,
 		if ((!checkpolling || mbhc->polling_active) &&
 		    restartpolling)
 			wcd9xxx_pause_hs_polling(mbhc);
+
 		/* Reprogram thresholds */
 		if (d->micb_mv != VDDIO_MICBIAS_MV) {
 			cfilt_k_val =
@@ -491,7 +492,7 @@ void *wcd9xxx_mbhc_cal_btn_det_mp(
 			    struct wcd9xxx_mbhc_btn_detect_cfg *btn_det,
 			    const enum wcd9xxx_mbhc_btn_det_mem mem)
 {
-	void *ret = btn_det->_v_btn_low;
+	void *ret = (void *)&btn_det->_v_btn_low;
 
 	switch (mem) {
 	case MBHC_BTN_DET_GAIN:

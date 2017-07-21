@@ -32,25 +32,25 @@
 #define LSM6DX0_ACC_GYR_DEV_NAME	"lsm6ds0"
 
 #define LSM6DX0_ACC_DEV_NAME		"accelerometer"
-#define LSM6DX0_GYR_DEV_NAME    	"gyroscope"
+#define LSM6DX0_GYR_DEV_NAME		"gyroscope"
 #define LSM6DX0_MOD_DESCRIPTION	"lsm6ds0 driver"
 #else
 /** LSM6DL0 model */
 #define LSM6DX0_ACC_GYR_DEV_NAME	"lsm6dl0"
 #define LSM6DX0_ACC_DEV_NAME		"accelerometer"
-#define LSM6DX0_GYR_DEV_NAME    	"gyroscope"
+#define LSM6DX0_GYR_DEV_NAME		"gyroscope"
 #define LSM6DX0_MOD_DESCRIPTION	"lsm6dl0 driver"
 #endif
 
 /**********************************************/
-/* 	Accelerometer section defines	 	*/
+/*	Accelerometer section defines		*/
 /**********************************************/
 
 /* Accelerometer Sensor Full Scale */
 #define LSM6DX0_ACC_FS_MASK		(0x18)
-#define LSM6DX0_ACC_FS_2G 		(0x00)	/* Full scale 2g */
-#define LSM6DX0_ACC_FS_4G 		(0x08)	/* Full scale 4g */
-#define LSM6DX0_ACC_FS_8G 		(0x10)	/* Full scale 8g */
+#define LSM6DX0_ACC_FS_2G		(0x00)	/* Full scale 2g */
+#define LSM6DX0_ACC_FS_4G		(0x08)	/* Full scale 4g */
+#define LSM6DX0_ACC_FS_8G		(0x10)	/* Full scale 8g */
 
 /* Accelerometer Anti-Aliasing Filter */
 #define LSM6DX0_ACC_BW_400		(0X00)
@@ -79,7 +79,7 @@
 #define LSM6DL0_ACC_ODR_1280		(0xC0)
 
 /**********************************************/
-/* 	Gyroscope section defines	 	*/
+/*	Gyroscope section defines		*/
 /**********************************************/
 
 

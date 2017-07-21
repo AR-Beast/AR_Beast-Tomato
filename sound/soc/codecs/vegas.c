@@ -58,6 +58,7 @@ static int vegas_put_spk_edre(struct snd_kcontrol *kcontrol,
 	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
 	unsigned int val = 0;
 
+
 	mutex_lock_nested(&codec->card->dapm_mutex, SND_SOC_DAPM_CLASS_RUNTIME);
 
 	if (ucontrol->value.integer.value[0] != 0)
@@ -80,6 +81,21 @@ static int vegas_put_spk_edre(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
+static int vegas_sysclk_ev(struct snd_soc_dapm_widget *w,
+			   struct snd_kcontrol *kcontrol, int event)
+{
+
+	switch (event) {
+	case SND_SOC_DAPM_POST_PMU:
+		break;
+	case SND_SOC_DAPM_PRE_PMD:
+		break;
+	default:
+		return 0;
+	}
+
+	return arizona_dvfs_sysclk_ev(w, kcontrol, event);
+}
 static int vegas_asrc_ev(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *kcontrol,
 			  int event)
@@ -92,18 +108,50 @@ static int vegas_asrc_ev(struct snd_soc_dapm_widget *w,
 		val &= ARIZONA_ASRC_RATE1_MASK;
 		val >>= ARIZONA_ASRC_RATE1_SHIFT;
 
-		val = snd_soc_read(w->codec, ARIZONA_SAMPLE_RATE_1 + val);
-		if (val >= 0x11)
-			dev_warn(w->codec->dev, "Unsupported ASRC rate1\n");
+		switch (val) {
+		case 0:
+		case 1:
+		case 2:
+			val = snd_soc_read(w->codec,
+					   ARIZONA_SAMPLE_RATE_1 + val);
+			if (val >= 0x11) {
+				dev_warn(w->codec->dev,
+					 "Unsupported ASRC rate1 (%s)\n",
+					 arizona_sample_rate_val_to_name(val));
+			return -EINVAL;
+			}
+			break;
+		default:
+			dev_err(w->codec->dev,
+				"Illegal ASRC rate1 selector (0x%x)\n",
+				val);
+			return -EINVAL;
+		}
 
 		val = snd_soc_read(w->codec, ARIZONA_ASRC_RATE2);
 		val &= ARIZONA_ASRC_RATE2_MASK;
 		val >>= ARIZONA_ASRC_RATE2_SHIFT;
-		val -= 0x8;
 
-		val = snd_soc_read(w->codec, ARIZONA_ASYNC_SAMPLE_RATE_1 + val);
-		if (val >= 0x11)
-			dev_warn(w->codec->dev, "Unsupported ASRC rate2\n");
+		switch (val) {
+		case 8:
+		case 9:
+			val -= 0x8;
+			val = snd_soc_read(w->codec,
+					   ARIZONA_ASYNC_SAMPLE_RATE_1 + val);
+			if (val >= 0x11) {
+				dev_warn(w->codec->dev,
+					 "Unsupported ASRC rate2 (%s)\n",
+					 arizona_sample_rate_val_to_name(val));
+				return -EINVAL;
+			}
+			break;
+		default:
+			dev_err(w->codec->dev,
+				"Illegal ASRC rate2 selector (0x%x)\n",
+				val);
+			return -EINVAL;
+		}
+
 		break;
 	default:
 		return -EINVAL;
@@ -120,9 +168,11 @@ static int vegas_in1mux_put(struct snd_kcontrol *kcontrol,
 	struct snd_soc_codec *codec = widget->codec;
 	struct vegas_priv *vegas = snd_soc_codec_get_drvdata(codec);
 	struct arizona *arizona = vegas->core.arizona;
-	const struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
+	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int mux, inmode;
 	unsigned int mode_val, src_val;
+	bool changed = false;
+	int ret;
 
 	mux = ucontrol->value.enumerated.item[0];
 	if (mux > 1)
@@ -141,31 +191,53 @@ static int vegas_in1mux_put(struct snd_kcontrol *kcontrol,
 		else
 			mode_val = 1 << ARIZONA_IN1_MODE_SHIFT;
 
-		snd_soc_update_bits(codec, ARIZONA_IN1L_CONTROL,
+		ret = snd_soc_update_bits(codec, ARIZONA_IN1L_CONTROL,
 				    ARIZONA_IN1_MODE_MASK, mode_val);
+		if (ret < 0)
+			return ret;
+		else if (ret)
+			changed = true;
 
 		/* IN1A is digital so L and R must change together */
 		/* src_val setting same for both registers */
-		snd_soc_update_bits(codec,
+		ret = snd_soc_update_bits(codec,
 				    ARIZONA_ADC_DIGITAL_VOLUME_1L,
 				    ARIZONA_IN1L_SRC_MASK |
 				    ARIZONA_IN1L_SRC_SE_MASK, src_val);
-		snd_soc_update_bits(codec,
+		if (ret < 0)
+			return ret;
+		else if (ret)
+			changed = true;
+
+		ret = snd_soc_update_bits(codec,
 				    ARIZONA_ADC_DIGITAL_VOLUME_1R,
 				    ARIZONA_IN1R_SRC_MASK |
 				    ARIZONA_IN1R_SRC_SE_MASK, src_val);
+
+		if (ret < 0)
+			return ret;
+		else if (ret)
+			changed = true;
 		break;
 	default:
 		/* both analogue */
-		snd_soc_update_bits(codec,
+		ret = snd_soc_update_bits(codec,
 				    e->reg,
 				    ARIZONA_IN1L_SRC_MASK |
 				    ARIZONA_IN1L_SRC_SE_MASK,
 				    src_val);
+		if (ret < 0)
+			return ret;
+		else if (ret)
+			changed = true;
 		break;
 	}
 
-	return snd_soc_dapm_put_enum_virt(kcontrol, ucontrol);
+	if (changed)
+		return snd_soc_dapm_mux_update_power(widget, kcontrol,
+						     mux, e);
+	else
+		return 0;
 }
 
 static int vegas_in2mux_put(struct snd_kcontrol *kcontrol,
@@ -177,6 +249,9 @@ static int vegas_in2mux_put(struct snd_kcontrol *kcontrol,
 	struct vegas_priv *vegas = snd_soc_codec_get_drvdata(codec);
 	struct arizona *arizona = vegas->core.arizona;
 	unsigned int mux, inmode, src_val, mode_val;
+	bool changed = false;
+	int ret;
+	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 
 	mux = ucontrol->value.enumerated.item[0];
 	if (mux > 1)
@@ -192,14 +267,28 @@ static int vegas_in2mux_put(struct snd_kcontrol *kcontrol,
 	if (inmode & ARIZONA_INMODE_SE)
 		src_val |= 1 << ARIZONA_IN2L_SRC_SE_SHIFT;
 
-	snd_soc_update_bits(codec, ARIZONA_IN2L_CONTROL,
+	ret = snd_soc_update_bits(codec, ARIZONA_IN2L_CONTROL,
 			    ARIZONA_IN2_MODE_MASK, mode_val);
+	if (ret < 0)
+		return ret;
+	else if (ret)
+		changed = true;
 
-	snd_soc_update_bits(codec, ARIZONA_ADC_DIGITAL_VOLUME_2L,
+	ret = snd_soc_update_bits(codec, ARIZONA_ADC_DIGITAL_VOLUME_2L,
 			    ARIZONA_IN2L_SRC_MASK | ARIZONA_IN2L_SRC_SE_MASK,
 			    src_val);
+	if (ret < 0)
+		return ret;
+	else if (ret)
+		changed = true;
 
-	return snd_soc_dapm_put_enum_virt(kcontrol, ucontrol);
+
+
+	if (changed)
+		return snd_soc_dapm_mux_update_power(widget, kcontrol,
+						     mux, e);
+	else
+		return 0;
 }
 
 static const char * const vegas_inmux_texts[] = {
@@ -602,7 +691,9 @@ static const struct snd_kcontrol_new vegas_aec_loopback_mux[] = {
 
 static const struct snd_soc_dapm_widget vegas_dapm_widgets[] = {
 SND_SOC_DAPM_SUPPLY("SYSCLK", ARIZONA_SYSTEM_CLOCK_1,
-		    ARIZONA_SYSCLK_ENA_SHIFT, 0, NULL, 0),
+		    ARIZONA_SYSCLK_ENA_SHIFT, 0,
+		    vegas_sysclk_ev,
+		    SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_PRE_PMD),
 SND_SOC_DAPM_SUPPLY("ASYNCCLK", ARIZONA_ASYNC_CLOCK_1,
 		    ARIZONA_ASYNC_CLK_ENA_SHIFT, 0, NULL, 0),
 SND_SOC_DAPM_SUPPLY("OPCLK", ARIZONA_OUTPUT_SYSTEM_CLOCK,
@@ -618,7 +709,7 @@ SND_SOC_DAPM_REGULATOR_SUPPLY("SPKVDDL", 0, 0),
 SND_SOC_DAPM_REGULATOR_SUPPLY("SPKVDDR", 0, 0),
 
 SND_SOC_DAPM_SIGGEN("TONE"),
-SND_SOC_DAPM_SIGGEN("HAPTICS"),
+SND_SOC_DAPM_MIC("HAPTICS", NULL),
 
 SND_SOC_DAPM_INPUT("IN1AL"),
 SND_SOC_DAPM_INPUT("IN1AR"),
@@ -1236,7 +1327,7 @@ static const struct snd_soc_dapm_route vegas_dapm_routes[] = {
 	{ "DRC1 Signal Activity", NULL, "DRC1R" },
 };
 
-#define VEGAS_RATES SNDRV_PCM_RATE_8000_192000
+#define VEGAS_RATES SNDRV_PCM_RATE_KNOT
 
 #define VEGAS_FORMATS (SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S20_3LE |\
 			SNDRV_PCM_FMTBIT_S24_LE | SNDRV_PCM_FMTBIT_S32_LE)
@@ -1458,6 +1549,8 @@ static int vegas_probe(struct platform_device *pdev)
 
 	vegas->core.arizona = arizona;
 	vegas->core.num_inputs = 3;	/* IN1L, IN1R, IN2 */
+
+	arizona_init_dvfs(&vegas->core);
 
 	for (i = 0; i < ARRAY_SIZE(vegas->fll); i++)
 		vegas->fll[i].vco_mult = 1;

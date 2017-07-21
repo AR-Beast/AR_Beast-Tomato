@@ -678,6 +678,15 @@ static int mmc_blk_ioctl_cmd(struct block_device *bdev,
 	idata = mmc_blk_ioctl_copy_from_user(ic_ptr);
 	if (IS_ERR_OR_NULL(idata))
 		return PTR_ERR(idata);
+	if (idata->ic.postsleep_max_us < idata->ic.postsleep_min_us) {
+		pr_err("%s: min value: %u must not be greater than max value: %u\n",
+			__func__, idata->ic.postsleep_min_us,
+			idata->ic.postsleep_max_us);
+		WARN_ON(1);
+		err = -EPERM;
+		goto cmd_err;
+	}
+
 	md = mmc_blk_get(bdev->bd_disk);
 	if (!md) {
 		err = -EINVAL;
@@ -3391,7 +3400,7 @@ static void mmc_blk_shutdown(struct mmc_card *card)
 		mmc_claim_host(card->host);
 		mmc_stop_bkops(card);
 		mmc_release_host(card->host);
-		mmc_send_long_pon(card);
+		mmc_send_pon(card);
 		mmc_rpm_release(card->host, &card->dev);
 	}
 	return;

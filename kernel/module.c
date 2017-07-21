@@ -2352,7 +2352,7 @@ static void layout_symtab(struct module *mod, struct load_info *info)
 
 	/* We'll tack temporary mod_kallsyms on the end. */
 	mod->init_size = ALIGN(mod->init_size,
-				      __alignof__(struct mod_kallsyms));
+			       __alignof__(struct mod_kallsyms));
 	info->mod_kallsyms_init_off = mod->init_size;
 	mod->init_size += sizeof(struct mod_kallsyms);
 	mod->init_size = debug_align(mod->init_size);

@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -43,10 +43,8 @@
 #include <sound/compress_offload.h>
 #include <sound/compress_driver.h>
 #include <sound/msm-audio-effects-q6-v2.h>
-
 #include "msm-pcm-routing-v2.h"
 #include "audio_ocmem.h"
-#include "msm-dts-eagle.h"
 
 #define DSP_PP_BUFFERING_IN_MSEC	25
 #define PARTIAL_DRAIN_ACK_EARLY_BY_MSEC	150
@@ -284,17 +282,6 @@ static int msm_compr_set_volume(struct snd_compr_stream *cstream,
 			if (rc < 0)
 				pr_err("%s: Send LR gain command failed rc=%d\n",
 					__func__, rc);
-			else {
-				pr_debug("%s: now calling msm_dts_eagle_set_volume\n",
-					 __func__);
-				rc = msm_dts_eagle_set_volume(
-							prtd->audio_client,
-							volume_l, volume_r);
-				if (rc < 0) {
-					pr_err("%s: Send Volume command failed (DTS_EAGLE) rc=%d\n",
-						__func__, rc);
-				}
-			}
 			break;
 		case Q6_SUBSYS_INVALID:
 		default:
@@ -764,7 +751,7 @@ static int msm_compr_send_media_format_block(struct snd_compr_stream *cstream,
 		wma_cfg.ch_mask = codec_options->wma.channelmask;
 		wma_cfg.encode_opt = codec_options->wma.encodeopt;
 		ret = q6asm_media_format_block_wma(prtd->audio_client,
-					&wma_cfg, stream_id);
+					&wma_cfg);
 		if (ret < 0)
 			pr_err("%s: CMD Format block failed\n", __func__);
 		break;
@@ -783,7 +770,7 @@ static int msm_compr_send_media_format_block(struct snd_compr_stream *cstream,
 		wma_pro_cfg.adv_encode_opt = codec_options->wma.encodeopt1;
 		wma_pro_cfg.adv_encode_opt2 = codec_options->wma.encodeopt2;
 		ret = q6asm_media_format_block_wmapro(prtd->audio_client,
-				&wma_pro_cfg, stream_id);
+				&wma_pro_cfg);
 		if (ret < 0)
 			pr_err("%s: CMD Format block failed\n", __func__);
 		break;
@@ -893,25 +880,6 @@ static int msm_compr_init_pp_params(struct snd_compr_stream *cstream,
 	};
 
 	switch (ac->topology) {
-	case ASM_STREAM_POSTPROC_TOPO_ID_HPX_PLUS: /* HPX + SA+ topology */
-
-		ret = q6asm_set_softvolume_v2(ac, &softvol,
-					      SOFT_VOLUME_INSTANCE_1);
-		if (ret < 0)
-			pr_err("%s: Send SoftVolume Param failed ret=%d\n",
-			__func__, ret);
-
-		ret = q6asm_set_softvolume_v2(ac, &softvol,
-					      SOFT_VOLUME_INSTANCE_2);
-		if (ret < 0)
-			pr_err("%s: Send SoftVolume2 Param failed ret=%d\n",
-			__func__, ret);
-
-	case ASM_STREAM_POSTPROC_TOPO_ID_DTS_HPX:
-
-		msm_dts_eagle_init_pre(ac);
-
-		break;
 	default:
 		ret = q6asm_set_softvolume_v2(ac, &softvol,
 					      SOFT_VOLUME_INSTANCE_1);
@@ -1648,7 +1616,7 @@ static int msm_compr_trigger(struct snd_compr_stream *cstream, int cmd)
 			if (prtd->last_buffer) {
 				pr_debug("%s: last buffer drain\n", __func__);
 				rc = msm_compr_drain_buffer(prtd, &flags);
-				if (rc || !atomic_read(&prtd->start)) {
+				if (rc) {
 					spin_unlock_irqrestore(&prtd->lock,
 									flags);
 					break;
@@ -1667,7 +1635,7 @@ static int msm_compr_trigger(struct snd_compr_stream *cstream, int cmd)
 			/* wait for the zero length buffer to be returned */
 			pr_debug("%s: zero length buffer drain\n", __func__);
 			rc = msm_compr_drain_buffer(prtd, &flags);
-			if (rc || !atomic_read(&prtd->start)) {
+			if (rc) {
 				spin_unlock_irqrestore(&prtd->lock, flags);
 				break;
 			}
@@ -2381,10 +2349,6 @@ static int msm_compr_audio_effects_config_put(struct snd_kcontrol *kcontrol,
 						    &(audio_effects->equalizer),
 						     values);
 		break;
-	case DTS_EAGLE_MODULE:
-		pr_debug("%s: DTS_EAGLE_MODULE\n", __func__);
-		msm_dts_eagle_handler_pre(prtd->audio_client, values);
-		break;
 	case SOFT_VOLUME_MODULE:
 		pr_debug("%s: SOFT_VOLUME_MODULE\n", __func__);
 		break;
@@ -2409,6 +2373,7 @@ static int msm_compr_audio_effects_config_get(struct snd_kcontrol *kcontrol,
 	/* dummy function */
 	return 0;
 }
+
 static int msm_compr_send_dec_params(struct snd_compr_stream *cstream,
 				     struct msm_compr_dec_params *dec_params,
 				     int stream_id)

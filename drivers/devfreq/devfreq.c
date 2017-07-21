@@ -25,6 +25,7 @@
 #include <linux/list.h>
 #include <linux/printk.h>
 #include <linux/hrtimer.h>
+#include <linux/fb.h>
 #include "governor.h"
 
 static struct class *devfreq_class;
@@ -41,6 +42,16 @@ static LIST_HEAD(devfreq_governor_list);
 /* The list of all device-devfreq */
 static LIST_HEAD(devfreq_list);
 static DEFINE_MUTEX(devfreq_list_lock);
+
+/* List of devices to boost when the screen is woken */
+static const char *boost_devices[] = {
+	"qcom,cpubw.30",
+	"1c00000.qcom,kgsl-3d0"
+};
+
+#define WAKE_BOOST_DURATION_MS (10000)
+static struct delayed_work wake_unboost_work;
+static struct work_struct wake_boost_work;
 
 /**
  * find_device_devfreq() - find devfreq struct using device pointer
@@ -196,9 +207,14 @@ int update_devfreq(struct devfreq *devfreq)
 		return -EINVAL;
 
 	/* Reevaluate the proper frequency */
-	err = devfreq->governor->get_target_freq(devfreq, &freq, &flags);
-	if (err)
-		return err;
+	if (devfreq->do_wake_boost) {
+		/* Use the max freq when the screen is turned on */
+		freq = UINT_MAX;
+	} else {
+		err = devfreq->governor->get_target_freq(devfreq, &freq, &flags);
+		if (err)
+			return err;
+	}
 
 	/*
 	 * Adjust the freuqency with user freq and QoS.
@@ -532,17 +548,19 @@ struct devfreq *devfreq_add_device(struct device *dev,
 	if (devfreq->governor)
 		err = devfreq->governor->event_handler(devfreq,
 					DEVFREQ_GOV_START, NULL);
-	mutex_unlock(&devfreq_list_lock);
 	if (err) {
 		dev_err(dev, "%s: Unable to start governor for the device\n",
 			__func__);
 		goto err_init;
 	}
+	mutex_unlock(&devfreq_list_lock);
 
 	return devfreq;
 
 err_init:
 	list_del(&devfreq->node);
+	mutex_unlock(&devfreq_list_lock);
+
 	device_unregister(&devfreq->dev);
 err_dev:
 	kfree(devfreq);
@@ -755,7 +773,7 @@ static ssize_t store_governor(struct device *dev, struct device_attribute *attr,
 	struct devfreq *df = to_devfreq(dev);
 	int ret;
 	char str_governor[DEVFREQ_NAME_LEN + 1];
-	struct devfreq_governor *governor;
+	const struct devfreq_governor *governor, *prev_gov;
 
 	ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
 	if (ret != 1)
@@ -780,12 +798,17 @@ static ssize_t store_governor(struct device *dev, struct device_attribute *attr,
 			goto out;
 		}
 	}
+	prev_gov = df->governor;
 	df->governor = governor;
 	strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
 	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
-	if (ret)
+	if (ret) {
 		dev_warn(dev, "%s: Governor %s not started(%d)\n",
 			 __func__, df->governor->name, ret);
+		df->governor = prev_gov;
+		strncpy(df->governor_name, prev_gov->name, DEVFREQ_NAME_LEN);
+		df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+	}
 out:
 	mutex_unlock(&devfreq_list_lock);
 
@@ -1020,6 +1043,76 @@ static struct device_attribute devfreq_attrs[] = {
 	{ },
 };
 
+static bool is_boost_device(struct devfreq *df)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(boost_devices); i++) {
+		if (!strncmp(dev_name(&df->dev), boost_devices[i],
+				DEVFREQ_NAME_LEN))
+			return true;
+	}
+
+	return false;
+}
+
+static void set_wake_boost(bool enable)
+{
+	struct devfreq *df;
+
+	mutex_lock(&devfreq_list_lock);
+	list_for_each_entry(df, &devfreq_list, node) {
+		if (!is_boost_device(df))
+			continue;
+
+		mutex_lock(&df->lock);
+		df->do_wake_boost = enable;
+		update_devfreq(df);
+		mutex_unlock(&df->lock);
+	}
+	mutex_unlock(&devfreq_list_lock);
+}
+
+static void wake_boost_fn(struct work_struct *work)
+{
+	set_wake_boost(true);
+	schedule_delayed_work(&wake_unboost_work,
+			msecs_to_jiffies(WAKE_BOOST_DURATION_MS));
+}
+
+static void wake_unboost_fn(struct work_struct *work)
+{
+	set_wake_boost(false);
+}
+
+static int fb_notifier_callback(struct notifier_block *nb,
+		unsigned long action, void *data)
+{
+	struct fb_event *evdata = data;
+	int *blank = evdata->data;
+
+	/* Parse framebuffer events as soon as they occur */
+	if (action != FB_EVENT_BLANK)
+		return NOTIFY_OK;
+
+	switch (*blank) {
+	case FB_BLANK_UNBLANK:
+		schedule_work(&wake_boost_work);
+		break;
+	default:
+		cancel_work_sync(&wake_boost_work);
+		if (cancel_delayed_work_sync(&wake_unboost_work))
+			set_wake_boost(false);
+	}
+
+	return NOTIFY_OK;
+}
+
+static struct notifier_block fb_notifier_callback_nb = {
+	.notifier_call = fb_notifier_callback,
+	.priority = INT_MAX,
+};
+
 static int __init devfreq_init(void)
 {
 	devfreq_class = class_create(THIS_MODULE, "devfreq");
@@ -1038,6 +1131,10 @@ static int __init devfreq_init(void)
 		return PTR_ERR(devfreq_wq);
 	}
 	devfreq_class->dev_attrs = devfreq_attrs;
+
+	INIT_WORK(&wake_boost_work, wake_boost_fn);
+	INIT_DELAYED_WORK(&wake_unboost_work, wake_unboost_fn);
+	fb_register_client(&fb_notifier_callback_nb);
 
 	return 0;
 }

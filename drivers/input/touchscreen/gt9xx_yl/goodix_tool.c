@@ -86,7 +86,7 @@ static void tool_set_proc_name(char *procname)
 	/* pr_debug("procname = %s", procname); */
 }
 #endif
-#define IIC_MAX_TRANSFER_SIZE    200 
+#define IIC_MAX_TRANSFER_SIZE    200
 static s32 tool_i2c_read_no_extra(u8* buf, u16 len)
 {
     s32 ret = -1;
@@ -103,7 +103,7 @@ static s32 tool_i2c_read_no_extra(u8* buf, u16 len)
     msgs[0].addr  = gt_client->addr;
     msgs[0].len   = cmd_head.addr_len;
     msgs[0].buf   = &buf[0];
-    
+
     msgs[1].flags = I2C_M_RD;
     msgs[1].addr  = gt_client->addr;
     msgs[1].len   = len;

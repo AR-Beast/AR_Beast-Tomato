@@ -89,11 +89,12 @@ static inline void set_fs(mm_segment_t fs)
  */
 #define __range_ok(addr, size)						\
 ({									\
+	unsigned long __addr = (unsigned long __force)(addr);		\
 	unsigned long flag, roksum;					\
 	__chk_user_ptr(addr);						\
 	asm("adds %1, %1, %3; ccmp %1, %4, #2, cc; cset %0, ls"		\
 		: "=&r" (flag), "=&r" (roksum)				\
-		: "1" (addr), "Ir" (size),				\
+		: "1" (__addr), "Ir" (size),				\
 		  "r" (current_thread_info()->addr_limit)		\
 		: "cc");						\
 	flag;								\
@@ -147,7 +148,7 @@ do {									\
 	default:							\
 		BUILD_BUG();						\
 	}								\
-	(x) = (__typeof__(*(ptr)))__gu_val;				\
+	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
 } while (0)
 
 #define __get_user(x, ptr)						\

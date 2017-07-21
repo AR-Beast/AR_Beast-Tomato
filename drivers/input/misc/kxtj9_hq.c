@@ -2830,5 +2830,3 @@ MODULE_DESCRIPTION("Kionix accelerometer driver");
 MODULE_AUTHOR("Kuching Tan <kuchingtan@kionix.com>");
 MODULE_LICENSE("GPL");
 MODULE_VERSION("3.3.0");
-
-

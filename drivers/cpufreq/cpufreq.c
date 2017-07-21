@@ -352,17 +352,15 @@ void cpufreq_notify_transition(struct cpufreq_policy *policy,
 EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
 
 /**
- * cpufreq_notify_utilization - notify CPU userspace about CPU utilization
- * change
- *
- * This function is called everytime the CPU load is evaluated by the
- * ondemand governor. It notifies userspace of cpu load changes via sysfs.
- */
+cpufreq_notify_utilization - notify CPU userspace about CPU utilization change
+This function is called everytime the CPU load is evaluated by the ondemand governor. 
+It notifies userspace of cpu load changes via sysfs.
+*/
 void cpufreq_notify_utilization(struct cpufreq_policy *policy,
-		unsigned int util)
+ unsigned int util)
 {
-	if (policy)
-		policy->util = util;
+ if (policy)
+ policy->util = util;
 }
 
 /*********************************************************************
@@ -1459,15 +1457,15 @@ static void cpufreq_out_of_sync(unsigned int cpu, unsigned int old_freq,
 
 unsigned int cpufreq_quick_get_util(unsigned int cpu)
 {
-	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-	unsigned int ret_util = 0;
+ struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+ unsigned int ret_util = 0;
 
-	if (policy) {
-		ret_util = policy->util;
-		cpufreq_cpu_put(policy);
-	}
+ if (policy) {
+ ret_util = policy->util;
+ cpufreq_cpu_put(policy);
+ }
 
-	return ret_util;
+ return ret_util;
 }
 EXPORT_SYMBOL(cpufreq_quick_get_util);
 

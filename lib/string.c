@@ -26,6 +26,7 @@
 #include <linux/export.h>
 #include <linux/bug.h>
 #include <linux/errno.h>
+#include <linux/memcopy.h>
 
 #ifndef __HAVE_ARCH_STRNICMP
 /**
@@ -614,11 +615,11 @@ EXPORT_SYMBOL(memzero_explicit);
  */
 void *memcpy(void *dest, const void *src, size_t count)
 {
-	char *tmp = dest;
-	const char *s = src;
+	unsigned long dstp = (unsigned long)dest; 
+	unsigned long srcp = (unsigned long)src; 
 
-	while (count--)
-		*tmp++ = *s++;
+	/* Copy from the beginning to the end */ 
+	mem_copy_fwd(dstp, srcp, count); 
 	return dest;
 }
 EXPORT_SYMBOL(memcpy);
@@ -635,21 +636,15 @@ EXPORT_SYMBOL(memcpy);
  */
 void *memmove(void *dest, const void *src, size_t count)
 {
-	char *tmp;
-	const char *s;
+	unsigned long dstp = (unsigned long)dest; 
+	unsigned long srcp = (unsigned long)src; 
 
-	if (dest <= src) {
-		tmp = dest;
-		s = src;
-		while (count--)
-			*tmp++ = *s++;
+	if (dest - src >= count) { 
+		/* Copy from the beginning to the end */ 
+		mem_copy_fwd(dstp, srcp, count); 
 	} else {
-		tmp = dest;
-		tmp += count;
-		s = src;
-		s += count;
-		while (count--)
-			*--tmp = *--s;
+		/* Copy from the end to the beginning */ 
+		mem_copy_bwd(dstp, srcp, count); 
 	}
 	return dest;
 }
@@ -840,3 +835,20 @@ void *memchr_inv(const void *start, int c, size_t bytes)
 	return check_bytes8(start, value, bytes % 8);
 }
 EXPORT_SYMBOL(memchr_inv);
+
+/**
+ * strreplace - Replace all occurrences of character in string.
+ * @s: The string to operate on.
+ * @old: The character being replaced.
+ * @new: The character @old is replaced with.
+ *
+ * Returns pointer to the nul byte at the end of @s.
+ */
+char *strreplace(char *s, char old, char new)
+{
+	for (; *s; ++s)
+		if (*s == old)
+			*s = new;
+	return s;
+}
+EXPORT_SYMBOL(strreplace);

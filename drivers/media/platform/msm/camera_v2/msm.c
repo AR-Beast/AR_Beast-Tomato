@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2015, 2017 The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -883,10 +883,8 @@ static int msm_open(struct file *filep)
 	BUG_ON(!pvdev);
 
 	/* !!! only ONE open is allowed !!! */
-	if (atomic_read(&pvdev->opened))
+	if (atomic_cmpxchg(&pvdev->opened, 0, 1))
 		return -EBUSY;
-
-	atomic_set(&pvdev->opened, 1);
 
 	spin_lock_irqsave(&msm_pid_lock, flags);
 	msm_pid = get_pid(task_pid(current));
@@ -1082,8 +1080,8 @@ static int msm_probe(struct platform_device *pdev)
 	if (WARN_ON(rc < 0))
 		goto media_fail;
 
-	if (WARN_ON((rc == media_entity_init(&pvdev->vdev->entity,
-			0, NULL, 0)) < 0))
+	rc = media_entity_init(&pvdev->vdev->entity, 0, NULL, 0);
+	if (WARN_ON(rc < 0))
 		goto entity_fail;
 
 	pvdev->vdev->entity.type = MEDIA_ENT_T_DEVNODE_V4L;

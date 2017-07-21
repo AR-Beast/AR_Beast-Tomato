@@ -59,6 +59,7 @@ obj-$(CONFIG_MSM_PERFORMANCE) 	  += msm_performance.o
 obj-$(CONFIG_MSM_CORE_CTL_HELPER) += core_ctl_helper.o
 obj-$(CONFIG_MSM_CORE_CTL) += core_ctl.o
 obj-$(CONFIG_STATE_NOTIFIER)      += state_notifier.o
+
 ifdef CONFIG_MSM_SUBSYSTEM_RESTART
        obj-y += subsystem_notif.o
        obj-y += subsystem_restart.o

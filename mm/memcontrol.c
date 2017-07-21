@@ -113,6 +113,9 @@ enum mem_cgroup_events_index {
 	MEM_CGROUP_EVENTS_PGPGOUT,	/* # of pages paged out */
 	MEM_CGROUP_EVENTS_PGFAULT,	/* # of page-faults */
 	MEM_CGROUP_EVENTS_PGMAJFAULT,	/* # of major page-faults */
+	MEM_CGROUP_EVENTS_PGMAJFAULT_S,	/* # of major shmem page-faults */
+	MEM_CGROUP_EVENTS_PGMAJFAULT_A,	/* # of major anonymous page-faults */
+	MEM_CGROUP_EVENTS_PGMAJFAULT_F,	/* # of major file page-faults */
 	MEM_CGROUP_EVENTS_NSTATS,
 };
 
@@ -121,6 +124,9 @@ static const char * const mem_cgroup_events_names[] = {
 	"pgpgout",
 	"pgfault",
 	"pgmajfault",
+	"pgmajfault_s",
+	"pgmajfault_a",
+	"pgmajfault_f",
 };
 
 static const char * const mem_cgroup_lru_names[] = {
@@ -1297,8 +1303,20 @@ void __mem_cgroup_count_vm_event(struct mm_struct *mm, enum vm_event_item idx)
 	case PGFAULT:
 		this_cpu_inc(memcg->stat->events[MEM_CGROUP_EVENTS_PGFAULT]);
 		break;
-	case PGMAJFAULT:
+	case PGMAJFAULT_S:
 		this_cpu_inc(memcg->stat->events[MEM_CGROUP_EVENTS_PGMAJFAULT]);
+		this_cpu_inc(memcg->stat->events[
+				     MEM_CGROUP_EVENTS_PGMAJFAULT_S]);
+		break;
+	case PGMAJFAULT_A:
+		this_cpu_inc(memcg->stat->events[MEM_CGROUP_EVENTS_PGMAJFAULT]);
+		this_cpu_inc(memcg->stat->events[
+				     MEM_CGROUP_EVENTS_PGMAJFAULT_A]);
+		break;
+	case PGMAJFAULT_F:
+		this_cpu_inc(memcg->stat->events[MEM_CGROUP_EVENTS_PGMAJFAULT]);
+		this_cpu_inc(memcg->stat->events[
+				     MEM_CGROUP_EVENTS_PGMAJFAULT_F]);
 		break;
 	default:
 		BUG();
@@ -2698,7 +2716,7 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
 	 * in system level. So, allow to go ahead dying process in addition to
 	 * MEMDIE process.
 	 */
-	if (unlikely(test_thread_flag(TIF_MEMDIE)
+	if (unlikely(test_thread_flag_relaxed(TIF_MEMDIE)
 		     || fatal_signal_pending(current)))
 		goto bypass;
 
@@ -4095,7 +4113,7 @@ static void mem_cgroup_do_uncharge(struct mem_cgroup *memcg,
 	 * because we want to do uncharge as soon as possible.
 	 */
 
-	if (!batch->do_batch || test_thread_flag(TIF_MEMDIE))
+	if (!batch->do_batch || test_thread_flag_relaxed(TIF_MEMDIE))
 		goto direct_uncharge;
 
 	if (nr_pages > 1)

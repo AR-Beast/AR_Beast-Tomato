@@ -1756,8 +1756,6 @@ static int arizona_extcon_probe(struct platform_device *pdev)
 		goto err_micdet;
 	}
 
-	arizona_clk32k_enable(arizona);
-
 	switch (arizona->type) {
 	case WM8997:
 	case WM5102:
@@ -1823,7 +1821,8 @@ err_rise:
 err_input:
 err_register:
 	pm_runtime_disable(&pdev->dev);
-	extcon_dev_unregister(&info->edev);
+	extcon_dev_unregister(info->edev);
+
 	return ret;
 }
 
@@ -1868,7 +1867,6 @@ static int arizona_extcon_remove(struct platform_device *pdev)
 	cancel_delayed_work_sync(&info->hpdet_work);
 	regmap_update_bits(arizona->regmap, ARIZONA_JACK_DETECT_ANALOGUE,
 			   ARIZONA_JD1_ENA, 0);
-	arizona_clk32k_disable(arizona);
 
 	device_remove_file(&pdev->dev, &dev_attr_hp_impedance);
 	extcon_dev_unregister(&info->edev);

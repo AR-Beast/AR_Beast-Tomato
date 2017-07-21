@@ -1,18 +1,18 @@
 /* drivers/input/touchscreen/gt813_827_828.h
- * 
+ *
  * 2010 - 2012 Goodix Technology.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be a reference 
- * to you, when you are integrating the GOODiX's CTP IC into your system, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+ *
+ * This program is distributed in the hope that it will be a reference
+ * to you, when you are integrating the GOODiX's CTP IC into your system,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * Version:1.0
  *      V1.0:2012/08/31,first release.
  */
@@ -67,7 +67,7 @@ struct goodix_ts_data {
     u8  fw_error;
     struct mutex reset_mutex;
     struct mutex doze_mutex;
-    struct tw_platform_data *pdata;		
+    struct tw_platform_data *pdata;
     struct pinctrl *ts_pinctrl;
 	struct pinctrl_state *gpio_state_active;
 	struct pinctrl_state *gpio_state_suspend;
@@ -88,11 +88,7 @@ extern u16 total_len;
 #define SWITCH_OFF            0
 #define SWITCH_ON             1
 
-#ifdef CONFIG_MACH_CP8675
 #define TW_GLOVE_SWITCH  1
-#else
-#define TW_GLOVE_SWITCH  0
-#endif
 /* begin to add esd protect switch and set it open by liushilong@yulong.com on 2014-11-7 18:00*/
 #define GTP_ESD_PROTECT       1
 /* end to add esd protect switch and set it open by liushilong@yulong.com on 2014-11-7 18:00*/

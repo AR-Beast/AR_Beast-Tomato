@@ -42,7 +42,6 @@
 #include "q6voice.h"
 #include "sound/q6lsm.h"
 #include <sound/audio_cal_utils.h>
-#include "msm-dts-eagle.h"
 
 static int get_cal_path(int path_type);
 
@@ -146,11 +145,6 @@ static void msm_pcm_routing_cfg_pp(int port_id, int copp_idx, int topology,
 					__func__, topology, port_id, rc);
 		}
 		break;
-	case ADM_CMD_COPP_OPEN_TOPOLOGY_ID_DTS_HPX_0:
-	case ADM_CMD_COPP_OPEN_TOPOLOGY_ID_DTS_HPX_1:
-		pr_debug("%s: DTS_EAGLE_COPP_TOPOLOGY_ID\n", __func__);
-		msm_dts_eagle_init_post(port_id, copp_idx, topology);
-		break;
 	case ADM_CMD_COPP_OPEN_TOPOLOGY_ID_AUDIOSPHERE:
 		pr_debug("%s: TOPOLOGY_ID_AUDIOSPHERE\n", __func__);
 		msm_qti_pp_asphere_init(port_id, copp_idx);
@@ -181,11 +175,6 @@ static void msm_pcm_routing_deinit_pp(int port_id, int topology)
 			pr_debug("%s: DOLBY_ADM_COPP_TOPOLOGY_ID\n", __func__);
 			msm_dolby_dap_deinit(port_id);
 		}
-		break;
-	case ADM_CMD_COPP_OPEN_TOPOLOGY_ID_DTS_HPX_0:
-	case ADM_CMD_COPP_OPEN_TOPOLOGY_ID_DTS_HPX_1:
-		pr_debug("%s: DTS_EAGLE_COPP_TOPOLOGY_ID\n", __func__);
-		msm_dts_eagle_deinit_post(port_id, topology);
 		break;
 	case ADM_CMD_COPP_OPEN_TOPOLOGY_ID_AUDIOSPHERE:
 		pr_debug("%s: TOPOLOGY_ID_AUDIOSPHERE\n", __func__);
@@ -4275,10 +4264,10 @@ static int msm_routing_put_stereo_to_custom_stereo_control(
 	int flag = 0, i = 0, rc = 0, idx = 0;
 	int be_index = 0, port_id, topo_id;
 	unsigned int session_id = 0;
-	uint16_t op_FL_ip_FL_weight;
-	uint16_t op_FL_ip_FR_weight;
-	uint16_t op_FR_ip_FL_weight;
-	uint16_t op_FR_ip_FR_weight;
+	uint16_t op_FL_ip_FL_weight = 0;
+	uint16_t op_FL_ip_FR_weight = 0;
+	uint16_t op_FR_ip_FL_weight = 0;
+	uint16_t op_FR_ip_FR_weight = 0;
 	flag = ucontrol->value.integer.value[0];
 	pr_debug("%s E flag %d\n", __func__, flag);
 
@@ -4955,19 +4944,19 @@ static int spkr_prot_get_vi_rch_port(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
-static const char * const slim0_rx_vi_fb_tx_lch_mux_text[] = {
+static const char * slim0_rx_vi_fb_tx_lch_mux_text[] = {
 	"ZERO", "SLIM4_TX"
 };
 
-static const char * const slim0_rx_vi_fb_tx_rch_mux_text[] = {
+static const char * slim0_rx_vi_fb_tx_rch_mux_text[] = {
 	"ZERO", "SLIM4_TX"
 };
 
-static const int const slim0_rx_vi_fb_tx_lch_value[] = {
+static const int slim0_rx_vi_fb_tx_lch_value[] = {
 	MSM_BACKEND_DAI_MAX, MSM_BACKEND_DAI_SLIMBUS_4_TX
 };
 
-static const int const slim0_rx_vi_fb_tx_rch_value[] = {
+static const int slim0_rx_vi_fb_tx_rch_value[] = {
 	MSM_BACKEND_DAI_MAX, MSM_BACKEND_DAI_SLIMBUS_4_TX
 };
 

@@ -1505,6 +1505,7 @@ wait:
 	rc = fg_mem_read(chip, &reg, PROFILE_INTEGRITY_REG, 1, 0, 0);
 	if (rc) {
 		pr_err("failed to read profile integrity rc=%d\n", rc);
+
 		goto fail;
 	}
 

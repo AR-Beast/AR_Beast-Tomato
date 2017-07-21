@@ -415,21 +415,15 @@ static int sb_finish_set_opts(struct super_block *sb)
 		}
 	}
 
-	sbsec->flags |= (SE_SBINITIALIZED | SE_SBLABELSUPP);
-
 	if (sbsec->behavior > ARRAY_SIZE(labeling_behaviors))
 		printk(KERN_ERR "SELinux: initialized (dev %s, type %s), unknown behavior\n",
 		       sb->s_id, sb->s_type->name);
-	else
-		printk(KERN_DEBUG "SELinux: initialized (dev %s, type %s), %s\n",
-		       sb->s_id, sb->s_type->name,
-		       labeling_behaviors[sbsec->behavior-1]);
 
-	if (sbsec->behavior == SECURITY_FS_USE_GENFS ||
-	    sbsec->behavior == SECURITY_FS_USE_MNTPOINT ||
-	    sbsec->behavior == SECURITY_FS_USE_NONE ||
-	    sbsec->behavior > ARRAY_SIZE(labeling_behaviors))
-		sbsec->flags &= ~SE_SBLABELSUPP;
+	sbsec->flags |= SE_SBINITIALIZED;
+	if (sbsec->behavior == SECURITY_FS_USE_XATTR ||
+	    sbsec->behavior == SECURITY_FS_USE_TRANS ||
+	    sbsec->behavior == SECURITY_FS_USE_TASK)
+		sbsec->flags |= SE_SBLABELSUPP;
 
 	/* Special handling. Is genfs but also has in-core setxattr handler*/
 	if (!strcmp(sb->s_type->name, "sysfs") ||
@@ -707,7 +701,12 @@ static int selinux_set_mnt_opts(struct super_block *sb,
 	}
 
 	if (strcmp(sb->s_type->name, "proc") == 0)
-		sbsec->flags |= SE_SBPROC;
+		sbsec->flags |= SE_SBPROC | SE_SBGENFS;
+
+	if (!strcmp(sb->s_type->name, "debugfs") ||
+	    !strcmp(sb->s_type->name, "sysfs") ||
+	    !strcmp(sb->s_type->name, "pstore"))
+		sbsec->flags |= SE_SBGENFS;
 
 	/* Determine the labeling behavior to use for this filesystem type. */
 	rc = security_fs_use((sbsec->flags & SE_SBPROC) ? "proc" : sb->s_type->name, &sbsec->behavior, &sbsec->sid);
@@ -1192,12 +1191,13 @@ static inline u16 socket_type_to_security_class(int family, int type, int protoc
 	return SECCLASS_SOCKET;
 }
 
-#ifdef CONFIG_PROC_FS
-static int selinux_proc_get_sid(struct dentry *dentry,
-				u16 tclass,
-				u32 *sid)
+static int selinux_genfs_get_sid(struct dentry *dentry,
+				 u16 tclass,
+				 u16 flags,
+				 u32 *sid)
 {
 	int rc;
+	struct super_block *sb = dentry->d_inode->i_sb;
 	char *buffer, *path;
 
 	buffer = (char *)__get_free_page(GFP_KERNEL);
@@ -1208,26 +1208,20 @@ static int selinux_proc_get_sid(struct dentry *dentry,
 	if (IS_ERR(path))
 		rc = PTR_ERR(path);
 	else {
-		/* each process gets a /proc/PID/ entry. Strip off the
-		 * PID part to get a valid selinux labeling.
-		 * e.g. /proc/1/net/rpc/nfs -> /net/rpc/nfs */
-		while (path[1] >= '0' && path[1] <= '9') {
-			path[1] = '/';
-			path++;
+		if (flags & SE_SBPROC) {
+			/* each process gets a /proc/PID/ entry. Strip off the
+			 * PID part to get a valid selinux labeling.
+			 * e.g. /proc/1/net/rpc/nfs -> /net/rpc/nfs */
+			while (path[1] >= '0' && path[1] <= '9') {
+				path[1] = '/';
+				path++;
+			}
 		}
-		rc = security_genfs_sid("proc", path, tclass, sid);
+		rc = security_genfs_sid(sb->s_type->name, path, tclass, sid);
 	}
 	free_page((unsigned long)buffer);
 	return rc;
 }
-#else
-static int selinux_proc_get_sid(struct dentry *dentry,
-				u16 tclass,
-				u32 *sid)
-{
-	return -EINVAL;
-}
-#endif
 
 /* The inode's security attributes must be initialized before first use. */
 static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dentry)
@@ -1382,7 +1376,7 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
 		/* Default to the fs superblock SID. */
 		isec->sid = sbsec->sid;
 
-		if ((sbsec->flags & SE_SBPROC) && !S_ISLNK(inode->i_mode)) {
+		if ((sbsec->flags & SE_SBGENFS) && !S_ISLNK(inode->i_mode)) {
 			/* We must have a dentry to determine the label on
 			 * procfs inodes */
 			if (opt_dentry)
@@ -1405,7 +1399,8 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
 			if (!dentry)
 				goto out_unlock;
 			isec->sclass = inode_mode_to_security_class(inode->i_mode);
-			rc = selinux_proc_get_sid(dentry, isec->sclass, &sid);
+			rc = selinux_genfs_get_sid(dentry, isec->sclass,
+						   sbsec->flags, &sid);
 			dput(dentry);
 			if (rc)
 				goto out_unlock;
@@ -1915,12 +1910,10 @@ static int selinux_binder_transfer_file(struct task_struct *from, struct task_st
 	struct inode *inode = file->f_path.dentry->d_inode;
 	struct inode_security_struct *isec = inode->i_security;
 	struct common_audit_data ad;
-	struct selinux_audit_data sad = {0,};
 	int rc;
 
 	ad.type = LSM_AUDIT_DATA_PATH;
 	ad.u.path = file->f_path;
-	ad.selinux_audit_data = &sad;
 
 	if (sid != fsec->sid) {
 		rc = avc_has_perm(sid, fsec->sid,
@@ -3245,24 +3238,20 @@ error:
 
 static int selinux_mmap_addr(unsigned long addr)
 {
-	int rc = 0;
-	u32 sid = current_sid();
-
-	/*
-	 * notice that we are intentionally putting the SELinux check before
-	 * the secondary cap_file_mmap check.  This is such a likely attempt
-	 * at bad behaviour/exploit that we always want to get the AVC, even
-	 * if DAC would have also denied the operation.
-	 */
-	if (addr < CONFIG_LSM_MMAP_MIN_ADDR) {
-		rc = avc_has_perm(sid, sid, SECCLASS_MEMPROTECT,
-				  MEMPROTECT__MMAP_ZERO, NULL);
-		if (rc)
-			return rc;
-	}
+	int rc;
 
 	/* do DAC check on address space usage */
-	return cap_mmap_addr(addr);
+	rc = cap_mmap_addr(addr);
+	if (rc)
+		return rc;
+
+	if (addr < CONFIG_LSM_MMAP_MIN_ADDR) {
+		u32 sid = current_sid();
+		rc = avc_has_perm(sid, sid, SECCLASS_MEMPROTECT,
+				  MEMPROTECT__MMAP_ZERO, NULL);
+	}
+
+	return rc;
 }
 
 static int selinux_mmap_file(struct file *file, unsigned long reqprot,
@@ -4282,15 +4271,15 @@ static int selinux_socket_unix_may_send(struct socket *sock,
 			    &ad);
 }
 
-static int selinux_inet_sys_rcv_skb(int ifindex, char *addrp, u16 family,
-				    u32 peer_sid,
+static int selinux_inet_sys_rcv_skb(struct net *ns, int ifindex,
+				    char *addrp, u16 family, u32 peer_sid,
 				    struct common_audit_data *ad)
 {
 	int err;
 	u32 if_sid;
 	u32 node_sid;
 
-	err = sel_netif_sid(ifindex, &if_sid);
+	err = sel_netif_sid(ns, ifindex, &if_sid);
 	if (err)
 		return err;
 	err = avc_has_perm(peer_sid, if_sid,
@@ -4383,8 +4372,8 @@ static int selinux_socket_sock_rcv_skb(struct sock *sk, struct sk_buff *skb)
 		err = selinux_skb_peerlbl_sid(skb, family, &peer_sid);
 		if (err)
 			return err;
-		err = selinux_inet_sys_rcv_skb(skb->skb_iif, addrp, family,
-					       peer_sid, &ad);
+		err = selinux_inet_sys_rcv_skb(sock_net(sk), skb->skb_iif,
+					       addrp, family, peer_sid, &ad);
 		if (err) {
 			selinux_netlbl_err(skb, err, 0);
 			return err;
@@ -4706,10 +4695,9 @@ static int selinux_nlmsg_perm(struct sock *sk, struct sk_buff *skb)
 	err = selinux_nlmsg_lookup(sksec->sclass, nlh->nlmsg_type, &perm);
 	if (err) {
 		if (err == -EINVAL) {
-			audit_log(current->audit_context, GFP_KERNEL, AUDIT_SELINUX_ERR,
-				  "SELinux:  unrecognized netlink message"
-				  " type=%hu for sclass=%hu\n",
-				  nlh->nlmsg_type, sksec->sclass);
+			WARN_ONCE(1, "selinux_nlmsg_perm: unrecognized netlink message:"
+				  " protocol=%hu nlmsg_type=%hu sclass=%hu\n",
+				  sk->sk_protocol, nlh->nlmsg_type, sksec->sclass);
 			if (!selinux_enforcing || security_get_allow_unknown())
 				err = 0;
 		}
@@ -4727,7 +4715,8 @@ out:
 
 #ifdef CONFIG_NETFILTER
 
-static unsigned int selinux_ip_forward(struct sk_buff *skb, int ifindex,
+static unsigned int selinux_ip_forward(struct sk_buff *skb,
+				       const struct net_device *indev,
 				       u16 family)
 {
 	int err;
@@ -4753,14 +4742,14 @@ static unsigned int selinux_ip_forward(struct sk_buff *skb, int ifindex,
 
 	ad.type = LSM_AUDIT_DATA_NET;
 	ad.u.net = &net;
-	ad.u.net->netif = ifindex;
+	ad.u.net->netif = indev->ifindex;
 	ad.u.net->family = family;
 	if (selinux_parse_skb(skb, &ad, &addrp, 1, NULL) != 0)
 		return NF_DROP;
 
 	if (peerlbl_active) {
-		err = selinux_inet_sys_rcv_skb(ifindex, addrp, family,
-					       peer_sid, &ad);
+		err = selinux_inet_sys_rcv_skb(dev_net(indev), indev->ifindex,
+					       addrp, family, peer_sid, &ad);
 		if (err) {
 			selinux_netlbl_err(skb, err, 1);
 			return NF_DROP;
@@ -4789,7 +4778,7 @@ static unsigned int selinux_ipv4_forward(unsigned int hooknum,
 					 const struct net_device *out,
 					 int (*okfn)(struct sk_buff *))
 {
-	return selinux_ip_forward(skb, in->ifindex, PF_INET);
+	return selinux_ip_forward(skb, in, PF_INET);
 }
 
 #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
@@ -4799,7 +4788,7 @@ static unsigned int selinux_ipv6_forward(unsigned int hooknum,
 					 const struct net_device *out,
 					 int (*okfn)(struct sk_buff *))
 {
-	return selinux_ip_forward(skb, in->ifindex, PF_INET6);
+	return selinux_ip_forward(skb, in, PF_INET6);
 }
 #endif	/* IPV6 */
 
@@ -4887,11 +4876,13 @@ static unsigned int selinux_ip_postroute_compat(struct sk_buff *skb,
 	return NF_ACCEPT;
 }
 
-static unsigned int selinux_ip_postroute(struct sk_buff *skb, int ifindex,
+static unsigned int selinux_ip_postroute(struct sk_buff *skb,
+					 const struct net_device *outdev,
 					 u16 family)
 {
 	u32 secmark_perm;
 	u32 peer_sid;
+	int ifindex = outdev->ifindex;
 	struct sock *sk;
 	struct common_audit_data ad;
 	struct lsm_network_audit net = {0,};
@@ -5004,7 +4995,7 @@ static unsigned int selinux_ip_postroute(struct sk_buff *skb, int ifindex,
 		u32 if_sid;
 		u32 node_sid;
 
-		if (sel_netif_sid(ifindex, &if_sid))
+		if (sel_netif_sid(dev_net(outdev), ifindex, &if_sid))
 			return NF_DROP;
 		if (avc_has_perm(peer_sid, if_sid,
 				 SECCLASS_NETIF, NETIF__EGRESS, &ad))
@@ -5026,7 +5017,7 @@ static unsigned int selinux_ipv4_postroute(unsigned int hooknum,
 					   const struct net_device *out,
 					   int (*okfn)(struct sk_buff *))
 {
-	return selinux_ip_postroute(skb, out->ifindex, PF_INET);
+	return selinux_ip_postroute(skb, out, PF_INET);
 }
 
 #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
@@ -5036,7 +5027,7 @@ static unsigned int selinux_ipv6_postroute(unsigned int hooknum,
 					   const struct net_device *out,
 					   int (*okfn)(struct sk_buff *))
 {
-	return selinux_ip_postroute(skb, out->ifindex, PF_INET6);
+	return selinux_ip_postroute(skb, out, PF_INET6);
 }
 #endif	/* IPV6 */
 
@@ -5571,7 +5562,7 @@ static int selinux_setprocattr(struct task_struct *p,
 		return error;
 
 	/* Obtain a SID for the context, if one was specified. */
-	if (size && str[1] && str[1] != '\n') {
+	if (size && str[0] && str[0] != '\n') {
 		if (str[size-1] == '\n') {
 			str[size-1] = 0;
 			size--;

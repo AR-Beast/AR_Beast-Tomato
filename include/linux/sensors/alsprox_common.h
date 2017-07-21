@@ -37,4 +37,3 @@ struct prox_offset {
 };
 
 #endif
-

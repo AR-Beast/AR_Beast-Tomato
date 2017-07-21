@@ -318,7 +318,7 @@ static ssize_t yl_params_read(struct file *file, char __user *buf,
 	size_t count_temp;
 
 	if (count <= TAG_LENGTH)
- 		pr_debug("%s read count %zu\n", __func__, count);
+		pr_debug("%s read count %zu\n", __func__, count);
 
 	mutex_lock(&yl_param_lock);
 	count_temp = copy_from_user(kernel_buf, buf,
@@ -346,7 +346,7 @@ static ssize_t yl_params_write(struct file *file, const char __user *buf,
 	ssize_t len;
 
 	if (count <= TAG_LENGTH)
- 		pr_debug("%s write count %zu\n", __func__, count);
+		pr_debug("%s write count %zu\n", __func__, count);
 
 	/* We only support reading a maximum of a flash block */
 	if (count > ONE_BLOCK_SIZE)

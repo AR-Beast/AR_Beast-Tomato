@@ -1,4 +1,4 @@
-/* Copyright (c) 2002,2007-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2002,2007-2015,2017 The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -71,8 +71,22 @@ void adreno_drawctxt_dump(struct kgsl_device *device,
 	 * We may have cmdbatch timer running, which also uses same
 	 * lock, take a lock with software interrupt disabled (bh)
 	 * to avoid spin lock recursion.
+	 *
+	 * Use Spin trylock because dispatcher can acquire drawctxt->lock
+	 * if context is pending and the fence it is waiting on just got
+	 * signalled. Dispatcher acquires drawctxt->lock and tries to
+	 * delete the cmdbatch timer using del_timer_sync().
+	 * del_timer_sync() waits till timer and its pending handlers
+	 * are deleted. But if the timer expires at the same time,
+	 * timer handler could be waiting on drawctxt->lock leading to a
+	 * deadlock. To prevent this use spin_trylock_bh.
 	 */
-	spin_lock_bh(&drawctxt->lock);
+	if (!spin_trylock_bh(&drawctxt->lock)) {
+		dev_err(device->dev, "  context[%d]: could not get lock\n",
+			context->id);
+		return;
+	}
+
 	dev_err(device->dev,
 		"  context[%d]: queue=%d, submit=%d, start=%d, retire=%d\n",
 		context->id, queue, drawctxt->submitted_timestamp,
@@ -333,6 +347,7 @@ adreno_drawctxt_create(struct kgsl_device_private *dev_priv,
 		KGSL_CONTEXT_PER_CONTEXT_TS |
 		KGSL_CONTEXT_USER_GENERATED_TS |
 		KGSL_CONTEXT_NO_FAULT_TOLERANCE |
+		KGSL_CONTEXT_INVALIDATE_ON_FAULT |
 		KGSL_CONTEXT_CTX_SWITCH |
 		KGSL_CONTEXT_PRIORITY_MASK |
 		KGSL_CONTEXT_TYPE_MASK |

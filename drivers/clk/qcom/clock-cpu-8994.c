@@ -764,6 +764,7 @@ static struct cpu_clk_8994 a57_clk = {
 	},
 };
 
+
 DEFINE_FIXED_SLAVE_DIV_CLK(a53_div_clk, 1, &a53_clk.c);
 DEFINE_FIXED_SLAVE_DIV_CLK(a57_div_clk, 1, &a57_clk.c);
 
@@ -1306,7 +1307,7 @@ static void populate_opp_table(struct platform_device *pdev)
 	struct platform_device *apc0_dev, *apc1_dev;
 	struct device_node *apc0_node, *apc1_node;
 	unsigned long apc0_fmax, apc1_fmax;
-	int cpu, a53_cpu, a57_cpu;
+	int cpu, a53_cpu = 0, a57_cpu = 0;
 
 	apc0_node = of_parse_phandle(pdev->dev.of_node, "vdd-a53-supply", 0);
 	apc1_node = of_parse_phandle(pdev->dev.of_node, "vdd-a57-supply", 0);
@@ -1366,7 +1367,6 @@ static int cpu_clock_8994_driver_probe(struct platform_device *pdev)
 	int pvs_ver = 0;
 	u32 pte_efuse;
 	char a57speedbinstr[] = "qcom,a57-speedbinXX-vXX";
-
 	v2 = msm8994_v2;
 	cpu_clock_8994_dev = pdev;
 

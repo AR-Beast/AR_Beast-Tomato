@@ -1,14 +1,14 @@
 /********************************************************************************/
 /*																				*/
-/* Copyright (c) 2000-2010  YULONG Company             　　　　　　　       	*/
+/* Copyright (c) 2000-2010  YULONG Company             　　　　　　　		*/
 /*         宇龙计算机通信科技（深圳）有限公司  版权所有 2000-2010               */
 /*																				*/
-/* PROPRIETARY RIGHTS of YULONG Company are involved in the           			*/
+/* PROPRIETARY RIGHTS of YULONG Company are involved in the				*/
 /* subject matter of this material.  All manufacturing, reproduction, use,      */
-/* and sales rights pertaining to this subject matter are governed by the     	*/
+/* and sales rights pertaining to this subject matter are governed by the	*/
 /* license agreement.  The recipient of this software implicitly accepts        */
 /* the terms of the license.                                                    */
-/* 本软件文档资料是宇龙公司的资产,任何人士阅读和使用本资料必须获得     			*/
+/* 本软件文档资料是宇龙公司的资产,任何人士阅读和使用本资料必须获得			*/
 /* 相应的书面授权,承担保密责任和接受相应的法律约束.                             */
 /*																				*/
 /********************************************************************************/
@@ -270,12 +270,12 @@ static ssize_t touchscreen_firmware_update_show(struct device *dev,struct device
 	if(TOUCH_IN_ACTIVE(0))
 	{
 		if(touchscreen_ops[0]->firmware_need_update)
-	       	ret = touchscreen_ops[0]->firmware_need_update();
+		ret = touchscreen_ops[0]->firmware_need_update();
 	}
 	else if(TOUCH_IN_ACTIVE(1))
 	{
 		if(touchscreen_ops[1]->firmware_need_update)
-	       	ret = touchscreen_ops[1]->firmware_need_update();
+		ret = touchscreen_ops[1]->firmware_need_update();
 	}
 	mutex_unlock(&touchscreen_mutex);
 
@@ -322,14 +322,14 @@ static ssize_t  touchscreen_firmware_update_store(struct device *dev,struct devi
 	     if(touchscreen_ops[0]->firmware_need_update && touchscreen_ops[0]->firmware_need_update() && touchscreen_ops[0]->firmware_do_update)
 		{
                    ret = touchscreen_ops[0]->firmware_do_update();
-            	}
+		}
 	}
 	else if(TOUCH_IN_ACTIVE(1))
 	{
-  	     if(touchscreen_ops[1]->firmware_need_update && touchscreen_ops[1]->firmware_need_update() && touchscreen_ops[1]->firmware_do_update)
+	     if(touchscreen_ops[1]->firmware_need_update && touchscreen_ops[1]->firmware_need_update() && touchscreen_ops[1]->firmware_do_update)
 		{
                    ret = touchscreen_ops[1]->firmware_do_update();
-            	}
+		}
 	}
 	mutex_unlock(&touchscreen_mutex);
 	return ret;
@@ -367,12 +367,12 @@ static ssize_t touchscreen_calibrate_show(struct device *dev,struct device_attri
 	if(TOUCH_IN_ACTIVE(0))
 	{
 		if(touchscreen_ops[0]->need_calibrate)
-	       	ret = touchscreen_ops[0]->need_calibrate();
+		ret = touchscreen_ops[0]->need_calibrate();
 	}
 	else if(TOUCH_IN_ACTIVE(1))
 	{
 		if(touchscreen_ops[1]->need_calibrate)
-	       	ret = touchscreen_ops[1]->need_calibrate();
+		ret = touchscreen_ops[1]->need_calibrate();
 	}
 	mutex_unlock(&touchscreen_mutex);
 
@@ -416,12 +416,12 @@ static ssize_t  touchscreen_calibrate_store(struct device *dev,struct device_att
 	if(TOUCH_IN_ACTIVE(0))
 	{
 		if(touchscreen_ops[0]->calibrate)
-	       	ret = touchscreen_ops[0]->calibrate();
+		ret = touchscreen_ops[0]->calibrate();
 	}
 	else if(TOUCH_IN_ACTIVE(1))
 	{
 		if(touchscreen_ops[1]->calibrate)
-	       	ret = touchscreen_ops[1]->calibrate();
+		ret = touchscreen_ops[1]->calibrate();
 	}
 	mutex_unlock(&touchscreen_mutex);
 	return ret;
@@ -460,12 +460,12 @@ static ssize_t  touchscreen_firmware_version_show(struct device *dev,struct devi
 	if(TOUCH_IN_ACTIVE(0))
 	{
 		if(touchscreen_ops[0]->get_firmware_version)
-	       	touchscreen_ops[0]->get_firmware_version(version);
+		touchscreen_ops[0]->get_firmware_version(version);
 	}
 	else if(TOUCH_IN_ACTIVE(1))
 	{
 		if(touchscreen_ops[1]->get_firmware_version)
-	       	touchscreen_ops[1]->get_firmware_version(version);
+		touchscreen_ops[1]->get_firmware_version(version);
 	}
 	mutex_unlock(&touchscreen_mutex);
 
@@ -512,12 +512,12 @@ static ssize_t  touchscreen_reset_store(struct device *dev,struct device_attribu
 	if(TOUCH_IN_ACTIVE(0))
 	{
 		if(touchscreen_ops[0]->reset_touchscreen)
-	       	ret = touchscreen_ops[0]->reset_touchscreen();
+		ret = touchscreen_ops[0]->reset_touchscreen();
 	}
 	else if(TOUCH_IN_ACTIVE(1))
 	{
 		if(touchscreen_ops[1]->reset_touchscreen)
-	       	ret = touchscreen_ops[1]->reset_touchscreen();
+		ret = touchscreen_ops[1]->reset_touchscreen();
 	}
 	mutex_unlock(&touchscreen_mutex);
 
@@ -647,12 +647,12 @@ static ssize_t  touchscreen_mode_store(struct device *dev,struct device_attribut
 	if(TOUCH_IN_ACTIVE(0))
 	{
 		if(touchscreen_ops[0]->set_mode)
-	       	ret = touchscreen_ops[0]->set_mode(mode);
+		ret = touchscreen_ops[0]->set_mode(mode);
 	}
 	else if(TOUCH_IN_ACTIVE(1))
 	{
 		if(touchscreen_ops[1]->set_mode)
-	       	ret = touchscreen_ops[1]->set_mode(mode);
+		ret = touchscreen_ops[1]->set_mode(mode);
 	}
 	mutex_unlock(&touchscreen_mutex);
 
@@ -750,12 +750,12 @@ static ssize_t  touchscreen_oreitation_store(struct device *dev,struct device_at
 	if(TOUCH_IN_ACTIVE(0))
 	{
 		if(touchscreen_ops[0]->set_oreitation)
-	       	ret = touchscreen_ops[0]->set_oreitation(oreitation);
+		ret = touchscreen_ops[0]->set_oreitation(oreitation);
 	}
 	else if(TOUCH_IN_ACTIVE(1))
 	{
 		if(touchscreen_ops[1]->set_oreitation)
-	       	ret = touchscreen_ops[1]->set_oreitation(oreitation);
+		ret = touchscreen_ops[1]->set_oreitation(oreitation);
 	}
 	mutex_unlock(&touchscreen_mutex);
 
@@ -925,12 +925,12 @@ static ssize_t  touchscreen_vendor_show(struct device *dev,struct device_attribu
 	if(TOUCH_IN_ACTIVE(0))
 	{
 		if(touchscreen_ops[0]->get_vendor)
-	       	touchscreen_ops[0]->get_vendor(vendor);
+		touchscreen_ops[0]->get_vendor(vendor);
 	}
 	else if(TOUCH_IN_ACTIVE(1))
 	{
 		if(touchscreen_ops[1]->get_vendor)
-	       	touchscreen_ops[1]->get_vendor(vendor);
+		touchscreen_ops[1]->get_vendor(vendor);
 	}
 	mutex_unlock(&touchscreen_mutex);
 
@@ -1060,7 +1060,7 @@ static ssize_t  touchscreen_charger_state_store(struct device *dev,struct device
 	else if(TOUCH_IN_ACTIVE(1))
 	{
 		if(touchscreen_ops[1]->set_charger_state)
-	       	ret = touchscreen_ops[1]->set_charger_state(buf);
+		ret = touchscreen_ops[1]->set_charger_state(buf);
 	}
 	mutex_unlock(&touchscreen_mutex);
 

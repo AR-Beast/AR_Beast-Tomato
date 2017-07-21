@@ -422,10 +422,10 @@ static void goodix_ts_work_func(struct work_struct *work)
 						"Slide(0xAA) To Light up the screen!");
 					doze_status = DOZE_WAKEUP;
 					input_report_key(
-						ts->input_dev, KEY_POWER, 1);
+						ts->input_dev, KEY_WAKEUP, 1);
 					input_sync(ts->input_dev);
 					input_report_key(
-						ts->input_dev, KEY_POWER, 0);
+						ts->input_dev, KEY_WAKEUP, 0);
 					input_sync(ts->input_dev);
 					/* clear 0x814B */
 					doze_buf[2] = 0x00;
@@ -435,10 +435,10 @@ static void goodix_ts_work_func(struct work_struct *work)
 						"Slide(0xBB) To Light up the screen!");
 					doze_status = DOZE_WAKEUP;
 					input_report_key(ts->input_dev,
-								KEY_POWER, 1);
+								KEY_WAKEUP, 1);
 					input_sync(ts->input_dev);
 					input_report_key(ts->input_dev,
-								KEY_POWER, 0);
+								KEY_WAKEUP, 0);
 					input_sync(ts->input_dev);
 					/* clear 0x814B*/
 					doze_buf[2] = 0x00;
@@ -448,10 +448,10 @@ static void goodix_ts_work_func(struct work_struct *work)
 						"double click to light up the screen!");
 					doze_status = DOZE_WAKEUP;
 					input_report_key(ts->input_dev,
-								KEY_POWER, 1);
+								KEY_WAKEUP, 1);
 					input_sync(ts->input_dev);
 					input_report_key(ts->input_dev,
-								KEY_POWER, 0);
+								KEY_WAKEUP, 0);
 					input_sync(ts->input_dev);
 					/* clear 0x814B */
 					doze_buf[2] = 0x00;
@@ -1230,7 +1230,7 @@ static int gtp_request_input_dev(struct goodix_ts_data *ts)
 	}
 
 	if (ts->pdata->slide_wakeup)
-		input_set_capability(ts->input_dev, EV_KEY, KEY_POWER);
+		input_set_capability(ts->input_dev, EV_KEY, KEY_WAKEUP);
 
 	if (ts->pdata->with_pen) {  /* pen support */
 		__set_bit(BTN_TOOL_PEN, ts->input_dev->keybit);

@@ -61,7 +61,7 @@
 #define CORE_010400XX			0x10400000
 #define CORE_01040001			0x10400001
 
-extern void gsl_I2C_ROnePage(unsigned int addr, char *buf); 
+extern void gsl_I2C_ROnePage(unsigned int addr, char *buf);
 extern void gsl_I2C_RTotal_Address(unsigned int addr,unsigned int *data);
 
 #define DATA_SEN_MAX			24
@@ -107,15 +107,15 @@ static union
 	unsigned char sen_table[20];
 }sen_data;
 
-typedef struct  
+typedef struct
 {
-	struct  
+	struct
 	{
 		unsigned int origin_up_limit[2];
 		unsigned int origin_low_limit[2];
 	}origin_limit[2];
 
-	struct  
+	struct
 	{
 		unsigned int dac_up_limit[4];
 		unsigned int dac_low_limit[4];
@@ -123,18 +123,18 @@ typedef struct
 
 	unsigned int Rate;
 
-	struct  
+	struct
 	{
 		unsigned int key_num;
 		unsigned int key[24];
 	}dac_scope;
 
-	struct  
+	struct
 	{
 		unsigned int key_dac_up_limit;
 		unsigned int key_dac_low_limit;
 	}key_dac;
-	
+
 	int key_and_aa_dac_split;//wuhao
 }Judge_Rule;
 
@@ -149,19 +149,19 @@ static Judge_Rule Test_Rule={
 	},
 	//dac
 	{
-		{{95,95,95,95},	  //up	
-			{30,30,30,30}}  //low	
+		{{95,95,95,95},	  //up
+			{30,30,30,30}}  //low
 		,
-		{{4,3,2,1},	  //up	
-			{0,0,0,0}}      //low	
+		{{4,3,2,1},	  //up
+			{0,0,0,0}}      //low
 	},
 	100,
 	{//key
-		0,//key number	
+		0,//key number
 		{2,5,8,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24}
 	},
 	{
-		75,//key up value	
+		75,//key up value
 		45// key low value
 	},
 	1
@@ -281,29 +281,29 @@ static int InitGather(void)//初始化的函数，读出行列数。
 {
 	UINT ret = TRUE;
 	int i;
-	unsigned int *data_temp; 
+	unsigned int *data_temp;
 	union data
 	{
 		UINT data_int[6];
 		unsigned char data_char[24];
 	}data;
-// 	dac_num = ReadCPU(CONF_PAGE_2680(3),0x54);//dac用到的数量
-// 	drv_num = ReadCPU(CONF_PAGE_2680(2),0x00);//AA区的驱动线数
-// 	sen_num = ReadCPU(CONF_PAGE_2680(2),0x08);//AA区的感应线数
-// 	drv_key = ReadCPU(CONF_PAGE_2680(2),0x04);//按键的驱动线数量
-// 	sen_key = ReadCPU(CONF_PAGE_2680(2),0x7c);//按键的感应线数量
-// 	sen_scan_num = ReadCPU(CONF_PAGE_2680(4),0x7c);//一行的原始值数量，这个数大于等于感应线数
-	
+//	dac_num = ReadCPU(CONF_PAGE_2680(3),0x54);//dac用到的数量
+//	drv_num = ReadCPU(CONF_PAGE_2680(2),0x00);//AA区的驱动线数
+//	sen_num = ReadCPU(CONF_PAGE_2680(2),0x08);//AA区的感应线数
+//	drv_key = ReadCPU(CONF_PAGE_2680(2),0x04);//按键的驱动线数量
+//	sen_key = ReadCPU(CONF_PAGE_2680(2),0x7c);//按键的感应线数量
+//	sen_scan_num = ReadCPU(CONF_PAGE_2680(4),0x7c);//一行的原始值数量，这个数大于等于感应线数
+
 	//UINT data_ = 0x00;
 	data_temp = (unsigned int *)kzalloc(32*4,GFP_KERNEL);
 	if(!data_temp)
 		return FALSE;
-	gsl_I2C_ROnePage(0x2,(unsigned char *)data_temp); 
+	gsl_I2C_ROnePage(0x2,(unsigned char *)data_temp);
 	core_vers = CoreVersion(data_temp);
 	gsl_I2C_RTotal_Address(CONF_PAGE_2680(-1)+0,&base_addr);
 	if((base_addr & 0xffffffc0)==0xa5a5ffc0)
 		base_addr = 0;
-	else 
+	else
 		base_addr = 1;
 	kfree(data_temp);
 	gsl_I2C_RTotal_Address(CONF_PAGE_2680(3)*0x80+0x54,&dac_num);
@@ -345,7 +345,7 @@ static int InitGather(void)//初始化的函数，读出行列数。
 		return TRUE;
 	else
 	return FALSE;
-} 
+}
 
 static void ReadFrame(void)//
 {
@@ -382,7 +382,7 @@ static void ReadFrame(void)//
 		else if(read_type == GATHER_DATA_SUB)
 		{
 			ReadDataInt(0x5f80+16*10*2*4,12,TRUE);
-	
+
 		}
 	}
 	else if(cpu_type == CPU_TYPE_2680)
@@ -422,7 +422,7 @@ static void ReadFrame(void)//
 			ReadDataShort(ic_addr + ori_frame*26*14*2);
 		}
 		else if(read_type == GATHER_DATA_REFE)
-		{	
+		{
 			ReadDataShort(ic_addr+26*14*2*2);
 		}
 		else if(read_type == GATHER_DATA_SUB)
@@ -435,7 +435,7 @@ static void ReadFrame(void)//
 		if(read_type == GATHER_DATA_BASE)
 		{
 			ReadDataShort(0x5f00 + ori_frame*17*10*2);
-		}	
+		}
 		else if(read_type == GATHER_DATA_REFE)
 		{
 			ReadDataShort(0x5f00+17*10*2*2);
@@ -480,36 +480,36 @@ static int InitSenData(void)
 {
 	UINT i;
 	//	COperation cpu;
-	// 	if(cpu.ConnectCPU() == FALSE)
-	// 		return FALSE;
-	
-	// 	if(FALSE)
-	// 	{
-	// 		//scan_sen[0] = cpu.ReadCPU(0xff08000c);
-	// 		//scan_sen[1] = cpu.ReadCPU(0xff080008);
-	// 		SPI_RTotal_Address(0xff08000c,scan_sen[0]);
-	// 		SPI_RTotal_Address(0xff08000c,scan_sen[1]);
-	// 		scan_num = 12;
-	// 		sen_num = cpu.ReadCPU(0x9e,0x4c);
-	// 		for(i=0;i<3;i++)
-	// 			sen_table_int[i] = cpu.ReadCPU(0x97,0x30+i*4);
-	// 		for(;i<5;i++)
-	// 			sen_table_int[i] = 0;
-	// 		return TRUE;
-	// 	}
+	//	if(cpu.ConnectCPU() == FALSE)
+	//		return FALSE;
+
+	//	if(FALSE)
+	//	{
+	//		//scan_sen[0] = cpu.ReadCPU(0xff08000c);
+	//		//scan_sen[1] = cpu.ReadCPU(0xff080008);
+	//		SPI_RTotal_Address(0xff08000c,scan_sen[0]);
+	//		SPI_RTotal_Address(0xff08000c,scan_sen[1]);
+	//		scan_num = 12;
+	//		sen_num = cpu.ReadCPU(0x9e,0x4c);
+	//		for(i=0;i<3;i++)
+	//			sen_table_int[i] = cpu.ReadCPU(0x97,0x30+i*4);
+	//		for(;i<5;i++)
+	//			sen_table_int[i] = 0;
+	//		return TRUE;
+	//	}
 	//	else
 	{
-		// 		scan_sen[0] = cpu.ReadCPU(0xff08000c);
-		// 		scan_sen[1] = cpu.ReadCPU(0xff080008);
+		//		scan_sen[0] = cpu.ReadCPU(0xff08000c);
+		//		scan_sen[1] = cpu.ReadCPU(0xff080008);
 		gsl_I2C_RTotal_Address(0xff08000c,&scan_sen[0]);
 		gsl_I2C_RTotal_Address(0xff080008,&scan_sen[1]);
-		
+
 		//scan_num = cpu.ReadCPU(CONF_PAGE_2680(4),0x7c);
 		//sen_num = cpu.ReadCPU(CONF_PAGE_2680(1),0x7c);
-		
+
 		gsl_I2C_RTotal_Address(CONF_PAGE_2680(4)*0x80+0x7c,&scan_num);
 		gsl_I2C_RTotal_Address(CONF_PAGE_2680(1)*0x80+0x7c,&sen_num);
-		
+
 		for(i=0;i<5;i++)
 			//sen_table_int[i] = cpu.ReadCPU(CONF_PAGE_2680(3),i*4);
 			gsl_I2C_RTotal_Address(CONF_PAGE_2680(3)*0x80+i*4,&sen_data.sen_table_int[i]);
@@ -584,7 +584,7 @@ void DacRefresh(unsigned int w_r,unsigned int m_mode)
 				}
 				else
 					dac_save[j][i2] = dac_data[j][i];
-			
+
 				if(w_r == FALSE && !(j<dac_num && i<dac_sen_num)){
 					dac_data[j][i] = 0;
 				}
@@ -625,15 +625,15 @@ static UINT CoreVersionCPU(void)
 		return FALSE;
 	ret = CoreVersion(data_.data_int);
 	return ret;
-}	
+}
 
 static void DacRead(void)
 {
 	if(cpu_type == CPU_TYPE_1682
-		|| cpu_type == CPU_TYPE_1688 
-		|| cpu_type == CPU_TYPE_2680 
-		|| cpu_type == CPU_TYPE_3670 
-		|| cpu_type == CPU_TYPE_968 
+		|| cpu_type == CPU_TYPE_1688
+		|| cpu_type == CPU_TYPE_2680
+		|| cpu_type == CPU_TYPE_3670
+		|| cpu_type == CPU_TYPE_968
 		|| cpu_type == CPU_TYPE_3692)
 	{
 		union
@@ -650,7 +650,7 @@ static void DacRead(void)
 			dac_type = CORE_01040001;
 		else
 			dac_type = FALSE;//旧版 5*4*4的dac
-		
+
 		if(dac_type == FALSE)
 		{
 			//cpu.ReadPage(0xb);
@@ -673,9 +673,9 @@ static void DacRead(void)
 			memcpy(data_.data_int,onepage,128);
 			for(;i<6*4*4;i++)
 				dac_save[i/24][i%24] = data_.data_char[0x30+i-0x80];
-				
+
 		}
-		
+
 	}
 	DacRefresh(FALSE,0);
 }
@@ -696,7 +696,7 @@ static unsigned char TestBase(char *str_result,int size)
 	}
 
 	memset(str_result,'\0',size);
-	
+
 	for (i=0;i<drv_num;i++)
 	{
 		for (j=0;j<sen_num;j++)
@@ -708,8 +708,8 @@ static unsigned char TestBase(char *str_result,int size)
 				GSL_STRCAT(up_origin,up_origin_temp,1024);
 				memset(up_origin_temp,'\0',sizeof(up_origin_temp));
 				OK_NG_1 = 0;
-				OK_NG = 0;		
-			}	
+				OK_NG = 0;
+			}
 
 			if (gsl_ogv[i][j] < Test_Rule.origin_limit[0].origin_low_limit[0])
 			{
@@ -774,7 +774,7 @@ static unsigned char TestDac(char *str_result,int size)
 	if(!(low_dac=kzalloc(1024,GFP_KERNEL))){
 		kfree(up_dac);
 		return OK_NG;
-	}	
+	}
 	memset(up_dac,'\0',1024);
 	memset(low_dac,'\0',1024);
 	memset(str_result,'\0',size);
@@ -782,16 +782,16 @@ static unsigned char TestDac(char *str_result,int size)
 	{
 		for (j=0;j<sen_num;j++)
 		{
-			if (dac_data[i][j] > Test_Rule.dac_limit[0].dac_up_limit[i]) 
+			if (dac_data[i][j] > Test_Rule.dac_limit[0].dac_up_limit[i])
 			{
 				printk("why======>>>>>>>>>>>%d::(%d,%d)\n",dac_data[i][j],i,j);
 				GSL_STRCAT(up_dac,up_dac_temp,1024);
 				memset(up_dac_temp,'\0',sizeof(up_dac_temp));
-				
+
 				OK_NG_1 = 0;
 				OK_NG = 0;
 			}
-			if (dac_data[i][j] < Test_Rule.dac_limit[0].dac_low_limit[i]) 
+			if (dac_data[i][j] < Test_Rule.dac_limit[0].dac_low_limit[i])
 			{
 				printk("why======<<<<<<<<<<%d::(%d,%d)\n",dac_data[i][j],i,j);
 				GSL_STRCAT(low_dac,low_dac_temp,1024);
@@ -800,7 +800,7 @@ static unsigned char TestDac(char *str_result,int size)
 				OK_NG_2 = 0;
 				OK_NG = 0;
 			}
-		}		
+		}
 	}
 
 	for (i=0;i<Test_Rule.dac_scope.key_num;i++)
@@ -867,8 +867,8 @@ static unsigned char TestRate(char *str_result,int size)
 	memset(str_result,'\0',size);
 	for ( i=0; i<dac_num-1;i++)
 	{
-		dac_max[i] = dac_data[i][0]; // 
-		dac_min[i] = dac_data[i][0]; // 
+		dac_max[i] = dac_data[i][0]; //
+		dac_min[i] = dac_data[i][0]; //
 		for (j=0;j<sen_num;j++)
 		{
 			if (dac_max[i] < dac_data[i][j])
@@ -898,7 +898,7 @@ static unsigned char TestRate(char *str_result,int size)
 			err = 1;
 		}
 	}
-	kfree(temp);	
+	kfree(temp);
 	GSL_STRCAT(str_result,dac_rate_temp,size);
 	return err_end;
 }
@@ -978,27 +978,26 @@ int gsl_tp_module_test(char *buf,int size)
 		printk("[%s] err==FALSE",__func__);
 		return -1;
 	}
-	
+
 	printk("why====%s::111111111111\n",__func__);
 	ReadFrame();
 	printk("why====%s::222222222222\n",__func__);
 	DacRead();
 	printk("why====%s::333333333333\n",__func__);
-	
+
 	tmp1 = TestBase(buf,ret);
 	buf[ret-1] = '\0';
 	printk("[%s] TestBase Result: %d\n",__func__,tmp1);
-	
+
 	tmp2 = TestDac(&buf[ret],ret);
 	buf[ret*2-1] = '\0';
 	printk("[%s] TestDac Result: %d\n",__func__,tmp2);
-	
+
 	tmp3 = TestRate(&buf[ret*2],ret);
 	buf[size] = '\0';
 	printk("[%s] TestRate Result: %d\n",__func__,tmp3);
-	
+
 	if(tmp1 && tmp2 && tmp3)
 		return 1;
-	return -1;	
+	return -1;
 }
-
