@@ -225,26 +225,18 @@ module_param_cb(temp_step, &temp_step_ops, &TEMP_STEP, 0644);
 static int set_freq_limit(const char *val, const struct kernel_param *kp)
 {
 	int ret = 0;
-	int i, cnt;
-	int valid = 0;
+	int i;
 	struct cpufreq_policy *policy;
 	static struct cpufreq_frequency_table *tbl = NULL;
 	
 	ret = kstrtouint(val, 10, &i);
+        
 	if (ret)
-		return -EINVAL;
-
+	   return -EINVAL;
+ 
 	policy = cpufreq_cpu_get(0);
 	tbl = cpufreq_frequency_get_table(0);
-	for (cnt = 0; (tbl[cnt].frequency != CPUFREQ_TABLE_END); cnt++) {
-		if (cnt > 0)
-			if (tbl[cnt].frequency == i)
-				valid = 1;
-	}	
 
-	if (!valid)
-		return -EINVAL;
-	
 	ret = param_set_int(val, kp);
 
 	return ret;
