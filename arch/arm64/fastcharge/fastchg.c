@@ -42,6 +42,3 @@ static int __init get_fastcharge_opt(char *ffc)
 }
 
 __setup("ffc=", get_fastcharge_opt);
-
-module_init(force_fast_charge_init);
-module_exit(force_fast_charge_exit);
