@@ -16,14 +16,12 @@
 
 // Enable/Disable Toggle.
 int QC_Toggle = ENABLED;
-// Variable to Store Actual Value of Current (mA) Drawn from Charger.
-unsigned int Dynamic_Current;
 
-// Function to Read the Value of Current (mA) Drawn from Charger.
-void Current (int Value)
-{
-Dynamic_Current = Value / 1000;
-}
+// Variable to store max charge current.
+int custom_current = 1500;
+
+// Variable to Store Actual Value of Current (mA) Drawn from Charger.
+unsigned int Actual_Current;
 
 static ssize_t qc_toggle_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
@@ -49,9 +47,20 @@ static ssize_t qc_toggle_store(struct kobject *kobj, struct kobj_attribute *attr
 return count;
 }
 
-static ssize_t dynamic_current_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t custom_current_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u", Dynamic_Current);
+	return sprintf(buf, "%d", custom_current);
+}
+
+static ssize_t custom_current_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int usercurrent;
+	sscanf(buf, "%d", &usercurrent);
+	if(QC_Toggle == 1 && usercurrent <= 1500 && usercurrent  >= 1250)
+		custom_current = usercurrent;
+	else
+		pr_info("%s: disabled or limit reached, ignoring\n", QUICK_CHARGE);
+	return count;
 }
 
 static struct kobj_attribute qc_toggle_attribute =
@@ -60,16 +69,16 @@ static struct kobj_attribute qc_toggle_attribute =
 		qc_toggle_show,
 		qc_toggle_store);
 
-static struct kobj_attribute dynamic_current_attribute =
-	__ATTR(Dynamic_Current,
-		0444,
-		dynamic_current_show, 
-		NULL);
+static struct kobj_attribute custom_current_attribute =
+	__ATTR(custom_current,
+		0666,
+		custom_current_show,
+custom_current_store);
 
 static struct attribute *charger_control_attrs[] =
 	{
 		&qc_toggle_attribute.attr,
-		&dynamic_current_attribute.attr,
+		&custom_current_attribute.attr,
 		NULL,
 	};
 	
