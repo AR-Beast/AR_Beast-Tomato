@@ -508,7 +508,7 @@ static int input_current_limit[] = {
 };
 
 static int fastchg_current[] = {
-	450, 600, 750, 900, 1050, 1200, 1350, 1500,
+	1000, 1100, 1250, 1300, 1350, 1400, 1450, 1500,
 };
 
 static void smb1360_stay_awake(struct smb1360_wakeup_source *source,
