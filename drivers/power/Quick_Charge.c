@@ -30,6 +30,9 @@
 
 #include <linux/module.h>
 #include <linux/Quick_Charge.h>
+#include <linux/kobject.h>
+#include <linux/fastchg.h>
+#include <linux/string.h>
 
 #define ENABLED             1
 #define QUICK_CHARGE        "Quick_Charge"
@@ -37,12 +40,9 @@
 // Enable/Disable Toggle.
 int QC_Toggle = ENABLED;
 
-#include <linux/kobject.h>
-#include <linux/fastchg.h>
-#include <linux/string.h>
-
 int force_fast_charge = ENABLED;
 
+//Force Fast Charge
 static int __init get_fastcharge_opt(char *ffc)
 {
 	if (strcmp(ffc, "0") == 0) {
@@ -56,13 +56,6 @@ static int __init get_fastcharge_opt(char *ffc)
 }
 
 __setup("ffc=", get_fastcharge_opt);
-
-
-// Variable to store max charge current.
-int custom_current = 1500;
-
-// Variable to Store Actual Value of Current (mA) Drawn from Charger.
-unsigned int Actual_Current;
 
 static ssize_t qc_toggle_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
@@ -88,38 +81,15 @@ static ssize_t qc_toggle_store(struct kobject *kobj, struct kobj_attribute *attr
 return count;
 }
 
-static ssize_t custom_current_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d", custom_current);
-}
-
-static ssize_t custom_current_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int usercurrent;
-	sscanf(buf, "%d", &usercurrent);
-	if(QC_Toggle == 1 && usercurrent <= 1500 && usercurrent  >= 1250)
-		custom_current = usercurrent;
-	else
-		pr_info("%s: disabled or limit reached, ignoring\n", QUICK_CHARGE);
-	return count;
-}
-
 static struct kobj_attribute qc_toggle_attribute =
 	__ATTR(QC_Toggle,
 		0666,
 		qc_toggle_show,
 		qc_toggle_store);
 
-static struct kobj_attribute custom_current_attribute =
-	__ATTR(custom_current,
-		0666,
-		custom_current_show,
-custom_current_store);
-
 static struct attribute *charger_control_attrs[] =
 	{
 		&qc_toggle_attribute.attr,
-		&custom_current_attribute.attr,
 		NULL,
 	};
 	

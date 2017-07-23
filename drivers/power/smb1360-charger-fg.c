@@ -1399,7 +1399,7 @@ static int smb1360_get_prop_batt_capacity(struct smb1360_chip *chip)
 	   input_current_limit[12] = 1350;
 	   input_current_limit[13] = 1400;
 	   input_current_limit[14] = 1450;
-	   input_current_limit[15] = custom_current;
+	   input_current_limit[15] = 1500;
 
 	   // If Quick Charge+ is Enabled, Boost Charging-Current (mA) Levels.
 	   fastchg_current[0] = 1000;
@@ -1409,7 +1409,7 @@ static int smb1360_get_prop_batt_capacity(struct smb1360_chip *chip)
 	   fastchg_current[4] = 1300;
 	   fastchg_current[5] = 1400;
 	   fastchg_current[6] = 1450;
-	   fastchg_current[7] = custom_current;
+	   fastchg_current[7] = 1500;
 	}
 	else
 	{

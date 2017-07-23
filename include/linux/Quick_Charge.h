@@ -12,7 +12,6 @@
 #define __LINUX_QUICK_CHARGE_H
 
 extern int QC_Toggle;
-extern int custom_current;
 		  
 #endif
 
