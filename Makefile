@@ -710,6 +710,9 @@ KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
 # Disabled misleading indentation warning
 KBUILD_CFLAGS += $(call cc-disable-warning, misleading-indentation)
 
+# Disabled misleading indentation warning
+KBUILD_CFLAGS += $(call cc-disable-warning, nonnull)
+
 # disable pointer signed / unsigned warnings in gcc 4.0
 KBUILD_CFLAGS += $(call cc-disable-warning, pointer-sign)
 

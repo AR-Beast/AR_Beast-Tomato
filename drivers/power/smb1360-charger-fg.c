@@ -34,11 +34,6 @@
 #include <linux/state_helper.h>
 #endif
 
-#ifdef CONFIG_QUICK_CHARGE
-// Include Header File of Quick Charge+ for Access to the Status of Driver as well as for Reporting the Current (mA) Drawn from Charger, to the Driver.
-#include <linux/Quick_Charge.h>
-#endif
-
 #define _SMB1360_MASK(BITS, POS) \
 	((unsigned char)(((1 << (BITS)) - 1) << (POS)))
 #define SMB1360_MASK(LEFT_BIT_POS, RIGHT_BIT_POS) \
@@ -507,18 +502,6 @@ static int chg_time[] = {
 	1536,
 };
 
-#ifdef CONFIG_QUICK_CHARGE
-// If Quick Charge+ is Compiled, then Allow Parameters to be Modified.
-int input_current_limit[] = {
-	300, 400, 450, 500, 600, 700, 800, 850, 900,
-	950, 1000, 1100, 1200, 1300, 1400, 1500,
-};
-
-int fastchg_current[] = {
-	450, 600, 750, 900, 1050, 1200, 1350, 1500,
-};
-#else
-// If Quick Charge+ is Not Compiled, then Leave Parameters Untouched.
 static int input_current_limit[] = {
 	300, 400, 450, 500, 600, 700, 800, 850, 900,
 	950, 1000, 1100, 1200, 1300, 1400, 1500,
@@ -527,7 +510,6 @@ static int input_current_limit[] = {
 static int fastchg_current[] = {
 	450, 600, 750, 900, 1050, 1200, 1350, 1500,
 };
-#endif
 
 static void smb1360_stay_awake(struct smb1360_wakeup_source *source,
 	enum wakeup_src wk_src)
@@ -1380,69 +1362,6 @@ static int smb1360_get_prop_batt_capacity(struct smb1360_chip *chip)
 	u32 temp = 0;
 	int rc, soc = 0;
 
-	#ifdef CONFIG_QUICK_CHARGE
-	if (QC_Toggle == 1)
-	{
-	   // If Quick Charge+ is Enabled, Relax Input-Current (mA) Limits. 
-	   input_current_limit[0] = 750;
-	   input_current_limit[1] = 800;
-	   input_current_limit[2] = 850;
-	   input_current_limit[3] = 900;
-	   input_current_limit[4] = 950;
-	   input_current_limit[5] = 1000;
-	   input_current_limit[6] = 1050;
-	   input_current_limit[7] = 1100;
-	   input_current_limit[8] = 1150;
-	   input_current_limit[9] = 1200;
-	   input_current_limit[10] = 1250;
-	   input_current_limit[11] = 1300;
-	   input_current_limit[12] = 1350;
-	   input_current_limit[13] = 1400;
-	   input_current_limit[14] = 1450;
-	   input_current_limit[15] = 1500;
-
-	   // If Quick Charge+ is Enabled, Boost Charging-Current (mA) Levels.
-	   fastchg_current[0] = 1000;
-	   fastchg_current[1] = 1100;
-	   fastchg_current[2] = 1200;
-	   fastchg_current[3] = 1250;
-	   fastchg_current[4] = 1300;
-	   fastchg_current[5] = 1400;
-	   fastchg_current[6] = 1450;
-	   fastchg_current[7] = 1500;
-	}
-	else
-	{
-	    // If Quick Charge+ is Disabled, Restore Default Input-Current (mA) Limits.
-	    input_current_limit[0] = 300;
-	    input_current_limit[1] = 400;
-	    input_current_limit[2] = 450;
-	    input_current_limit[3] = 500;
-	    input_current_limit[4] = 600;
-	    input_current_limit[5] = 700;
-	    input_current_limit[6] = 800;
-	    input_current_limit[7] = 850;
-	    input_current_limit[8] = 900;
-	    input_current_limit[9] = 950;
-	    input_current_limit[10] = 1000;
-	    input_current_limit[11] = 1100;
-	    input_current_limit[12] = 1200;
-	    input_current_limit[13] = 1300;
-	    input_current_limit[14] = 1400;
-	    input_current_limit[15] = 1500;
-
-	    // If Quick Charge+ is Disabled, Restore Default Charging-Current (mA) Levels.
-	    fastchg_current[0] = 450;
-	    fastchg_current[1] = 600;
-	    fastchg_current[2] = 750;
-	    fastchg_current[3] = 900;
-	    fastchg_current[4] = 1050;
-	    fastchg_current[5] = 1200;
-	    fastchg_current[6] = 1350;
-	    fastchg_current[7] = 1500;
-	}
-	#endif
-
 	if (chip->fake_battery_soc >= 0)
 		return chip->fake_battery_soc;
 
@@ -2271,19 +2190,7 @@ static void smb1360_external_power_changed(struct power_supply *psy)
 		dev_err(chip->dev,
 			"could not read USB current_max property, rc=%d\n", rc);
 	else
-	#ifdef CONFIG_QUICK_CHARGE
-	{
-	// If Quick Charge+ is Enabled, Set USB-Current (mA) Limit to Maximum.
-	    if (QC_Toggle == 1)
-	       current_limit = 1000;
-	    else
-	// If Quick Charge+ is Disabled, Restore Default USB-Current (mA) Limit.
 		current_limit = prop.intval / 1000;
-	}
-	#else
-	// If Quick Charge+ is Not Compiled, Leave USB-Current (mA) Limit Untouched.
-            current_limit = prop.intval / 1000;
-	#endif    
 
 	pr_debug("current_limit = %d\n", current_limit);
 
@@ -5269,9 +5176,8 @@ static int smb1360_probe(struct i2c_client *client,
 	int rc;
 	struct smb1360_chip *chip;
 	struct power_supply *usb_psy;
-	
-	usb_psy = power_supply_get_by_name("usb");
 
+	usb_psy = power_supply_get_by_name("usb");
 	if (!usb_psy) {
 		dev_dbg(&client->dev, "USB supply not found; defer probe\n");
 		return -EPROBE_DEFER;
