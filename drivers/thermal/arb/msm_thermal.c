@@ -150,15 +150,21 @@ static void __ref check_temp(struct work_struct *work)
  		cpu_offline_wrapper(2);
  		cpu_offline_wrapper(3);
 	}
- 	else if (temp >= 60){
- 	    cpu_offline_wrapper(1);
+ 	else if (temp >= 69){
+		cpu_online_wrapper(1);
+ 		cpu_offline_wrapper(2);
  		cpu_offline_wrapper(3);
  	}
- 	else if (temp < 60){
+ 	else if (temp >= 63){
+ 	    cpu_online_wrapper(1);
+ 		cpu_online_wrapper(2);
+ 		cpu_offline_wrapper(3);
+ 	}
+ 	else if (temp < 63){
         cpu_online_wrapper(1);
  		cpu_online_wrapper(2);
  		cpu_online_wrapper(3);
-	}
+    }
  }
  
 reschedule:
