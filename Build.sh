@@ -43,9 +43,8 @@ echo -e "$blue***********************************************"
 echo "          Compiling AR_Beast™          "
 echo -e "***********************************************$nocol"
 rm -f $KERN_IMG
-make ARBeast_lettuce_defconfig -j4
-make Image -j4
-make dtbs -j4
+make ARBeast_lettuce_defconfig -j$(nproc --all)
+make Image -j$(nproc --all)
 if ! [ -a $KERN_IMG ];
 then
 echo -e "$red Kernel Compilation failed! Fix the errors! $nocol"
@@ -59,8 +58,8 @@ clean)
 make ARCH=arm64 -j4 clean mrproper
 ;;
 dt)
-make ARBeast_lettuce_defconfig -j4
-make dtbs -j4
+make ARBeast_lettuce_defconfig -j$(nproc --all)
+make dtbs -j$(nproc --all)
 $DTBTOOL -2 -o $KERNEL_DIR/arch/arm64/boot/dt.img -s 2048 -p $KERNEL_DIR/scripts/dtc/ $KERNEL_DIR/arch/arm/boot/dts/
 ;;
 *)
