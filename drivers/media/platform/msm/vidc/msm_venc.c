@@ -1453,7 +1453,6 @@ static inline int start_streaming(struct msm_vidc_inst *inst)
 	if (rc) {
 		dprintk(VIDC_ERR,
 			"Failed to move inst: %pK to start done state\n", inst);
-		msm_comm_session_clean(inst);
 		goto fail_start;
 	}
 	mutex_lock(&inst->pendingq.lock);
@@ -3712,11 +3711,8 @@ static struct v4l2_ctrl **get_super_cluster(struct msm_vidc_inst *inst,
 	struct v4l2_ctrl **cluster = kmalloc(sizeof(struct v4l2_ctrl *) *
 			NUM_CTRLS, GFP_KERNEL);
 
-	if (!size || !cluster || !inst)	{
-		if (cluster)
-			kfree(cluster);
+	if (!size || !cluster || !inst)
 		return NULL;
-	}
 
 	for (c = 0; c < NUM_CTRLS; c++)
 		cluster[sz++] =  inst->ctrls[c];
