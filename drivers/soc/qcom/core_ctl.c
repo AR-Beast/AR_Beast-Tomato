@@ -83,7 +83,7 @@ struct cpu_data {
 	struct list_head pending_lru;
 	bool cctoggle;
 };
-
+int gswitch;
 static DEFINE_PER_CPU(struct cpu_data, cpu_state);
 static DEFINE_SPINLOCK(state_lock);
 static DEFINE_SPINLOCK(pending_lru_lock);
@@ -98,6 +98,17 @@ static void __ref cpu_online_wrapper(int cpu)
         if (!cpu_online(cpu))
 		cpu_up(cpu);
 }
+
+#ifdef CONFIG_AiO_HotPlug
+extern int AiO_HotPlug;
+#endif
+#ifdef CONFIG_ALUCARD_HOTPLUG
+extern int alucard;
+#endif
+#ifdef CONFIG_ARB_THERMAL
+extern int TEMP_SAFETY;
+#endif
+
 /* ========================= sysfs interface =========================== */
 
 static ssize_t store_min_cpus(struct cpu_data *state,
@@ -374,8 +385,21 @@ static ssize_t store_cctoggle(struct cpu_data *state,
 
 	if (sscanf(buf, "%u\n", &val) != 1)
 		return -EINVAL;
-
+	#ifdef CONFIG_AiO_HotPlug
+    if (AiO_HotPlug)
+		return -EINVAL;
+    #endif		
+    #ifdef CONFIG_ALUCARD_HOTPLUG
+	if (alucard)
+	   return -EINVAL; 
+    #endif
+    #ifdef CONFIG_ARB_THERMAL   
+    if (TEMP_SAFETY)
+		return -EINVAL;
+    #endif
 	val = !!val;
+	
+	gswitch = val;
 
 	if (state->cctoggle == val)
 		return count;
@@ -391,7 +415,6 @@ static ssize_t store_cctoggle(struct cpu_data *state,
 	   for_each_possible_cpu(cpu)
        cpu_online_wrapper(cpu);
 	} 
-
 	return count;
 }
 

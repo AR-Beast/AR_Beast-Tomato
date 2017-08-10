@@ -42,7 +42,7 @@ static struct thermal_info {
 	.pending_change = false,
 };
 
-int TEMP_SAFETY = 1;
+int TEMP_SAFETY = 0;
 int TEMP_THRESHOLD = _temp_threshold;
 int TEMP_STEP = _temp_step;
 int LEVEL_VERY_HOT = _temp_threshold + _temp_step;
@@ -57,6 +57,9 @@ extern int AiO_HotPlug;
 #endif
 #ifdef CONFIG_ALUCARD_HOTPLUG
 extern int alucard;
+#endif
+#ifdef CONFIG_MSM_CORE_CTL
+extern int gswitch;
 #endif
 
 static struct msm_thermal_data msm_thermal_info;
@@ -268,6 +271,10 @@ static int set_temp_safety(const char *val, const struct kernel_param *kp)
 #endif		
 #ifdef CONFIG_ALUCARD_HOTPLUG
 	if (alucard)
+	   return -EINVAL; 
+#endif
+#ifdef CONFIG_MSM_CORE_CTL
+	if (!gswitch)
 	   return -EINVAL; 
 #endif
 
