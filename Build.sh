@@ -20,6 +20,7 @@ KERN_IMG=$KERNEL_DIR/arch/arm64/boot/Image
 DTBTOOL=$KERNEL_DIR/tools/dtbToolCM
 FINAL_KERNEL_ZIP=AR_Beast™-$(date +"%Y%m%d-%T")-lettuce.zip
 ZIP_MAKER_DIR=/home/ayushr1/AR_Beast/ARB-Anykernel2
+VERSION=5
 
 BUILD_START=$(date +"%s")
 blue='\033[0;34m'
@@ -36,6 +37,9 @@ export KBUILD_BUILD_USER="Ayush"
 export KBUILD_BUILD_HOST="Beast"
 STRIP="/home/ayushr1/AR_Beast/linaro/bin/aarch64-linaro-linux-android-strip"
 MODULES_DIR=$KERNEL_DIR/drivers/staging/prima/
+CAL=$(($VERSION - 1))
+touch .version
+echo "$CAL" > .version;
 
 compile_kernel ()
 {
@@ -72,7 +76,6 @@ echo -e "$yellow Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)
 
 #ZIP MAKER time!
 echo "**** Verifying ZIP MAKER Directory ****"
-ls $ZIP_MAKER_DIR
 echo "**** Removing leftovers ****"
 rm -rf $ZIP_MAKER_DIR/tools/dt.img
 rm -rf $ZIP_MAKER_DIR/Image
