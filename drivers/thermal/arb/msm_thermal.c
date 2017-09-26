@@ -49,9 +49,9 @@ int LEVEL_VERY_HOT = _temp_threshold + _temp_step;
 int LEVEL_HOT = _temp_threshold + (_temp_step * 2);
 int LEVEL_HELL = _temp_threshold + (_temp_step * 3);
 int FREQ_HELL = 800000;
-int FREQ_VERY_HOT = 998400;
-int FREQ_HOT = 1094400;
-int FREQ_WARM = 1209600;
+int FREQ_VERY_HOT = 1113600;
+int FREQ_HOT = 1344000;
+int FREQ_WARM = 1459200;
 #ifdef CONFIG_AiO_HotPlug
 extern int AiO_HotPlug;
 #endif
@@ -152,15 +152,28 @@ static void __ref check_temp(struct work_struct *work)
  		cpu_offline_wrapper(1);
  		cpu_offline_wrapper(2);
  		cpu_offline_wrapper(3);
+ 		cpu_offline_wrapper(4);
+ 		cpu_offline_wrapper(5);
+ 	    cpu_offline_wrapper(6);
+ 		cpu_offline_wrapper(7);
 	}
  	else if (temp >= 60){
  	    cpu_offline_wrapper(1);
+ 	    cpu_offline_wrapper(2);
  		cpu_offline_wrapper(3);
+ 		cpu_offline_wrapper(4);
+ 		cpu_online_wrapper(5);
+		cpu_online_wrapper(6);
+        cpu_online_wrapper(7);
  	}
  	else if (temp < 60){
         cpu_online_wrapper(1);
  		cpu_online_wrapper(2);
  		cpu_online_wrapper(3);
+ 		cpu_online_wrapper(4);
+ 		cpu_online_wrapper(5);
+		cpu_online_wrapper(6);
+ 		cpu_online_wrapper(7);
 	}
  }
  
