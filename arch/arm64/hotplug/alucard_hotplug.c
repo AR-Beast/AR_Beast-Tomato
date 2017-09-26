@@ -45,10 +45,14 @@ struct hotplug_cpuinfo {
 	unsigned int cur_up_rate;
 	unsigned int cur_down_rate;
 };
-
+#ifdef CONFIG_ARB_THERMAL
 extern int TEMP_SAFETY;
+#endif
 #ifdef CONFIG_AiO_HotPlug
 extern int AiO_HotPlug;
+#endif
+#ifdef CONFIG_MSM_CORE_CTL
+extern int gswitch;
 #endif
 int alucard;
 
@@ -655,12 +659,18 @@ static ssize_t store_hotplug_enable(struct kobject *a, struct attribute *b,
 	ret = sscanf(buf, "%u", &input);
 	if (ret != 1)
 		return -EINVAL;
-    
+
+#ifdef CONFIG_ARB_THERMAL   
     if (TEMP_SAFETY)
 		return -EINVAL;
+#endif
 #ifdef CONFIG_AiO_HotPlug
 	if (AiO_HotPlug)
 		return -EINVAL;	
+#endif
+#ifdef CONFIG_MSM_CORE_CTL
+	if (!gswitch)
+	   return -EINVAL; 
 #endif
 	input = input > 0;
 	alucard = input;
@@ -857,17 +867,10 @@ static int __init alucard_hotplug_init(void)
 	int ret;
 	unsigned int cpu;
 	unsigned int hotplug_freq[NR_CPUS][2] = {
-#ifdef CONFIG_MACH_LGE
-		{0, 1497600},
-		{652800, 1190400},
-		{652800, 1190400},
-		{652800, 0}
-#else
-		{0, 1242000},
-		{810000, 1566000},
-		{918000, 1674000},
-		{1026000, 0}
-#endif
+		{0, 1209600},
+		{800000, 998400},
+		{800000, 998400},
+		{800000, 0}
 	};
 	unsigned int hotplug_load[NR_CPUS][2] = {
 		{0, 60},
@@ -930,4 +933,3 @@ MODULE_DESCRIPTION("'alucard_hotplug' - A cpu hotplug driver for "
 MODULE_LICENSE("GPL");
 
 late_initcall(alucard_hotplug_init);
-

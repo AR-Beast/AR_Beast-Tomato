@@ -1271,22 +1271,10 @@ static int msm8x16_wcd_readable(struct snd_soc_codec *ssc, unsigned int reg)
 	return msm8x16_wcd_reg_readable[reg];
 }
 
-#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
-extern int snd_hax_reg_access(unsigned int);
-extern unsigned int snd_hax_cache_read(unsigned int);
-extern void snd_hax_cache_write(unsigned int, unsigned int);
-#endif
-
-#ifndef CONFIG_SOUND_CONTROL_HAX_3_GPL
-static
-#endif
-int msm8x16_wcd_write(struct snd_soc_codec *codec, unsigned int reg,
+static int msm8x16_wcd_write(struct snd_soc_codec *codec, unsigned int reg,
 			     unsigned int value)
 {
 	int ret;
-#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
-	int val;
-#endif
 	struct msm8x16_wcd_priv *msm8x16_wcd = snd_soc_codec_get_drvdata(codec);
 
 	dev_dbg(codec->dev, "%s: Write from reg 0x%x val 0x%x\n",
@@ -1306,28 +1294,10 @@ int msm8x16_wcd_write(struct snd_soc_codec *codec, unsigned int reg,
 				reg);
 		return -ENODEV;
 	} else
-#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
-	if (!snd_hax_reg_access(reg)) {
-		if (!((val = snd_hax_cache_read(reg)) != -1)) {
-			val = wcd9xxx_reg_read_safe(codec->control_data, reg);
-		}
-	} else {
-		snd_hax_cache_write(reg, value);
-		val = value;
-	}
-	return __msm8x16_wcd_reg_write(codec, reg, val);
-#else
- 	return __msm8x16_wcd_reg_write(codec, reg, (u8)value);
-#endif
+		return __msm8x16_wcd_reg_write(codec, reg, (u8)value);
 }
-#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
-EXPORT_SYMBOL(msm8x16_wcd_write);
-#endif
 
-#ifndef CONFIG_SOUND_CONTROL_HAX_3_GPL
-static
-#endif
-unsigned int msm8x16_wcd_read(struct snd_soc_codec *codec,
+static unsigned int msm8x16_wcd_read(struct snd_soc_codec *codec,
 				unsigned int reg)
 {
 	unsigned int val;
@@ -1367,9 +1337,6 @@ unsigned int msm8x16_wcd_read(struct snd_soc_codec *codec,
 					__func__, reg, val);
 	return val;
 }
-#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
-EXPORT_SYMBOL(msm8x16_wcd_read);
-#endif
 
 static void msm8x16_wcd_boost_on(struct snd_soc_codec *codec)
 {
@@ -1896,13 +1863,12 @@ static int msm8x16_wcd_codec_enable_on_demand_supply(
 				 __func__, on_demand_supply_name[w->shift]);
 			goto out;
 		}
-		if (atomic_dec_return(&supply->ref) == 0){
+		if (atomic_dec_return(&supply->ref) == 0)
 			ret = regulator_disable(supply->supply);
 			if (ret)
 				dev_err(codec->dev, "%s: Failed to disable %s\n",
 					__func__,
 					on_demand_supply_name[w->shift]);
-		}
 		break;
 	default:
 		break;
@@ -2570,11 +2536,16 @@ static const struct snd_kcontrol_new msm8x16_wcd_snd_controls[] = {
 
 	SOC_ENUM_EXT("LOOPBACK Mode", msm8x16_wcd_loopback_mode_ctl_enum[0],
 		msm8x16_wcd_loopback_mode_get, msm8x16_wcd_loopback_mode_put),
-
 #ifdef CONFIG_MACH_JALEBI
 	SOC_ENUM_EXT("Speaker Ext", msm8x16_wcd_ext_spk_ctl_enum[0],
 		msm8x16_wcd_ext_spk_get, msm8x16_wcd_ext_spk_set),
 #endif
+	SOC_SINGLE_TLV("ADC1 Volume", MSM8X16_WCD_A_ANALOG_TX_1_EN, 3,
+					8, 0, analog_gain),
+	SOC_SINGLE_TLV("ADC2 Volume", MSM8X16_WCD_A_ANALOG_TX_2_EN, 3,
+					8, 0, analog_gain),
+	SOC_SINGLE_TLV("ADC3 Volume", MSM8X16_WCD_A_ANALOG_TX_3_EN, 3,
+					8, 0, analog_gain),
 
 	SOC_SINGLE_SX_TLV("RX1 Digital Volume",
 			  MSM8X16_WCD_A_CDC_RX1_VOL_CTL_B2_CTL,
@@ -3253,26 +3224,26 @@ static int msm8x16_wcd_codec_enable_spk_pa(struct snd_soc_dapm_widget *w,
 			MSM8X16_WCD_A_ANALOG_SPKR_DAC_CTL, 0x10, 0x10);
 		if (get_codec_version(msm8x16_wcd) < CAJON_2_0)
 			msm8x16_wcd_boost_mode_sequence(codec, SPK_PMD);
-		snd_soc_update_bits(codec, w->reg, 0x80, 0x00);
-		switch (msm8x16_wcd->boost_option) {
-		case BOOST_SWITCH:
-			if (msm8x16_wcd->spk_boost_set)
+			snd_soc_update_bits(codec, w->reg, 0x80, 0x00);
+			switch (msm8x16_wcd->boost_option) {
+			case BOOST_SWITCH:
+				if (msm8x16_wcd->spk_boost_set)
+					snd_soc_update_bits(codec,
+					MSM8X16_WCD_A_ANALOG_SPKR_DRV_CTL,
+					0xEF, 0x69);
+				break;
+			case BOOST_ALWAYS:
+			case BOOST_ON_FOREVER:
 				snd_soc_update_bits(codec,
-				MSM8X16_WCD_A_ANALOG_SPKR_DRV_CTL,
-				0xEF, 0x69);
+					MSM8X16_WCD_A_ANALOG_SPKR_DRV_CTL,
+					0xEF, 0x69);
+				break;
+			case BYPASS_ALWAYS:
+				break;
+			default:
+				pr_err("%s: invalid boost option: %d\n",
+					__func__, msm8x16_wcd->boost_option);
 			break;
-		case BOOST_ALWAYS:
-		case BOOST_ON_FOREVER:
-			snd_soc_update_bits(codec,
-				MSM8X16_WCD_A_ANALOG_SPKR_DRV_CTL,
-				0xEF, 0x69);
-			break;
-		case BYPASS_ALWAYS:
-			break;
-		default:
-			pr_err("%s: invalid boost option: %d\n",
-				__func__, msm8x16_wcd->boost_option);
-		break;
 		}
 		break;
 	case SND_SOC_DAPM_POST_PMD:
@@ -5431,11 +5402,6 @@ void msm8x16_wcd_hs_detect_exit(struct snd_soc_codec *codec)
 }
 EXPORT_SYMBOL(msm8x16_wcd_hs_detect_exit);
 
-#ifdef CONFIG_SOUND_CONTROL_HAX_GPL
-struct snd_kcontrol_new *gpl_faux_snd_controls_ptr =
-		(struct snd_kcontrol_new *)msm8x16_wcd_snd_controls;
-#endif
-
 static void msm8x16_wcd_set_micb_v(struct snd_soc_codec *codec)
 {
 
@@ -5494,13 +5460,6 @@ static void msm8x16_wcd_configure_cap(struct snd_soc_codec *codec,
 	}
 }
 
-#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
-struct snd_kcontrol_new *gpl_faux_snd_controls_ptr =
-		(struct snd_kcontrol_new *)msm8x16_wcd_snd_controls;
-struct snd_soc_codec *fauxsound_codec_ptr;
-EXPORT_SYMBOL(fauxsound_codec_ptr);
-#endif
-
 static int msm8x16_wcd_codec_probe(struct snd_soc_codec *codec)
 {
 	struct msm8x16_wcd_priv *msm8x16_wcd_priv;
@@ -5508,11 +5467,6 @@ static int msm8x16_wcd_codec_probe(struct snd_soc_codec *codec)
 	struct msm8x16_wcd_pdata *pdata;
 
 	int i, ret;
-
-#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
-	pr_info("msm8x16_wcd codec probe...\n");
-	fauxsound_codec_ptr = codec;
-#endif
 
 	dev_dbg(codec->dev, "%s()\n", __func__);
 

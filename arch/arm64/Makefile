@@ -59,11 +59,12 @@ core-$(CONFIG_XEN)		+= arch/arm64/xen/
 core-$(CONFIG_KVM) += arch/arm64/kvm/
 core-$(CONFIG_CRYPTO) += arch/arm64/crypto/
 core-y		+= arch/arm64/hotplug/
+core-$(CONFIG_FORCE_FAST_CHARGE) += arch/arm64/fastcharge/
 libs-y		:= arch/arm64/lib/ $(libs-y)
 
 # Default target when executing plain make
 ifeq ($(CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE),y)
-KBUILD_IMAGE	:= Image.gz-dtb
+KBUILD_IMAGE	:= $(subst $\",,$(CONFIG_BUILD_ARM64_APPENDED_KERNEL_IMAGE_NAME))
 else
 KBUILD_IMAGE	:= Image.gz
 endif
@@ -83,15 +84,17 @@ zinstall install: vmlinux
 %.dtb: scripts
 	$(Q)$(MAKE) $(build)=$(boot)/dts $(boot)/dts/$@
 
+.PHONY: dtbs
 dtbs: scripts
 	$(Q)$(MAKE) $(build)=$(boot)/dts dtbs
 	$(Q)$(MAKE) $(build)=$(boot)/dts/qcom dtbs
+	@true
 
 PHONY += vdso_install
 vdso_install:
 	$(Q)$(MAKE) $(build)=arch/arm64/kernel/vdso $@
 
-Image.gz-dtb: vmlinux scripts dtbs
+Image-dtb Image.gz-dtb: vmlinux scripts dtbs
 	$(Q)$(MAKE) $(build)=$(boot) $(boot)/$@
 
 # We use MRPROPER_FILES and CLEAN_FILES now

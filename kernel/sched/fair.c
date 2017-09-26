@@ -1268,8 +1268,7 @@ unsigned int __read_mostly sysctl_sched_mostly_idle_nr_run = 3;
  * guide task placement.
  * This sysctl can be set to a default value using boot command line arguments.
  */
- 
-unsigned int __read_mostly sysctl_sched_enable_power_aware = 1;
+unsigned int __read_mostly sysctl_sched_enable_power_aware = 0;
 
 /*
  * This specifies the maximum percent power difference between 2
@@ -2699,7 +2698,7 @@ static inline int nr_big_tasks(struct rq *rq)
 
 #else	/* CONFIG_SCHED_HMP */
 
-#define sysctl_sched_enable_power_aware 1
+#define sysctl_sched_enable_power_aware 0
 
 static inline int select_best_cpu(struct task_struct *p, int target, int reason)
 {
@@ -4312,7 +4311,7 @@ static int runtime_refresh_within(struct cfs_bandwidth *cfs_b, u64 min_expire)
 	u64 remaining;
 
 	/* if the call-back is running a quota refresh is already occurring */
-	if (hrtimer_callback_running(refresh_timer))
+	if (hrtimer_callback_running_relaxed(refresh_timer))
 		return 1;
 
 	/* is a quota refresh about to occur? */

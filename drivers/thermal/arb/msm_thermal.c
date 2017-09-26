@@ -25,7 +25,7 @@
 #include <linux/msm_thermal.h>
 #include <linux/platform_device.h>
 #include <linux/of.h>
-#define _temp_threshold		50
+#define _temp_threshold		60
 #define _temp_step	3
 
 static struct thermal_info {
@@ -42,21 +42,24 @@ static struct thermal_info {
 	.pending_change = false,
 };
 
-int TEMP_SAFETY = 1;
+int TEMP_SAFETY = 0;
 int TEMP_THRESHOLD = _temp_threshold;
 int TEMP_STEP = _temp_step;
 int LEVEL_VERY_HOT = _temp_threshold + _temp_step;
 int LEVEL_HOT = _temp_threshold + (_temp_step * 2);
 int LEVEL_HELL = _temp_threshold + (_temp_step * 3);
 int FREQ_HELL = 800000;
-int FREQ_VERY_HOT = 1113600;
-int FREQ_HOT = 1344000;
-int FREQ_WARM = 1459200;
+int FREQ_VERY_HOT = 998400;
+int FREQ_HOT = 1094400;
+int FREQ_WARM = 1209600;
 #ifdef CONFIG_AiO_HotPlug
 extern int AiO_HotPlug;
 #endif
 #ifdef CONFIG_ALUCARD_HOTPLUG
 extern int alucard;
+#endif
+#ifdef CONFIG_MSM_CORE_CTL
+extern int gswitch;
 #endif
 
 static struct msm_thermal_data msm_thermal_info;
@@ -149,37 +152,15 @@ static void __ref check_temp(struct work_struct *work)
  		cpu_offline_wrapper(1);
  		cpu_offline_wrapper(2);
  		cpu_offline_wrapper(3);
- 		cpu_offline_wrapper(4);
- 		cpu_offline_wrapper(5);
- 	    cpu_offline_wrapper(6);
- 		cpu_offline_wrapper(7);
 	}
- 	else if (temp >= 69){
-		cpu_offline_wrapper(1);
- 		cpu_offline_wrapper(2);
- 		cpu_offline_wrapper(3);
- 		cpu_online_wrapper(4);
- 		cpu_online_wrapper(5);
- 	    cpu_offline_wrapper(6);
- 		cpu_offline_wrapper(7);
- 	}
- 	else if (temp >= 63){
+ 	else if (temp >= 60){
  	    cpu_offline_wrapper(1);
- 		cpu_offline_wrapper(2);
  		cpu_offline_wrapper(3);
- 		cpu_online_wrapper(4);
- 		cpu_online_wrapper(5);
-		cpu_online_wrapper(6);
- 		cpu_online_wrapper(7);
  	}
- 	else if (temp < 63){
+ 	else if (temp < 60){
         cpu_online_wrapper(1);
  		cpu_online_wrapper(2);
  		cpu_online_wrapper(3);
- 		cpu_online_wrapper(4);
- 		cpu_online_wrapper(5);
-		cpu_online_wrapper(6);
- 		cpu_online_wrapper(7);
 	}
  }
  
@@ -247,26 +228,18 @@ module_param_cb(temp_step, &temp_step_ops, &TEMP_STEP, 0644);
 static int set_freq_limit(const char *val, const struct kernel_param *kp)
 {
 	int ret = 0;
-	int i, cnt;
-	int valid = 0;
+	int i;
 	struct cpufreq_policy *policy;
 	static struct cpufreq_frequency_table *tbl = NULL;
 	
 	ret = kstrtouint(val, 10, &i);
+        
 	if (ret)
-		return -EINVAL;
-
+	   return -EINVAL;
+ 
 	policy = cpufreq_cpu_get(0);
 	tbl = cpufreq_frequency_get_table(0);
-	for (cnt = 0; (tbl[cnt].frequency != CPUFREQ_TABLE_END); cnt++) {
-		if (cnt > 0)
-			if (tbl[cnt].frequency == i)
-				valid = 1;
-	}	
 
-	if (!valid)
-		return -EINVAL;
-	
 	ret = param_set_int(val, kp);
 
 	return ret;
@@ -298,6 +271,10 @@ static int set_temp_safety(const char *val, const struct kernel_param *kp)
 #endif		
 #ifdef CONFIG_ALUCARD_HOTPLUG
 	if (alucard)
+	   return -EINVAL; 
+#endif
+#ifdef CONFIG_MSM_CORE_CTL
+	if (!gswitch)
 	   return -EINVAL; 
 #endif
 

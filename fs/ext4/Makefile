@@ -1,6 +1,19 @@
 #
 # Makefile for the linux ext4-filesystem routines.
 #
+CFLAGS_KERNEL :=-fno-graphite \
+                -fno-graphite-identity \
+                -fno-loop-flatten \
+                -fno-tree-loop-linear \
+                -fno-loop-interchange \
+                -fno-loop-strip-mine \
+                -fno-loop-block \
+                -fno-loop-nest-optimize \
+                -fno-loop-unroll-and-jam \
+                -fno-loop-parallelize-all \
+                -ftree-parallelize-loops=0 \
+                -fno-openmp \
+                -Wno-unused-function
 
 obj-$(CONFIG_EXT4_FS) += ext4.o
 

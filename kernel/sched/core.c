@@ -2994,9 +2994,10 @@ unsigned long wait_task_inactive(struct task_struct *p, long match_state)
 		 * is actually now running somewhere else!
 		 */
 		while (task_running(rq, p)) {
-			if (match_state && unlikely(p->state != match_state))
+			if (match_state && unlikely(cpu_relaxed_read_long
+				(&(p->state)) != match_state))
 				return 0;
-			cpu_relax();
+			cpu_read_relax();
 		}
 
 		/*
@@ -3324,7 +3325,7 @@ void scheduler_ipi(void)
 {
 	int cpu = smp_processor_id();
 
-	if (llist_empty(&this_rq()->wake_list)
+	if (llist_empty_relaxed(&this_rq()->wake_list)
 			&& !tick_nohz_full_cpu(cpu)
 			&& !got_nohz_idle_kick()
 			&& !got_boost_kick())
@@ -3493,8 +3494,8 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 * If the owning (remote) cpu is still in the middle of schedule() with
 	 * this task as prev, wait until its done referencing the task.
 	 */
-	while (p->on_cpu)
-		cpu_relax();
+	while (cpu_relaxed_read(&(p->on_cpu)))
+		cpu_read_relax();
 	/*
 	 * Pairs with the smp_wmb() in finish_lock_switch().
 	 */
@@ -4157,6 +4158,67 @@ unsigned long this_cpu_load(void)
 	return this->cpu_load[0];
 }
 
+unsigned long avg_cpu_nr_running(unsigned int cpu)
+{
+	unsigned int seqcnt, ave_nr_running;
+
+	struct rq *q = cpu_rq(cpu);
+
+	/*
+	 * Update average to avoid reading stalled value if there were
+	 * no run-queue changes for a long time. On the other hand if
+	 * the changes are happening right now, just read current value
+	 * directly.
+	 */
+	seqcnt = read_seqcount_begin(&q->ave_seqcnt);
+	ave_nr_running = do_avg_nr_running(q);
+	if (read_seqcount_retry(&q->ave_seqcnt, seqcnt)) {
+		read_seqcount_begin(&q->ave_seqcnt);
+		ave_nr_running = q->ave_nr_running;
+	}
+	return ave_nr_running;
+}
+EXPORT_SYMBOL(avg_cpu_nr_running);
+
+unsigned long get_avg_nr_running(unsigned int cpu)
+{
+	struct rq *q;
+
+	if (cpu >= nr_cpu_ids)
+		return 0;
+
+	q = cpu_rq(cpu);
+
+	return q->ave_nr_running;
+}
+
+unsigned long avg_nr_running(void)
+{
+	unsigned long i, sum = 0;
+	unsigned int seqcnt, ave_nr_running;
+
+	for_each_online_cpu(i) {
+		struct rq *q = cpu_rq(i);
+
+		/*
+		 * Update average to avoid reading stalled value if there were
+		 * no run-queue changes for a long time. On the other hand if
+		 * the changes are happening right now, just read current value
+		 * directly.
+		 */
+		seqcnt = read_seqcount_begin(&q->ave_seqcnt);
+		ave_nr_running = do_avg_nr_running(q);
+		if (read_seqcount_retry(&q->ave_seqcnt, seqcnt)) {
+			read_seqcount_begin(&q->ave_seqcnt);
+			ave_nr_running = q->ave_nr_running;
+		}
+
+		sum += ave_nr_running;
+	}
+
+	return sum;
+}
+EXPORT_SYMBOL(avg_nr_running);
 
 /*
  * Global load-average calculations
@@ -5918,7 +5980,7 @@ int idle_cpu(int cpu)
 		return 0;
 
 #ifdef CONFIG_SMP
-	if (!llist_empty(&rq->wake_list))
+	if (!llist_empty_relaxed(&rq->wake_list))
 		return 0;
 #endif
 

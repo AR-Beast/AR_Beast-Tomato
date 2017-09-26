@@ -28,7 +28,22 @@
 #include <linux/slab.h>
 #include <linux/syscore_ops.h>
 #include <linux/tick.h>
+#include <linux/pm_opp.h>
 #include <trace/events/power.h>
+#include <linux/moduleparam.h>
+
+static bool allow_minup = true;
+module_param(allow_minup, bool, 0644);
+bool allow_maxdown = true;
+module_param(allow_maxdown, bool, 0644);
+// Sloppy sysfs file to indicate if we're allowing per core control of freqs and governors.
+// This is used in our modified Kernel Adiutor
+bool per_core_control = true;
+module_param(per_core_control, bool, 0644);
+
+#ifdef CONFIG_MSM_LIMITER
+#include <linux/msm_thermal.h>
+#endif
 
 /**
  * The "cpufreq driver" - the arch- or hardware-dependent low
@@ -338,17 +353,15 @@ void cpufreq_notify_transition(struct cpufreq_policy *policy,
 EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
 
 /**
- * cpufreq_notify_utilization - notify CPU userspace about CPU utilization
- * change
- *
- * This function is called everytime the CPU load is evaluated by the
- * ondemand governor. It notifies userspace of cpu load changes via sysfs.
- */
+cpufreq_notify_utilization - notify CPU userspace about CPU utilization change
+This function is called everytime the CPU load is evaluated by the ondemand governor. 
+It notifies userspace of cpu load changes via sysfs.
+*/
 void cpufreq_notify_utilization(struct cpufreq_policy *policy,
-		unsigned int util)
+ unsigned int util)
 {
-	if (policy)
-		policy->util = util;
+ if (policy)
+ policy->util = util;
 }
 
 /*********************************************************************
@@ -665,6 +678,22 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
 }
 
+#ifdef CONFIG_ARCH_MSM8916
+extern ssize_t cpu_clock_get_vdd(char *buf);
+extern ssize_t cpu_clock_set_vdd(const char *buf, size_t count);
+
+static ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf)
+{
+	return cpu_clock_get_vdd(buf);
+}
+
+static ssize_t store_UV_mV_table(struct cpufreq_policy *policy,
+	const char *buf, size_t count)
+{
+	return cpu_clock_set_vdd(buf, count);
+}
+#endif
+
 cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
 cpufreq_freq_attr_ro(cpuinfo_min_freq);
 cpufreq_freq_attr_ro(cpuinfo_max_freq);
@@ -679,6 +708,9 @@ cpufreq_freq_attr_rw(scaling_min_freq);
 cpufreq_freq_attr_rw(scaling_max_freq);
 cpufreq_freq_attr_rw(scaling_governor);
 cpufreq_freq_attr_rw(scaling_setspeed);
+#ifdef CONFIG_ARCH_MSM8916
+cpufreq_freq_attr_rw(UV_mV_table);
+#endif
 
 static struct attribute *default_attrs[] = {
 	&cpuinfo_min_freq.attr,
@@ -692,6 +724,9 @@ static struct attribute *default_attrs[] = {
 	&scaling_driver.attr,
 	&scaling_available_governors.attr,
 	&scaling_setspeed.attr,
+#ifdef CONFIG_ARCH_MSM8916
+	&UV_mV_table.attr,
+#endif
 	NULL
 };
 
@@ -1445,15 +1480,15 @@ static void cpufreq_out_of_sync(unsigned int cpu, unsigned int old_freq,
 
 unsigned int cpufreq_quick_get_util(unsigned int cpu)
 {
-	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-	unsigned int ret_util = 0;
+ struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+ unsigned int ret_util = 0;
 
-	if (policy) {
-		ret_util = policy->util;
-		cpufreq_cpu_put(policy);
-	}
+ if (policy) {
+ ret_util = policy->util;
+ cpufreq_cpu_put(policy);
+ }
 
-	return ret_util;
+ return ret_util;
 }
 EXPORT_SYMBOL(cpufreq_quick_get_util);
 

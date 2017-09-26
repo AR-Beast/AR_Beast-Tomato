@@ -149,7 +149,7 @@ struct device_clnt_data {
 	void                         *usr_data;
 };
 
-#if defined (CONFIG_THERMAL_MONITOR) || defined (CONFIG_ARB_THERMAL)
+#ifdef CONFIG_THERMAL_MONITOR
 extern int msm_thermal_init(struct msm_thermal_data *pdata);
 static int msm_thermal_device_init(void);
 extern int msm_thermal_set_frequency(uint32_t cpu, uint32_t freq,
@@ -253,31 +253,23 @@ extern void devmgr_unregister_mitigation_client(
 					struct device *dev,
 					struct device_clnt_data *clnt);
 #else
-static inline int msm_thermal_init(struct msm_thermal_data *pdata)
-{
-	return -ENOSYS;
-}
-static inline int msm_thermal_device_init(void)
-{
-	return -ENOSYS;
-}
 static inline int msm_thermal_set_frequency(uint32_t cpu, uint32_t freq,
 	bool is_max)
 {
 	return -ENOSYS;
 }
 static inline int msm_thermal_set_cluster_freq(uint32_t cluster, uint32_t freq,
-	bool is_max);
+	bool is_max)
 {
 	return -ENOSYS;
 }
 static inline int msm_thermal_get_freq_plan_size(uint32_t cluster,
-	unsigned int *table_len);
+	unsigned int *table_len)
 {
 	return -ENOSYS;
 }
 static inline int msm_thermal_get_cluster_freq_plan(uint32_t cluster,
-	unsigned int *table_ptr);
+	unsigned int *table_ptr)
 {
 	return -ENOSYS;
 }

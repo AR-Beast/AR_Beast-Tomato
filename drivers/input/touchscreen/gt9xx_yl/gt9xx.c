@@ -321,9 +321,9 @@ void tw_hall_wakeup(int in_hall)
 		if(ts->gtp_is_suspend)
 	        {
 	        // report powerkey event for PowerManagerService to wakeup or sleep system
-		    input_report_key(ts->input_dev, KEY_POWER, 1);
+		    input_report_key(ts->input_dev, KEY_WAKEUP, 1);
 		    input_sync(ts->input_dev);
-		    input_report_key(ts->input_dev, KEY_POWER, 0);
+		    input_report_key(ts->input_dev, KEY_WAKEUP, 0);
 		    input_sync(ts->input_dev);
 		}
     }
@@ -331,9 +331,9 @@ void tw_hall_wakeup(int in_hall)
     {
 		if(0 ==ts->gtp_is_suspend)
 		{
-		    input_report_key(ts->input_dev, KEY_POWER, 1);
+		    input_report_key(ts->input_dev, KEY_WAKEUP, 1);
 		    input_sync(ts->input_dev);
-		    input_report_key(ts->input_dev, KEY_POWER, 0);
+		    input_report_key(ts->input_dev, KEY_WAKEUP, 0);
 		    input_sync(ts->input_dev);
 		}
     }

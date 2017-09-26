@@ -1,5 +1,3 @@
-CFLAGS_q6lsm.o := -Wno-memset-transposed-args
-
 # MSM CPU/CODEC DAI Support
 
 

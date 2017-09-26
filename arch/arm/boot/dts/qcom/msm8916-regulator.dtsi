@@ -101,11 +101,11 @@
 		qcom,speed-bin-fuse-sel = <1 34 3 0>;
 		qcom,pvs-version-fuse-sel = <0 55 2 0>;
 		qcom,cpr-speed-bin-max-corners =
-					<0 0 2 4 8>,
-					<0 1 2 4 7>,
+					<0 0 2 4 9>,
+					<0 1 2 4 9>,
 					<2 0 2 4 9>,
-					<3 0 2 4 5>,
-					<3 1 2 4 5>;
+					<3 0 2 4 9>,
+					<3 1 2 4 9>;
 		qcom,cpr-quot-adjust-scaling-factor-max = <650>;
 		qcom,cpr-enable;
 	};

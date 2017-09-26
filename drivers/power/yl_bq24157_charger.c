@@ -36,14 +36,6 @@
 
 #include "yl_pm8916_vbus.h"
 
-#ifdef CONFIG_QUICK_CHARGE
-// Include the Header File of Quick Charge for Access to the Status and Dynamic Current of the Driver as well as for Reporting the Battery-Level to the Driver.
-#include <linux/Quick_Charge.h>
-
-// Variable to Store a Copy of Default Max. Current (mA) as Specified in DTB.
-int BQ_DTB_Max_Current;
-#endif
-
 struct bq24157_chip {
 	struct device         *dev;
 	struct i2c_client      *client;
@@ -1065,23 +1057,9 @@ static int bq24157_get_prop_batt_status(struct bq24157_chip *chip)
 		if (chip->batt_capa >= 100)
 			ret.intval = POWER_SUPPLY_STATUS_FULL;
 		else
-		#ifdef CONFIG_QUICK_CHARGE
-		{
-		   // Report the Status of Charging to Quick Charge Driver.
-		   charging (1);
-
-		   ret.intval = POWER_SUPPLY_STATUS_CHARGING;
-		}
-		#else
-			ret.intval = POWER_SUPPLY_STATUS_CHARGING;
-		#endif
+			ret.intval = POWER_SUPPLY_STATUS_CHARGING;	
 	} else {
 		ret.intval = POWER_SUPPLY_STATUS_DISCHARGING;
-		
-		#ifdef CONFIG_QUICK_CHARGE
-		// Report the Status of Dis-Charging to Quick Charger Driver.
-		charging (0);
-		#endif
 	}
 #if 0	
 	chip->charge_stat = bq24157_get_stat(chip);
@@ -1160,8 +1138,6 @@ static int bq24157_get_prop_current_now(struct bq24157_chip *chip)
 
 	ret.intval = chip->chg_curr_now;
 
-	actual_current (ret.intval);
-
 	return ret.intval;
 }
 
@@ -1238,11 +1214,6 @@ static int bq24157_get_prop_batt_capa(struct bq24157_chip *chip)
 
 	#ifdef CONFIG_STATE_HELPER
 	batt_level_notify(chip->batt_capa);
-	#endif
-	#ifdef CONFIG_QUICK_CHARGE
-	// Report the Battery-Level to the Quick Charge Driver (only if it is Enabled).
-	if (QC_Toggle == 1)
-	   batt_level (chip->batt_capa);
 	#endif
 
         return chip->batt_capa;
@@ -1389,65 +1360,16 @@ static void bq24157_external_power_changed(struct power_supply *psy)
 		dev_err(chip->dev,
 			"could not read USB current_max property, rc=%d\n", rc);
 	else
-        #ifdef CONFIG_QUICK_CHARGE
-        {
-	    if (QC_Toggle == 1) 
-	    {
-	       // If Current (mA) is Equal to 500 mA, then USB-Charger is Connected.
-               if ((prop.intval / 1000) == 500) 
-	       {
-	          // Set vBUS Current-Limit (mA) to 1000 mA.
-                  pr_info("Using Quick Charge USB-Current (mA) %d", 1000);
-                  chip->set_ivbus_max = 1000;
-		  // Store USB-Current (mA) Value Correctly.
-		  chip->chg_curr_max = chip->set_ivbus_max;
-		  chip->chg_curr_now = chip->chg_curr_max;
-               }
-               else 
-	       {
-		   // If Flow of Control comes here, then AC-Charger is Connected.
-                   pr_info("Using Quick Charge AC-Current (mA) %d", Dynamic_Current);
-		   // Set vBUS Current-Limit (mA) to Original Value i.e., 1500 mA.
-                   chip->set_ivbus_max = prop.intval / 1000;
-		   // Store AC-Current (mA) Value as specified in Quick Charge.
-		   chip->chg_curr_max = Dynamic_Current;
-		   chip->chg_curr_now = chip->chg_curr_max;
-               }
-            }
-            else
-	    {
-	        // If Quick Charge is Disabled, Restore Default Value of Current (mA). 
-		if ((prop.intval / 1000) == 500)
-		{ 
-		   // If USB-Charger is Connected, Restore Default Value of Current (mA). 
-                   pr_info("Using Default USB-Current (mA) %d", prop.intval / 1000);
-		   chip->set_ivbus_max = prop.intval / 1000;
-		   chip->chg_curr_max = chip->set_ivbus_max;
-		   chip->chg_curr_now = chip->chg_curr_max;
-		}
-	 	else
-		{
-		    // If Flow of Control comes here, then AC-Charger is Connected.
-		    pr_info("Using Default AC-Current (mA) %d", BQ_DTB_Max_Current);
-		    // Set vBUS Current-Limit (mA) to Original Value i.e., 1500 mA. 
-		    chip->set_ivbus_max = prop.intval / 1000;
-		    // Set Current (mA) to the Default Value as per DTB.    
-		    chip->chg_curr_max = BQ_DTB_Max_Current;
-		    chip->chg_curr_now = chip->chg_curr_max;
-		}	  
-	    }
-	}
-	#else
-	    // If Quick Charge is Not Compiled, Leave Current (mA) Value Untouched.
-	    chip->set_ivbus_max = prop.intval / 1000;
-	#endif
+		chip->set_ivbus_max = prop.intval / 1000;
+
 
 	rc = bq24157_set_ivbus_max(chip, chip->set_ivbus_max); //VBUS CURRENT
         /*modify by sunxiaogang@yulong.com 2015.03.10 distinguish to fan5405*/
         bq24157_set_wake_lock(chip);
 
 	power_supply_changed(&chip->batt_psy);
-	pr_info("vBUS Current-Limit (mA) = %d\n", chip->set_ivbus_max);
+	pr_info("current_limit = %d\n", chip->set_ivbus_max);
+	
 }
 
 static void bq24157_set_charged_work(struct work_struct *work)
@@ -1527,26 +1449,9 @@ static int bq24157_parse_dt(struct bq24157_chip *chip)
 	if (rc < 0)
 		return -EINVAL;
 
-#ifdef CONFIG_QUICK_CHARGE
-	// Read the Max. Current (mA) Value from DTB and Store in Copy-Variable.
-	rc = of_property_read_u32(node, "yl,max-charge-current-mA", &BQ_DTB_Max_Current);
-
-	// If Quick Charge is Enabled, then Set the Max. Current to the Value of Dynamic Current of the Driver.
-	if (QC_Toggle == 1)
-	   chip->chg_curr_max = Dynamic_Current;
-	else
-	{
-	// If Quick Charge is Disabled, then Restore the Max. Current Value to the Default as Specified in DTB.
-	    rc = of_property_read_u32(node, "yl,max-charge-current-mA", &chip->chg_curr_max);
-	    if (rc < 0)
-	       return -EINVAL;
-	}
-#else
-	// If Quick Charge is not Compiled, then Read the Default Value only.
 	rc = of_property_read_u32(node, "yl,max-charge-current-mA", &chip->chg_curr_max);
 	if (rc < 0)
-	   return -EINVAL;
-#endif
+		return -EINVAL;
 	chip->chg_curr_now = chip->chg_curr_max;
 	
 	rc = of_property_read_u32(node, "yl,term-current-mA", &chip->iterm_ma);

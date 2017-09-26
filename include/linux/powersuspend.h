@@ -36,6 +36,10 @@
 #define POWER_SUSPEND_USERSPACE	1	// Use fauxclock as trigger
 #define POWER_SUSPEND_PANEL	2	// Use display panel state as hook
 
+#ifdef CONFIG_ADRENO_IDLER
+extern bool power_suspended;
+#endif
+
 struct power_suspend {
 	struct list_head link;
 	void (*suspend)(struct power_suspend *h);
@@ -46,10 +50,6 @@ void register_power_suspend(struct power_suspend *handler);
 void unregister_power_suspend(struct power_suspend *handler);
 
 void set_power_suspend_state_panel_hook(int new_state);
-
-#ifdef CONFIG_ADRENO_IDLER
-extern bool power_suspended;
-#endif
 
 #endif
 

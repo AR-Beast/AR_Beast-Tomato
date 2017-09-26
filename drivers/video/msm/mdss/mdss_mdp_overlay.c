@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2016, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -905,6 +905,11 @@ int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
 	pipe->dst.y = req->dst_rect.y;
 	pipe->dst.w = req->dst_rect.w;
 	pipe->dst.h = req->dst_rect.h;
+
+	if (mixer->ctl) {
+		pipe->dst.x += mixer->ctl->border_x_off;
+		pipe->dst.y += mixer->ctl->border_y_off;
+	}
 
 	pipe->horz_deci = req->horz_deci;
 	pipe->vert_deci = req->vert_deci;
@@ -3213,12 +3218,16 @@ static int mdss_fb_get_metadata(struct msm_fb_data_type *mfd,
 		ret = mdss_fb_get_hw_caps(mfd, &metadata->data.caps);
 		break;
 	case metadata_op_get_ion_fd:
-		if (mfd->fb_ion_handle) {
+		if (mfd->fb_ion_handle && mfd->fb_ion_client) {
+			get_dma_buf(mfd->fbmem_buf);
 			metadata->data.fbmem_ionfd =
-				dma_buf_fd(mfd->fbmem_buf, 0);
-			if (metadata->data.fbmem_ionfd < 0)
+				ion_share_dma_buf_fd(mfd->fb_ion_client,
+					mfd->fb_ion_handle);
+			if (metadata->data.fbmem_ionfd < 0) {
+				dma_buf_put(mfd->fbmem_buf);
 				pr_err("fd allocation failed. fd = %d\n",
 						metadata->data.fbmem_ionfd);
+			}
 		}
 		break;
 	case metadata_op_crc:
