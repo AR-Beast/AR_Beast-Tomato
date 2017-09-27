@@ -241,8 +241,8 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else echo sh; fi ; fi)
 HOSTCC       = $(CCACHE) gcc
 HOSTCXX      = $(CCACHE) g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -funswitch-loops -fpredictive-commoning -fgcse-after-reload -ftree-loop-vectorize -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fpeel-loops -fomit-frame-pointer -std=gnu89
-HOSTCXXFLAGS = -O2 -funswitch-loops -fpredictive-commoning -fgcse-after-reload -ftree-loop-vectorize -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fpeel-loops
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -Ofast -fomit-frame-pointer -std=gnu89
+HOSTCXXFLAGS = -O3 -Ofast
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -346,11 +346,11 @@ CC		= $(srctree)/scripts/gcc-wrapper.py $(REAL_CC)
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-CFLAGS_MODULE   = -O2 -funswitch-loops -fpredictive-commoning -fgcse-after-reload -ftree-loop-vectorize -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fpeel-loops  $(GRAPHITE)
-AFLAGS_MODULE   = --O2 -funswitch-loops -fpredictive-commoning -fgcse-after-reload -ftree-loop-vectorize -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fpeel-loops $(GRAPHITE)
-LDFLAGS_MODULE  = -O2 -funswitch-loops -fpredictive-commoning -fgcse-after-reload -ftree-loop-vectorize -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fpeel-loops --strip-debug 
-CFLAGS_KERNEL	= $(GRAPHITE) -O2 -funswitch-loops -fpredictive-commoning -fgcse-after-reload -ftree-loop-vectorize -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fpeel-loops
-AFLAGS_KERNEL	= -O2 -funswitch-loops -fpredictive-commoning -fgcse-after-reload -ftree-loop-vectorize -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fpeel-loops $(GRAPHITE) 
+CFLAGS_MODULE   = -O3 -Ofast $(GRAPHITE)
+AFLAGS_MODULE   = -O3 -Ofast $(GRAPHITE)
+LDFLAGS_MODULE  = -O3 -Ofast --strip-debug 
+CFLAGS_KERNEL	= $(GRAPHITE) -O3 -Ofast
+AFLAGS_KERNEL	= -O3 -Ofast $(GRAPHITE) 
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 # ak flags optimization
@@ -606,7 +606,7 @@ KBUILD_CFLAGS   += $(call cc-option,-fno-store-merging,)
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os
 else
-KBUILD_CFLAGS	+= -O2 -funswitch-loops -fpredictive-commoning -fgcse-after-reload -ftree-loop-vectorize -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fpeel-loops
+KBUILD_CFLAGS	+= -O2 -Wno-maybe-uninitialized -funswitch-loops -fsplit-paths -fpredictive-commoning -fgcse-after-reload -ftree-loop-vectorize -ftree-loop-distribution -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model -ftree-partial-pre -fpeel-loops
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
