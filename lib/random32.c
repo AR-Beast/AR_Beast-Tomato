@@ -36,6 +36,7 @@
 #include <linux/export.h>
 #include <linux/jiffies.h>
 #include <linux/random.h>
+#include <linux/timer.h>
 #include <linux/sched.h>
 #include <asm/unaligned.h>
 
@@ -46,6 +47,7 @@ static inline void prandom_state_selftest(void)
 {
 }
 #endif
+
 
 static DEFINE_PER_CPU(struct rnd_state, net_rand_state);
 
@@ -182,9 +184,8 @@ void prandom_seed(u32 entropy)
 	 */
 	for_each_possible_cpu (i) {
 		struct rnd_state *state = &per_cpu(net_rand_state, i);
-
-		state->s1 = __seed(state->s1 ^ entropy, 2U);
-		prandom_warmup(state);
+		state->s1 = __seed(state->s1 ^ entropy, 2);
+		prandom_u32_state(state);
 	}
 }
 EXPORT_SYMBOL(prandom_seed);
@@ -212,28 +213,23 @@ static int __init prandom_init(void)
 core_initcall(prandom_init);
 
 static void __prandom_timer(unsigned long dontcare);
-
 static DEFINE_TIMER(seed_timer, __prandom_timer, 0, 0);
 
 static void __prandom_timer(unsigned long dontcare)
 {
 	u32 entropy;
-	unsigned long expires;
 
-	erandom_get_random_bytes((char *)&entropy, sizeof(entropy));
+	get_random_bytes(&entropy, sizeof(entropy));
 	prandom_seed(entropy);
-
 	/* reseed every ~60 seconds, in [40 .. 80) interval with slack */
-	expires = 40 + prandom_u32_max(40);
-	seed_timer.expires = jiffies + msecs_to_jiffies(expires * MSEC_PER_SEC);
-
+	seed_timer.expires = jiffies + (40 * HZ + (prandom_u32() % (40 * HZ)));
 	add_timer(&seed_timer);
 }
 
-static void __init __prandom_start_seed_timer(void)
+static void prandom_start_seed_timer(void)
 {
 	set_timer_slack(&seed_timer, HZ);
-	seed_timer.expires = jiffies + msecs_to_jiffies(40 * MSEC_PER_SEC);
+	seed_timer.expires = jiffies + 40 * HZ;
 	add_timer(&seed_timer);
 }
 
@@ -256,14 +252,10 @@ static void __prandom_reseed(bool late)
 	 * already waiting for bytes when the nonblocking pool
 	 * got initialized.
 	 */
-
 	/* only allow initial seeding (late == false) once */
-	if (!spin_trylock_irqsave(&lock, flags))
-		return;
-
+	spin_lock_irqsave(&lock, flags);
 	if (latch && !late)
 		goto out;
-
 	latch = true;
 
 	for_each_possible_cpu(i) {
@@ -290,7 +282,8 @@ void prandom_reseed_late(void)
 static int __init prandom_reseed(void)
 {
 	__prandom_reseed(false);
-	__prandom_start_seed_timer();
+
+	prandom_start_seed_timer();
 	return 0;
 }
 late_initcall(prandom_reseed);
