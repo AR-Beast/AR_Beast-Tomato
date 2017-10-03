@@ -91,7 +91,7 @@ cp $KERNEL_DIR/spectrum/init.spectrum.rc $ZIP_MAKER_DIR/ramdisk/
 
 echo "**** Time to zip up! ****"
 cd $ZIP_MAKER_DIR/
-git checkout tomato
+git checkout tomato-nougat
 zip -r9 $FINAL_KERNEL_ZIP * -x README $FINAL_KERNEL_ZIP
 rm -rf /home/beast12/ARBeast/$FINAL_KERNEL_ZIP
 cp /home/ayushr1/AR_Beast/ARB-Anykernel2/$FINAL_KERNEL_ZIP /home/ayushr1/AR_Beast/out/tomato/$FINAL_KERNEL_ZIP
