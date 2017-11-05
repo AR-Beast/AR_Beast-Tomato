@@ -20,7 +20,7 @@ KERN_IMG=$KERNEL_DIR/arch/arm64/boot/Image
 DTBTOOL=$KERNEL_DIR/tools/dtbToolCM
 FINAL_KERNEL_ZIP=AR_Beast™-$(date +"%Y%m%d-%T")-tomato.zip
 ZIP_MAKER_DIR=/home/ayushr1/AR_Beast/ARB-Anykernel2
-VERSION=7
+VERSION=9
 
 BUILD_START=$(date +"%s")
 blue='\033[0;34m'
@@ -49,7 +49,6 @@ echo -e "***********************************************$nocol"
 rm -f $KERN_IMG
 make ARBeast_tomato_defconfig  -j$(nproc --all)
 make Image -j$(nproc --all)
-make modules -j$(nproc --all)
 make dtbs -j$(nproc --all)
 if ! [ -a $KERN_IMG ];
 then
@@ -80,7 +79,6 @@ echo "**** Verifying ZIP MAKER Directory ****"
 echo "**** Removing leftovers ****"
 rm -rf $ZIP_MAKER_DIR/tools/dt.img
 rm -rf $ZIP_MAKER_DIR/Image
-rm -rf $ZIP_MAKER_DIR/modules/wlan.ko
 
 echo "**** Copying Image ****"
 cp $KERNEL_DIR/arch/arm64/boot/Image $ZIP_MAKER_DIR/
@@ -90,10 +88,6 @@ cp $KERNEL_DIR/arch/arm64/boot/dt.img $ZIP_MAKER_DIR/
 echo "**** Copying tweaks ****"
 cp $KERNEL_DIR/spectrum/init.spectrum.sh $ZIP_MAKER_DIR/ramdisk/
 cp $KERNEL_DIR/spectrum/init.spectrum.rc $ZIP_MAKER_DIR/ramdisk/
-echo "**** Copying modules ****"		
-cp $KERNEL_DIR/drivers/staging/prima/wlan.ko $ZIP_MAKER_DIR/modules/		
-cp $KERNEL_DIR/net/ipv4/tcp_bic.ko $ZIP_MAKER_DIR/modules/		
-cp $KERNEL_DIR/net/ipv4/tcp_htcp.ko $ZIP_MAKER_DIR/modules/
 
 echo "**** Time to zip up! ****"
 cd $ZIP_MAKER_DIR/
@@ -109,9 +103,6 @@ rm -rf $ZIP_MAKER_DIR/ramdisk/init.spectrum.rc
 rm -rf $ZIP_MAKER_DIR/dt.img
 rm -rf $ZIP_MAKER_DIR/zImage
 rm -rf $ZIP_MAKER_DIR/$FINAL_KERNEL_ZIP
-rm -rf $ZIP_MAKER_DIR/modules/wlan.ko		
-rm -rf $ZIP_MAKER_DIR/modules/tcp_bic.ko		
-rm -rf $ZIP_MAKER_DIR/modules/tcp_htcp.ko
 
 # Clearing For Commiting
 echo "**** Cleaning ****"
