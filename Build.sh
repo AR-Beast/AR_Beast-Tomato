@@ -20,7 +20,7 @@ KERN_IMG=$KERNEL_DIR/arch/arm64/boot/Image
 DTBTOOL=$KERNEL_DIR/tools/dtbToolCM
 FINAL_KERNEL_ZIP=AR_Beast™-$(date +"%Y%m%d-%T")-tomato.zip
 ZIP_MAKER_DIR=/home/ayushr1/AR_Beast/ARB-Anykernel2
-VERSION=7
+VERSION=9
 
 BUILD_START=$(date +"%s")
 blue='\033[0;34m'
