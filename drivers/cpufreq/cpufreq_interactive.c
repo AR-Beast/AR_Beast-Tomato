@@ -32,9 +32,8 @@
 #include <linux/kthread.h>
 #include <linux/slab.h>
 #include <linux/kernel_stat.h>
-#include <linux/display_state.h>
 #include <asm/cputime.h>
-
+#include <linux/state_notifier.h>
 #define CREATE_TRACE_POINTS
 #include <trace/events/cpufreq_interactive.h>
 
@@ -496,7 +495,6 @@ static void cpufreq_interactive_timer(unsigned long data)
 	bool policy_max_fast_restore = false;
 	bool jump_to_max = false;
 	unsigned int this_hispeed_freq;
-	bool display_on = is_display_on();
 	unsigned int MAX_LOCAL_LOAD;
 
 	if (!down_read_trylock(&ppol->enable_sem))
@@ -518,10 +516,10 @@ static void cpufreq_interactive_timer(unsigned long data)
 	ppol->notif_pending = false;
 	ppol->last_evaluated_jiffy = get_jiffies_64();
 
-	if (display_on
+	if (!state_suspended
 		&& tunables->timer_rate != tunables->prev_timer_rate)
 		tunables->timer_rate = tunables->prev_timer_rate;
-	else if (!display_on
+	else if (state_suspended
 		&& tunables->timer_rate != SCREEN_OFF_TIMER_RATE) {
 		tunables->prev_timer_rate = tunables->timer_rate;
 		tunables->timer_rate
@@ -725,7 +723,6 @@ static int cpufreq_interactive_speedchange_task(void *data)
 	unsigned long flags;
 	struct cpufreq_interactive_policyinfo *ppol;
 	struct cpufreq_interactive_tunables *tunables;
-	bool display_on = is_display_on();
 
 	while (1) {
 		set_current_state(TASK_INTERRUPTIBLE);
@@ -757,13 +754,13 @@ static int cpufreq_interactive_speedchange_task(void *data)
 				continue;
 			}
 
-			if (unlikely(!display_on)) {
+			if (unlikely(state_suspended)) {
 			    if (ppol->target_freq > tunables->screen_off_max)
 				ppol->target_freq = tunables->screen_off_max;
 			}
 
 			if (ppol->target_freq != ppol->policy->cur) {
-			    if (tunables->powersave_bias || !display_on)
+			    if (tunables->powersave_bias || state_suspended)
 				    __cpufreq_driver_target(ppol->policy,
 							    ppol->target_freq,
 							    CPUFREQ_RELATION_C);
