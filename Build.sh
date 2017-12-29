@@ -20,7 +20,7 @@ KERN_IMG=$KERNEL_DIR/arch/arm64/boot/Image
 DTBTOOL=$KERNEL_DIR/tools/dtbToolCM
 FINAL_KERNEL_ZIP=AR_Beast™-$(date +"%Y%m%d-%T")-lettuce.zip
 ZIP_MAKER_DIR=/home/ayushr1/AR_Beast/ARB-Anykernel2
-VERSION=6
+VERSION=7
 
 BUILD_START=$(date +"%s")
 blue='\033[0;34m'
@@ -29,13 +29,13 @@ yellow='\033[0;33m'
 red='\033[0;31m'
 nocol='\033[0m'
 
-export CROSS_COMPILE="/home/ayushr1/AR_Beast/GCC-UBER-Prebuilts-8/bin/aarch64-linux-android-"
+export CROSS_COMPILE="/home/ayushr1/AR_Beast/GCC-UBER-Prebuilts/bin/aarch64-linux-android-"
 export ARCH=arm64
 export USE_CCACHE=1
 export SUBARCH=arm64
 export KBUILD_BUILD_USER="Ayush"
 export KBUILD_BUILD_HOST="Beast"
-STRIP="/home/ayushr1/AR_Beast/GCC-UBER-Prebuilts-8/bin/aarch64-linux-android-strip"
+STRIP="/home/ayushr1/AR_Beast/GCC-UBER-Prebuilts/bin/aarch64-linux-android-strip"
 MODULES_DIR=$KERNEL_DIR/drivers/staging/prima/
 CAL=$(($VERSION - 1))
 touch .version

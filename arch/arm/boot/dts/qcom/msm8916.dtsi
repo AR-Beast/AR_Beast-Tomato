@@ -1633,43 +1633,6 @@
 		linux,contiguous-region = <&venus_qseecom_mem>;
 	};
 
-	qcom,msm-thermal {
-		compatible = "qcom,msm-thermal";
-		qcom,sensor-id = <5>;
-		qcom,poll-ms = <250>;
-		qcom,limit-temp = <60>;
-		qcom,temp-hysteresis = <10>;
-		qcom,freq-step = <2>;
-		qcom,freq-control-mask = <0xf>;
-		qcom,core-limit-temp = <80>;
-		qcom,core-temp-hysteresis = <10>;
-		qcom,core-control-mask = <0xe>;
-		qcom,hotplug-temp = <94>;
-		qcom,hotplug-temp-hysteresis = <15>;
-		qcom,cpu-sensors = "tsens_tz_sensor5", "tsens_tz_sensor5",
-				"tsens_tz_sensor4", "tsens_tz_sensor4";
-		qcom,freq-mitigation-temp = <94>;
-		qcom,freq-mitigation-temp-hysteresis = <10>;
-		qcom,freq-mitigation-value = <400000>;
-		qcom,freq-mitigation-control-mask = <0x01>;
-		qcom,online-hotplug-core;
-		qcom,vdd-restriction-temp = <5>;
-		qcom,vdd-restriction-temp-hysteresis = <10>;
-		vdd-dig-supply = <&pm8916_s1_floor_corner>;
-
-		qcom,vdd-dig-rstr{
-			qcom,vdd-rstr-reg = "vdd-dig";
-			qcom,levels = <5 7 7>; /* Nominal, Super Turbo, Super Turbo */
-			qcom,min-level = <1>; /* No Request */
-		};
-
-		qcom,vdd-apps-rstr{
-			qcom,vdd-rstr-reg = "vdd-apps";
-			qcom,levels = <533330 800000 998400>;
-			qcom,freq-req;
-		};
-	};
-
 	qcom,memshare {
 		compatible = "qcom,memshare";
 
