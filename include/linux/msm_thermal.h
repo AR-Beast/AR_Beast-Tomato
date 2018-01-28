@@ -310,11 +310,6 @@ static inline int devmgr_client_request_mitigation(
 {
 	return -ENOSYS;
 }
-static inline void devmgr_unregister_mitigation_client(
-					struct device *dev,
-					struct device_clnt_data *clnt)
-{
-}
 #endif
 
 #endif /*__MSM_THERMAL_H*/
